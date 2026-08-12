@@ -1,0 +1,294 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &1174077719290796
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4673820302850102}
+  - component: {fileID: 114699211552144172}
+  - component: {fileID: 114357917685340400}
+  - component: {fileID: 114731103037089660}
+  - component: {fileID: 114119349169962376}
+  - component: {fileID: 114304002679836050}
+  m_Layer: 5
+  m_Name: Game Controller
+  m_TagString: GameController
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4673820302850102
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1174077719290796}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &114699211552144172
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1174077719290796}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3dca88cdc8de3d947aaa69c214095e93, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  sound:
+  - audioMixerGroup: {fileID: 243269708013697962, guid: 9acfcb9d4e72c9e42b65bd5440607716,
+      type: 2}
+    clipName: Alarm
+    clip: {fileID: 8300000, guid: 9173ae5f51f1e4bb8b9356dd0b4196fc, type: 3}
+    volume: 1
+    pitch: 1
+    loop: 1
+    playOnAwake: 0
+  - audioMixerGroup: {fileID: 243269708013697962, guid: 9acfcb9d4e72c9e42b65bd5440607716,
+      type: 2}
+    clipName: Door
+    clip: {fileID: 8300000, guid: 947e0f748d3ec47b79c3d26cc4a8a8b8, type: 3}
+    volume: 1
+    pitch: 1
+    loop: 0
+    playOnAwake: 0
+  - audioMixerGroup: {fileID: 243269708013697962, guid: 9acfcb9d4e72c9e42b65bd5440607716,
+      type: 2}
+    clipName: Use Button
+    clip: {fileID: 8300000, guid: 1b6650593eab8be438bcd01915fc3f68, type: 3}
+    volume: 1
+    pitch: 1
+    loop: 0
+    playOnAwake: 0
+  - audioMixerGroup: {fileID: 243919384435583198, guid: 9acfcb9d4e72c9e42b65bd5440607716,
+      type: 2}
+    clipName: Level 1
+    clip: {fileID: 8300000, guid: 23921df5c34984954a8f1992165602f2, type: 3}
+    volume: 1
+    pitch: 1
+    loop: 0
+    playOnAwake: 0
+  - audioMixerGroup: {fileID: 243919384435583198, guid: 9acfcb9d4e72c9e42b65bd5440607716,
+      type: 2}
+    clipName: Level 2
+    clip: {fileID: 8300000, guid: 1f9d026877e63fd4bbea648116e7ba68, type: 3}
+    volume: 0.5
+    pitch: 1
+    loop: 0
+    playOnAwake: 0
+  - audioMixerGroup: {fileID: 243919384435583198, guid: 9acfcb9d4e72c9e42b65bd5440607716,
+      type: 2}
+    clipName: Level 3
+    clip: {fileID: 8300000, guid: 40749ae89f05f456eaa052295aaec083, type: 3}
+    volume: 1
+    pitch: 1
+    loop: 0
+    playOnAwake: 0
+  - audioMixerGroup: {fileID: 243919384435583198, guid: 9acfcb9d4e72c9e42b65bd5440607716,
+      type: 2}
+    clipName: Main Menu
+    clip: {fileID: 8300000, guid: 32ac44c98f0f646348efbb67c9d60ef0, type: 3}
+    volume: 1
+    pitch: 1
+    loop: 1
+    playOnAwake: 1
+  - audioMixerGroup: {fileID: 243269708013697962, guid: 9acfcb9d4e72c9e42b65bd5440607716,
+      type: 2}
+    clipName: Swipe
+    clip: {fileID: 8300000, guid: 9cca06694e70343d3a39f395667c9651, type: 3}
+    volume: 1
+    pitch: 1
+    loop: 0
+    playOnAwake: 0
+  - audioMixerGroup: {fileID: 243269708013697962, guid: 9acfcb9d4e72c9e42b65bd5440607716,
+      type: 2}
+    clipName: Extreme Force
+    clip: {fileID: 8300000, guid: ae3e70033468a49cca79f5e3a46a4178, type: 3}
+    volume: 1
+    pitch: 1
+    loop: 0
+    playOnAwake: 0
+  - audioMixerGroup: {fileID: 243269708013697962, guid: 9acfcb9d4e72c9e42b65bd5440607716,
+      type: 2}
+    clipName: Hellfire Blast
+    clip: {fileID: 8300000, guid: 0aaa3a8f375c5c842bf0861f0e2b6262, type: 3}
+    volume: 1
+    pitch: 1
+    loop: 0
+    playOnAwake: 0
+  - audioMixerGroup: {fileID: 243269708013697962, guid: 9acfcb9d4e72c9e42b65bd5440607716,
+      type: 2}
+    clipName: Mimic
+    clip: {fileID: 8300000, guid: fc26cccf553ab74488ccc3072ea94fc2, type: 3}
+    volume: 1
+    pitch: 1
+    loop: 0
+    playOnAwake: 0
+  - audioMixerGroup: {fileID: 243269708013697962, guid: 9acfcb9d4e72c9e42b65bd5440607716,
+      type: 2}
+    clipName: Shadow Sink
+    clip: {fileID: 8300000, guid: 7afca98a49d984070864412940747f32, type: 3}
+    volume: 1
+    pitch: 1
+    loop: 0
+    playOnAwake: 0
+  - audioMixerGroup: {fileID: 243269708013697962, guid: 9acfcb9d4e72c9e42b65bd5440607716,
+      type: 2}
+    clipName: Stasis
+    clip: {fileID: 8300000, guid: 5b5416614038649b38575080e929ffd0, type: 3}
+    volume: 1
+    pitch: 1
+    loop: 0
+    playOnAwake: 0
+  - audioMixerGroup: {fileID: 243269708013697962, guid: 9acfcb9d4e72c9e42b65bd5440607716,
+      type: 2}
+    clipName: Traitor
+    clip: {fileID: 8300000, guid: 5eeeee6e34ec34fc99180bf51d59a129, type: 3}
+    volume: 1
+    pitch: 1
+    loop: 0
+    playOnAwake: 0
+  - audioMixerGroup: {fileID: 243269708013697962, guid: 9acfcb9d4e72c9e42b65bd5440607716,
+      type: 2}
+    clipName: Translocation
+    clip: {fileID: 8300000, guid: be685f9a0f6b74057b611a2b24c48d97, type: 3}
+    volume: 1
+    pitch: 1
+    loop: 0
+    playOnAwake: 0
+  - audioMixerGroup: {fileID: 0}
+    clipName: Select
+    clip: {fileID: 8300000, guid: 8d3e3e3652829104cb973557d983cbe2, type: 3}
+    volume: 1
+    pitch: 1
+    loop: 0
+    playOnAwake: 0
+  - audioMixerGroup: {fileID: 243269708013697962, guid: 9acfcb9d4e72c9e42b65bd5440607716,
+      type: 2}
+    clipName: Swish
+    clip: {fileID: 8300000, guid: 0d1d467553cf8304ab145e59b670571e, type: 3}
+    volume: 1
+    pitch: 1
+    loop: 0
+    playOnAwake: 0
+  - audioMixerGroup: {fileID: 243269708013697962, guid: 9acfcb9d4e72c9e42b65bd5440607716,
+      type: 2}
+    clipName: Corrupted Guard Death
+    clip: {fileID: 8300000, guid: c67dc85b3a58b8346bdc6520b52b0f7a, type: 3}
+    volume: 1
+    pitch: 1
+    loop: 0
+    playOnAwake: 0
+  - audioMixerGroup: {fileID: 243269708013697962, guid: 9acfcb9d4e72c9e42b65bd5440607716,
+      type: 2}
+    clipName: Guard Hurt
+    clip: {fileID: 8300000, guid: 8b2affb083c6e5d4382aff9f5dddb4e2, type: 3}
+    volume: 1
+    pitch: 1
+    loop: 0
+    playOnAwake: 0
+  - audioMixerGroup: {fileID: 243269708013697962, guid: 9acfcb9d4e72c9e42b65bd5440607716,
+      type: 2}
+    clipName: Guard Surprise
+    clip: {fileID: 8300000, guid: 534996f402509974c85492bb55f0da5f, type: 3}
+    volume: 1
+    pitch: 1
+    loop: 0
+    playOnAwake: 0
+  - audioMixerGroup: {fileID: 243269708013697962, guid: 9acfcb9d4e72c9e42b65bd5440607716,
+      type: 2}
+    clipName: Player Hurt
+    clip: {fileID: 8300000, guid: 9807957b74e6994478b33e19e9a1a832, type: 3}
+    volume: 1
+    pitch: 1
+    loop: 0
+    playOnAwake: 0
+  - audioMixerGroup: {fileID: 243269708013697962, guid: 9acfcb9d4e72c9e42b65bd5440607716,
+      type: 2}
+    clipName: Player Death
+    clip: {fileID: 8300000, guid: db33d0298db861b4d8f6da4bfc700577, type: 3}
+    volume: 1
+    pitch: 1
+    loop: 0
+    playOnAwake: 0
+--- !u!114 &114357917685340400
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1174077719290796}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 562732cc6a0837c41923dcb6b3822d77, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  canvas: {fileID: 0}
+  selectedMenu: 0
+--- !u!114 &114731103037089660
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1174077719290796}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c4bcdbcb1467f514fbb3e394129176f3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  enemiesKilled: 0
+  timesSpotted: 0
+  statsQuickSave:
+    enemiesKilled: 0
+    timesSpotted: 0
+--- !u!114 &114119349169962376
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1174077719290796}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 54d4c4e1433204943b9ab72b9caf10fa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  objectives:
+  - objectiveNumber: 101
+    objectiveText: Obtain the MacGuffin
+    objectiveStatus: 0
+    isActive: 1
+    nextObjectives: 66000000
+  - objectiveNumber: 102
+    objectiveText: Get back to the roof
+    objectiveStatus: 0
+    isActive: 0
+    nextObjectives: 
+--- !u!114 &114304002679836050
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1174077719290796}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a2a7c76242960e741ae43d0940dd198a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  player: {fileID: 0}
+  enemiesHolder: {fileID: 0}
+  itemsHolder: {fileID: 0}
