@@ -294,7 +294,7 @@ namespace Spells
 					}
 					else if (currentSpell == SpellNames.shadowSink && CheckMana(shadowSinkPrefab.manaCost))
 					{
-						if (currentShadowSinkObject == null && gameObject.GetComponent<Rigidbody2D>().velocity.x == 0f)
+						if (currentShadowSinkObject == null && gameObject.GetComponent<Rigidbody2D>().linearVelocity.x == 0f)
 						{
 							currentShadowSinkObject =
 								Instantiate(shadowSinkPrefab, transform.position, transform.rotation);

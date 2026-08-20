@@ -54,7 +54,7 @@ namespace Items
 				if (!isBeingChased)
 				{
 					player.transform.position = center.position;
-					player.GetComponent<Rigidbody2D>().velocity = Vector2.zero;
+					player.GetComponent<Rigidbody2D>().linearVelocity = Vector2.zero;
 					Switch(true);
 				}
 			}

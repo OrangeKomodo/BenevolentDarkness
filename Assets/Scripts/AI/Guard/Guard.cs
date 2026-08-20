@@ -125,7 +125,7 @@ namespace AI.Guard
 				{
 					if (!dead)
 					{
-						rb.velocity = Vector2.zero;
+						rb.linearVelocity = Vector2.zero;
 						suspicionPercentage = 0f;
 						//GetComponent<SpriteRenderer> ().color = state == State.dead ? Color.red : Color.blue;
 						GetComponent<BoxCollider2D>().isTrigger = true;
@@ -144,7 +144,7 @@ namespace AI.Guard
 							    whatIsGround))
 						{
 							rb.gravityScale = 0f;
-							rb.velocity = Vector2.zero;
+							rb.linearVelocity = Vector2.zero;
 							rb.constraints = RigidbodyConstraints2D.FreezePositionX |
 							                 RigidbodyConstraints2D.FreezePositionY;
 						}
@@ -161,7 +161,7 @@ namespace AI.Guard
 							if (!idling)
 							{
 								//transform.position = new Vector2 (Vector2.MoveTowards (transform.position, nextStop.position, walkSpeed * Time.fixedDeltaTime).x, transform.position.y);
-								rb.velocity = new Vector2(
+								rb.linearVelocity = new Vector2(
 									GetDirection(transform.position, nextStop.position) * walkSpeed,
 									0f);
 							}
@@ -184,8 +184,8 @@ namespace AI.Guard
 							SearchingForPlayer(guardFound ? downedGuard : lastKnownLocation);
 						}
 					}
-					else if (Mathf.Abs(rb.velocity.magnitude) > maxVelocity)
-						maxVelocity = Mathf.Abs(rb.velocity.magnitude);
+					else if (Mathf.Abs(rb.linearVelocity.magnitude) > maxVelocity)
+						maxVelocity = Mathf.Abs(rb.linearVelocity.magnitude);
 				}
 			}
 			else if (state == State.corrupted)
@@ -211,7 +211,7 @@ namespace AI.Guard
 				}
 			}
 
-			anim.SetFloat("Speed", Mathf.Abs(rb.velocity.x));
+			anim.SetFloat("Speed", Mathf.Abs(rb.linearVelocity.x));
 		}
 
 		////////////////////////////////////////////////////////////////////////////////////IDLE FUNCTIONS////////////////////////////////////////////////////////////////////////////////////////////
@@ -434,7 +434,7 @@ namespace AI.Guard
 				else
 				{
 					//transform.position = new Vector2 (Vector2.MoveTowards (transform.position, player.transform.position, runSpeed * Time.fixedDeltaTime).x, transform.position.y);
-					rb.velocity = new Vector2(GetDirection(transform.position, player.transform.position) * runSpeed,
+					rb.linearVelocity = new Vector2(GetDirection(transform.position, player.transform.position) * runSpeed,
 						0f);
 				}
 
@@ -453,7 +453,7 @@ namespace AI.Guard
 			    Time.time < lastSeenTime + giveUpTime)
 			{
 				//transform.position = new Vector2 (Vector2.MoveTowards (transform.position, searchArea, runSpeed * Time.fixedDeltaTime).x, transform.position.y);
-				rb.velocity = new Vector2(GetDirection(transform.position, searchArea) * runSpeed, 0f);
+				rb.linearVelocity = new Vector2(GetDirection(transform.position, searchArea) * runSpeed, 0f);
 				alertedEndTime = Time.time + alertedTime;
 			}
 			else if (alertedEndTime >= Time.time)
@@ -533,7 +533,7 @@ namespace AI.Guard
 				else
 				{
 					//transform.position = new Vector2 (Vector2.MoveTowards (transform.position, fellowGuard.position, runSpeed * Time.fixedDeltaTime).x, transform.position.y);
-					rb.velocity = new Vector2(GetDirection(transform.position, fellowGuard.position) * runSpeed, 0f);
+					rb.linearVelocity = new Vector2(GetDirection(transform.position, fellowGuard.position) * runSpeed, 0f);
 					transform.localScale =
 						new Vector3(
 							Mathf.Abs(transform.localScale.x) * GetDirection(transform.position, closestGuard.position),
@@ -669,7 +669,7 @@ namespace AI.Guard
 						Mathf.Abs(transform.localScale.x) * GetDirection(transform.position, player.transform.position),
 						transform.localScale.y, 0);
 			}
-			else if (Mathf.Abs(rb.velocity.x) <= 0.01f)
+			else if (Mathf.Abs(rb.linearVelocity.x) <= 0.01f)
 			{
 				if ((collision.collider.gameObject.layer == 11 || collision.collider.gameObject.layer == 12 ||
 				     collision.collider.gameObject.layer == 13) && maxVelocity >= 30f)

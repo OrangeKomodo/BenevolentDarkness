@@ -213,7 +213,7 @@ namespace Player
 					}
 				}
 
-				if (falling && Mathf.Abs(rb.velocity.y) < 0.05f)
+				if (falling && Mathf.Abs(rb.linearVelocity.y) < 0.05f)
 				{
 					TakeHit(1000);
 				}

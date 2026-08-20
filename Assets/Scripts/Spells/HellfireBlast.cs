@@ -19,7 +19,7 @@ public class HellfireBlast : Spell
 		damageDone = FindObjectOfType<SpellCasting>().spellLevel * 20f;
 		rb = GetComponent<Rigidbody2D>();
 
-		rb.velocity = transform.right * speed;
+		rb.linearVelocity = transform.right * speed;
 	}
 
 	void OnTriggerEnter2D(Collider2D collider)

@@ -86,7 +86,7 @@ namespace AI.Sentry
 				{
 					if (!dead)
 					{
-						rb.velocity = Vector2.zero;
+						rb.linearVelocity = Vector2.zero;
 						suspicionPercentage = 0f;
 						spriteRenderer.sprite = disabledSprite;
 						coll.isTrigger = true;
@@ -107,7 +107,7 @@ namespace AI.Sentry
 							    whatIsGround))
 						{
 							rb.gravityScale = 0f;
-							rb.velocity = Vector2.zero;
+							rb.linearVelocity = Vector2.zero;
 						}
 					}
 
@@ -140,9 +140,9 @@ namespace AI.Sentry
 					}
 				}
 
-				if (Mathf.Abs(rb.velocity.magnitude) > maxVelocity)
+				if (Mathf.Abs(rb.linearVelocity.magnitude) > maxVelocity)
 				{
-					maxVelocity = Mathf.Abs(rb.velocity.magnitude);
+					maxVelocity = Mathf.Abs(rb.linearVelocity.magnitude);
 				}
 			}
 		}
