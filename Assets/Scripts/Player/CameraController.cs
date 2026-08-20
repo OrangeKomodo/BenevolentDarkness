@@ -42,7 +42,7 @@ namespace Player
 			float targetScalePositive = Mathf.Abs(targetScale);
 
 			//Finds how far ahead of the player the camera should be.
-			m_LookAheadPos = offset.x * Vector3.right * (targetScale / targetScalePositive);
+			m_LookAheadPos = Vector3.right * (offset.x * (targetScale / targetScalePositive));
 			//Finds the exact position the camera should be focused on.
 			Vector3 aheadTargetPos = target.position + m_LookAheadPos + Vector3.forward * m_OffsetZ;
 			//Lerps to that position.
