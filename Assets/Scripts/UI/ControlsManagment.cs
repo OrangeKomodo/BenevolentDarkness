@@ -1,21 +1,17 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using GameManager;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
-public class ControlsManagment : MonoBehaviour {
+namespace UI
+{
+	public class ControlsManagment : MonoBehaviour {
 
-	public MenuSwitcher menuSwitcher;
-
-	// Use this for initialization
-	void Start () {
-		
-	}
+		public MenuSwitcher menuSwitcher;
 	
-	// Update is called once per frame
-	void Update () {
-		if (Input.GetKeyDown (KeyCode.Escape)) {
-			menuSwitcher.LoadMenu (1);
+		// Update is called once per frame
+		void Update () {
+			if (Input.GetKeyDown (KeyCode.Escape)) {
+				menuSwitcher.LoadMenu (1);
+			}
 		}
 	}
 }

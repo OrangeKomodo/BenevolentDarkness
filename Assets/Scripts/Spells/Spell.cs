@@ -1,10 +1,11 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
-public class Spell : MonoBehaviour {
+namespace Spells
+{
+	public class Spell : MonoBehaviour
+	{
 
-	public int manaCost;
-	//public int altManaCost;
+		public int manaCost;
 
+	}
 }

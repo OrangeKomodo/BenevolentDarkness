@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using AI.Guard;
 using UnityEngine;
 
 public class GuardStop : MonoBehaviour {
@@ -18,8 +19,12 @@ public class GuardStop : MonoBehaviour {
 
 	public void ForceUpdate () {
 		if (stationary)
+		{
 			guard.StopReached (Mathf.Infinity, idleDirection, transform);
+		}
 		else
+		{
 			guard.StopReached (idleTime, idleDirection, nextStop);
+		}
 	}
 }

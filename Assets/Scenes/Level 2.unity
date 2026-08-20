@@ -54,7 +54,7 @@ LightmapSettings:
     m_EnableBakedLightmaps: 0
     m_EnableRealtimeLightmaps: 0
   m_LightmapEditorSettings:
-    serializedVersion: 10
+    serializedVersion: 12
     m_Resolution: 2
     m_BakeResolution: 40
     m_AtlasSize: 1024
@@ -62,6 +62,7 @@ LightmapSettings:
     m_AOMaxDistance: 1
     m_CompAOExponent: 1
     m_CompAOExponentDirect: 0
+    m_ExtractAmbientOcclusion: 0
     m_Padding: 2
     m_LightmapParameters: {fileID: 0}
     m_LightmapsBakeMode: 1
@@ -76,10 +77,16 @@ LightmapSettings:
     m_PVRDirectSampleCount: 32
     m_PVRSampleCount: 500
     m_PVRBounces: 2
+    m_PVREnvironmentSampleCount: 500
+    m_PVREnvironmentReferencePointCount: 2048
+    m_PVRFilteringMode: 2
+    m_PVRDenoiserTypeDirect: 0
+    m_PVRDenoiserTypeIndirect: 0
+    m_PVRDenoiserTypeAO: 0
     m_PVRFilterTypeDirect: 0
     m_PVRFilterTypeIndirect: 0
     m_PVRFilterTypeAO: 0
-    m_PVRFilteringMode: 1
+    m_PVREnvironmentMIS: 0
     m_PVRCulling: 1
     m_PVRFilteringGaussRadiusDirect: 1
     m_PVRFilteringGaussRadiusIndirect: 5
@@ -87,7 +94,9 @@ LightmapSettings:
     m_PVRFilteringAtrousPositionSigmaDirect: 0.5
     m_PVRFilteringAtrousPositionSigmaIndirect: 2
     m_PVRFilteringAtrousPositionSigmaAO: 1
-    m_ShowResolutionOverlay: 1
+    m_ExportTrainingData: 0
+    m_TrainingDataDestination: TrainingData
+    m_LightProbeSampleCountMultiplier: 4
   m_LightingDataAsset: {fileID: 0}
   m_UseShadowmask: 1
 --- !u!196 &4
@@ -169,6 +178,66 @@ PrefabInstance:
       propertyPath: m_RootOrder
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 114119349169962376, guid: cbd8c0202cf50e84d8b797a8f8934560,
+        type: 3}
+      propertyPath: Objectives.Array.size
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 114119349169962376, guid: cbd8c0202cf50e84d8b797a8f8934560,
+        type: 3}
+      propertyPath: Objectives.Array.data[0].NextObjectives.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 114119349169962376, guid: cbd8c0202cf50e84d8b797a8f8934560,
+        type: 3}
+      propertyPath: Objectives.Array.data[0].ObjectiveText
+      value: Grab MacGuffin
+      objectReference: {fileID: 0}
+    - target: {fileID: 114119349169962376, guid: cbd8c0202cf50e84d8b797a8f8934560,
+        type: 3}
+      propertyPath: Objectives.Array.data[0].ObjectiveNumber
+      value: 201
+      objectReference: {fileID: 0}
+    - target: {fileID: 114119349169962376, guid: cbd8c0202cf50e84d8b797a8f8934560,
+        type: 3}
+      propertyPath: Objectives.Array.data[0].NextObjectives.Array.data[0]
+      value: 202
+      objectReference: {fileID: 0}
+    - target: {fileID: 114119349169962376, guid: cbd8c0202cf50e84d8b797a8f8934560,
+        type: 3}
+      propertyPath: Objectives.Array.data[1].ObjectiveNumber
+      value: 202
+      objectReference: {fileID: 0}
+    - target: {fileID: 114119349169962376, guid: cbd8c0202cf50e84d8b797a8f8934560,
+        type: 3}
+      propertyPath: Objectives.Array.data[1].ObjectiveText
+      value: Escape the Museum
+      objectReference: {fileID: 0}
+    - target: {fileID: 114119349169962376, guid: cbd8c0202cf50e84d8b797a8f8934560,
+        type: 3}
+      propertyPath: Objectives.Array.data[0].IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 114304002679836050, guid: cbd8c0202cf50e84d8b797a8f8934560,
+        type: 3}
+      propertyPath: player
+      value: 
+      objectReference: {fileID: 1978013966}
+    - target: {fileID: 114304002679836050, guid: cbd8c0202cf50e84d8b797a8f8934560,
+        type: 3}
+      propertyPath: enemiesHolder
+      value: 
+      objectReference: {fileID: 24041964}
+    - target: {fileID: 114304002679836050, guid: cbd8c0202cf50e84d8b797a8f8934560,
+        type: 3}
+      propertyPath: itemsHolder
+      value: 
+      objectReference: {fileID: 96704233}
+    - target: {fileID: 114357917685340400, guid: cbd8c0202cf50e84d8b797a8f8934560,
+        type: 3}
+      propertyPath: canvas
+      value: 
+      objectReference: {fileID: 1019834876}
     - target: {fileID: 114699211552144172, guid: cbd8c0202cf50e84d8b797a8f8934560,
         type: 3}
       propertyPath: sound.Array.data[3].loop
@@ -209,26 +278,6 @@ PrefabInstance:
       propertyPath: sound.Array.data[4].playOnAwake
       value: 1
       objectReference: {fileID: 0}
-    - target: {fileID: 114357917685340400, guid: cbd8c0202cf50e84d8b797a8f8934560,
-        type: 3}
-      propertyPath: canvas
-      value: 
-      objectReference: {fileID: 1019834876}
-    - target: {fileID: 114304002679836050, guid: cbd8c0202cf50e84d8b797a8f8934560,
-        type: 3}
-      propertyPath: player
-      value: 
-      objectReference: {fileID: 1978013966}
-    - target: {fileID: 114304002679836050, guid: cbd8c0202cf50e84d8b797a8f8934560,
-        type: 3}
-      propertyPath: enemiesHolder
-      value: 
-      objectReference: {fileID: 24041964}
-    - target: {fileID: 114304002679836050, guid: cbd8c0202cf50e84d8b797a8f8934560,
-        type: 3}
-      propertyPath: itemsHolder
-      value: 
-      objectReference: {fileID: 96704233}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: cbd8c0202cf50e84d8b797a8f8934560, type: 3}
 --- !u!1001 &337631463
@@ -238,6 +287,27 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1185870405923002, guid: 4beb08f191ec1204bb5ffbaa0299a99e, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1214928930727034, guid: 4beb08f191ec1204bb5ffbaa0299a99e, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1746226215534182, guid: 4beb08f191ec1204bb5ffbaa0299a99e, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1899976377959632, guid: 4beb08f191ec1204bb5ffbaa0299a99e, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 114618076610933586, guid: 4beb08f191ec1204bb5ffbaa0299a99e,
+        type: 3}
+      propertyPath: numberOfGuards
+      value: 7
+      objectReference: {fileID: 0}
     - target: {fileID: 224917245111746058, guid: 4beb08f191ec1204bb5ffbaa0299a99e,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -328,27 +398,6 @@ PrefabInstance:
       propertyPath: m_Pivot.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 114618076610933586, guid: 4beb08f191ec1204bb5ffbaa0299a99e,
-        type: 3}
-      propertyPath: numberOfGuards
-      value: 7
-      objectReference: {fileID: 0}
-    - target: {fileID: 1185870405923002, guid: 4beb08f191ec1204bb5ffbaa0299a99e, type: 3}
-      propertyPath: m_IsActive
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 1214928930727034, guid: 4beb08f191ec1204bb5ffbaa0299a99e, type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1746226215534182, guid: 4beb08f191ec1204bb5ffbaa0299a99e, type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1899976377959632, guid: 4beb08f191ec1204bb5ffbaa0299a99e, type: 3}
-      propertyPath: m_IsActive
-      value: 1
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 4beb08f191ec1204bb5ffbaa0299a99e, type: 3}
 --- !u!1001 &515611323
@@ -405,7 +454,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: -765806418, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!224 &1010228247 stripped
@@ -560,7 +609,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: -765806418, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1001 &1849443784

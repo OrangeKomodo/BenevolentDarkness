@@ -1,48 +1,40 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
-[System.Serializable]
-public class Objective {
+namespace GameManager
+{
+	public class ObjectiveSystem : MonoBehaviour
+	{
+		public Objective[] Objectives;
 
-	public enum Status {
-		mandatory,
-		optional,
-		completed,
-		impossible
-	}
+		public void SetObjectiveStatus(int objectiveNumber, Objective.Status newStatus)
+		{
+			int objectiveIndex = FindObjectiveIndex(objectiveNumber);
+			Objectives[objectiveIndex].SetStatus(newStatus);
 
-	public int objectiveNumber;
-	public string objectiveText;
-	public Status objectiveStatus;
-	public bool isActive;
-	public int[] nextObjectives;
-
-	public void SetStatus (Status newStatus) {
-		objectiveStatus = newStatus;
-	}
-}
-
-public class ObjectiveSystem : MonoBehaviour {
-
-	public Objective[] objectives;
-
-	public void SetObjectiveStatus (int objectiveNumber, Objective.Status newStatus){
-		int objectiveIndex = FindObjectiveIndex (objectiveNumber);
-		objectives [objectiveIndex].SetStatus (newStatus);
-
-		if (newStatus == Objective.Status.completed) {
-			for (int i = 0; i < objectives [objectiveIndex].nextObjectives.Length; i++)
-				objectives [FindObjectiveIndex (objectives [objectiveIndex].nextObjectives [i])].isActive = true;
-			objectives [objectiveIndex].isActive = false;
-			//Debug.Log ("Objective " + objectives [objectiveIndex].objectiveText + " completed!");
+			if (newStatus == Objective.Status.completed)
+			{
+				for (int i = 0; i < Objectives[objectiveIndex].NextObjectives.Length; i++)
+				{
+					Objectives[FindObjectiveIndex(Objectives[objectiveIndex].NextObjectives[i])].IsActive = true;
+				}
+				Objectives[objectiveIndex].IsActive = false;
+				//Debug.Log ("Objective " + objectives [objectiveIndex].objectiveText + " completed!");
+			}
 		}
-	}
 
-	int FindObjectiveIndex (int objectiveNumber) {
-		int w = 0;
-		while (objectiveNumber != objectives [w].objectiveNumber && w < objectives.Length)
-			w++;
-		return w < objectives.Length ? w : -1;
+		int FindObjectiveIndex(int objectiveNumber)
+		{
+			for (int objectiveIndex = 0; objectiveIndex < Objectives.Length; ++objectiveIndex)
+			{
+				if (objectiveNumber != Objectives[objectiveIndex].ObjectiveNumber)
+				{
+					continue;
+				}
+				
+				return objectiveIndex;
+			}
+			
+			return -1;
+		}
 	}
 }
