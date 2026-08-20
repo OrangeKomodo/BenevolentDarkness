@@ -67,7 +67,7 @@ namespace Items
 		void Switch(bool newState)
 		{
 			isHiding = newState;
-			player.GetComponent<PlayerInfo>().InHidingPlace(isHiding);
+			player.GetComponent<PlayerController>().InHidingPlace(isHiding);
 
 			for (int i = 0; i < floor.childCount; i++)
 			{

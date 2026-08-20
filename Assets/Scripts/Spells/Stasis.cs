@@ -17,7 +17,7 @@ public class Stasis : Spell
 
 	CameraController cameraController;
 	GameObject player;
-	PlayerInfo playerInfo;
+	PlayerController playerController;
 	LayerMask whatAreEnemies;
 
 	List<Guard> frozenGuards = new List<Guard>();
@@ -31,7 +31,7 @@ public class Stasis : Spell
 		cameraController = FindObjectOfType<CameraController>();
 		cameraController.NewTarget(transform, Vector2.zero, 0.5f);
 		player = GameObject.FindGameObjectWithTag("Player");
-		playerInfo = player.GetComponent<PlayerInfo>();
+		playerController = player.GetComponent<PlayerController>();
 		whatAreEnemies = LayerMask.GetMask("Enemies");
 		usingController = Input.GetJoystickNames().Length > 0;
 
@@ -98,7 +98,7 @@ public class Stasis : Spell
 
 		if (Input.GetAxis("Use Item") == 0f && !stasisOccured)
 		{
-			playerInfo.PlaySound("Stasis");
+			playerController.PlaySound("Stasis");
 			Time.timeScale = 1f;
 			cameraController.ResetTarget();
 			Collider2D[] enemiesToFreeze =

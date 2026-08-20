@@ -7,7 +7,7 @@ namespace AI.Sentry
 	{
 		Sentry sentry;
 		GameObject player;
-		PlayerInfo playerInfo;
+		PlayerController playerController;
 
 		bool boxVisible = false;
 		bool circleVisible = false;
@@ -18,13 +18,13 @@ namespace AI.Sentry
 		{
 			sentry = gameObject.transform.parent.GetComponent<Sentry>();
 			player = GameObject.FindGameObjectWithTag("Player");
-			playerInfo = player.GetComponent<PlayerInfo>();
+			playerController = player.GetComponent<PlayerController>();
 			layerMask = LayerMask.GetMask("Player", "Platforms", "Effected Platforms");
 		}
 
 		void Update()
 		{
-			if (!playerInfo.disguisedAsGuard)
+			if (!playerController.disguisedAsGuard)
 			{
 				if (boxVisible || circleVisible)
 				{
@@ -38,7 +38,7 @@ namespace AI.Sentry
 
 					if (playerRayHit.collider != null && playerRayHit.collider.tag.Equals("Player"))
 					{
-						sentry.SeesPlayer(player.GetComponent<PlayerInfo>().visibilityFactor);
+						sentry.SeesPlayer(player.GetComponent<PlayerController>().visibilityFactor);
 					}
 				}
 

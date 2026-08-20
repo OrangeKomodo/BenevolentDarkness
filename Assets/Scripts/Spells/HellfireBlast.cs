@@ -15,7 +15,7 @@ public class HellfireBlast : Spell
 
 	void Start()
 	{
-		GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerInfo>().PlaySound("Hellfire Blast");
+		GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerController>().PlaySound("Hellfire Blast");
 		damageDone = FindObjectOfType<SpellCasting>().spellLevel * 20f;
 		rb = GetComponent<Rigidbody2D>();
 

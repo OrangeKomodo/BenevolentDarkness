@@ -12,7 +12,7 @@ namespace Spells
 
 		GameObject translocationMarker;
 		GameObject player;
-		PlayerInfo playerInfo;
+		PlayerController playerController;
 		SpriteRenderer spriteRenderer;
 
 		bool positionValid;
@@ -26,7 +26,7 @@ namespace Spells
 			maxDistance = FindObjectOfType<SpellCasting>().spellLevel * 5f + 5f;
 			translocationMarker = gameObject.transform.GetChild(0).gameObject;
 			player = GameObject.FindGameObjectWithTag("Player");
-			playerInfo = player.GetComponent<PlayerInfo>();
+			playerController = player.GetComponent<PlayerController>();
 			spriteRenderer = translocationMarker.GetComponent<SpriteRenderer>();
 			usingController = Input.GetJoystickNames().Length > 0;
 
@@ -93,13 +93,13 @@ namespace Spells
 			{
 				if (positionValid)
 				{
-					playerInfo.PlaySound("Translocation");
+					playerController.PlaySound("Translocation");
 
 					translocationOccured = true;
 
 					if ((translocationMarker.transform.position.x - player.transform.position.x) * player.transform.localScale.x < 0)
 					{
-						player.GetComponent<PlayerInfo>().Flip();
+						player.GetComponent<PlayerController>().Flip();
 					}
 
 					if (hittingPlatform && normal.x == 0)

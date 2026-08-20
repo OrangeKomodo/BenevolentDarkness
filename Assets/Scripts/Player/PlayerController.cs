@@ -13,7 +13,7 @@ using UnityStandardAssets._2D;
 
 namespace Player
 {
-	public class PlayerInfo : LivingEntity
+	public class PlayerController : LivingEntity
 	{
 		[Serializable]
 		struct PlayerQuickSave {

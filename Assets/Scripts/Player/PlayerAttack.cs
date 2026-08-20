@@ -14,7 +14,7 @@ namespace Player
 		public float startTimeBetweenAttacks;
 		public LayerMask whatAreEnemies;
 
-		PlayerInfo playerInfo;
+		PlayerController playerController;
 
 		float timeBetweenAttacks;
 		bool seesBackside = false;
@@ -23,12 +23,12 @@ namespace Player
 
 		void Start()
 		{
-			playerInfo = GetComponent<PlayerInfo>();
+			playerController = GetComponent<PlayerController>();
 		}
 
 		void FixedUpdate()
 		{
-			if (playerInfo.canAttack)
+			if (playerController.canAttack)
 			{
 				RaycastHit2D playerRayHit;
 				Debug.DrawRay(transform.position, transform.right * (transform.localScale.x / Mathf.Abs(transform.localScale.x)), Color.magenta);
@@ -36,30 +36,30 @@ namespace Player
 			
 				if (playerRayHit.collider != null && playerRayHit.collider.name.Equals("Backside"))
 				{
-					if (!seesBackside && !playerInfo.disguisedAsGuard)
+					if (!seesBackside && !playerController.disguisedAsGuard)
 					{
-						transform.GetComponent<PlayerInfo>().LoadAttackIcons(true);
+						transform.GetComponent<PlayerController>().LoadAttackIcons(true);
 						seesBackside = true;
 					}
 
 					if (Input.GetAxis("Attack") == 1f)
 					{
-						playerInfo.PlaySound("Swipe");
+						playerController.PlaySound("Swipe");
 						playerRayHit.collider.GetComponentInParent<LivingEntity>().TakeHit(1000);
-						playerInfo.Attack(0);
+						playerController.Attack(0);
 					}
 					else if (Input.GetButtonDown("Subdue"))
 					{
-						playerInfo.PlaySound("Swipe");
+						playerController.PlaySound("Swipe");
 						playerRayHit.collider.GetComponentInParent<Guard>().OnGuardUnconscious();
-						playerInfo.Attack(1);
+						playerController.Attack(1);
 					}
 				}
 				else
 				{
 					if (seesBackside)
 					{
-						transform.GetComponent<PlayerInfo>().LoadAttackIcons(false);
+						transform.GetComponent<PlayerController>().LoadAttackIcons(false);
 						seesBackside = false;
 					}
 
@@ -67,7 +67,7 @@ namespace Player
 					{
 						if (Input.GetAxis("Attack") == 1f && triggerReleased)
 						{
-							playerInfo.PlaySound("Swipe");
+							playerController.PlaySound("Swipe");
 							Collider2D[] enemiesToDamage = Physics2D.OverlapCircleAll(attackPos.position, attackRange, whatAreEnemies);
 						
 							for (int i = 0; i < enemiesToDamage.Length; i++)
@@ -80,7 +80,7 @@ namespace Player
 							}
 						
 							timeBetweenAttacks = startTimeBetweenAttacks;
-							playerInfo.Attack(0);
+							playerController.Attack(0);
 							triggerReleased = false;
 						}
 					}

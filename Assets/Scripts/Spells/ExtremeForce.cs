@@ -11,7 +11,7 @@ public class ExtremeForce : Spell
 
 	void Start()
 	{
-		GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerInfo>().PlaySound("Extreme Force");
+		GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerController>().PlaySound("Extreme Force");
 
 		boxCollider = GetComponent<BoxCollider2D>();
 

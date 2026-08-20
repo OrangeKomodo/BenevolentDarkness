@@ -24,7 +24,7 @@ public class Mimic : Spell
 
 	GameObject mimicMarker;
 	GameObject player;
-	PlayerInfo playerInfo;
+	PlayerController playerController;
 	SpellCasting spellCaster;
 	SpriteRenderer spriteRenderer;
 
@@ -45,12 +45,12 @@ public class Mimic : Spell
 		manaDeductTick = (FindObjectOfType<SpellCasting>().spellLevel - 1f) * 0.5f;
 		mimicMarker = gameObject.transform.GetChild(0).gameObject;
 		player = GameObject.FindGameObjectWithTag("Player");
-		playerInfo = player.GetComponent<PlayerInfo>();
+		playerController = player.GetComponent<PlayerController>();
 		spellCaster = FindObjectOfType<SpellCasting>();
 		spriteRenderer = mimicMarker.GetComponent<SpriteRenderer>();
 		usingController = Input.GetJoystickNames().Length > 0;
 
-		playerInfo.canAttack = false;
+		playerController.canAttack = false;
 
 		if (!usingController)
 		{
@@ -150,9 +150,9 @@ public class Mimic : Spell
 					player.layer = 9;
 
 					//DISGUISE HERE
-					playerInfo.PlaySound("Mimic");
-					playerInfo.InDisguise(true);
-					playerInfo.canAttack = true;
+					playerController.PlaySound("Mimic");
+					playerController.InDisguise(true);
+					playerController.canAttack = true;
 
 					if (!usingController)
 					{
@@ -180,11 +180,11 @@ public class Mimic : Spell
 		if (disguised)
 		{
 			player.layer = 8;
-			playerInfo.PlaySound("Mimic");
-			playerInfo.InDisguise(false);
+			playerController.PlaySound("Mimic");
+			playerController.InDisguise(false);
 		}
 
-		playerInfo.canAttack = true;
+		playerController.canAttack = true;
 		if (!usingController)
 		{
 			Cursor.lockState = CursorLockMode.Locked;

@@ -6,18 +6,17 @@ namespace Items
 {
 	public class TriggerArea : Item
 	{
-
 		public int functionNumber;
 		public bool singleTrigger = false;
 		public bool triggered = false;
 
-		PlayerInfo playerInfo;
+		PlayerController playerController;
 
 		bool playerIn = false;
 
 		void Start()
 		{
-			playerInfo = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerInfo>();
+			playerController = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerController>();
 		}
 
 		public void PerformFunction()
@@ -29,12 +28,12 @@ namespace Items
 					case 0:
 					{
 						//Level 1 End
-						if (playerInfo.inventory.Contains("MacGuffin"))
+						if (playerController.inventory.Contains("MacGuffin"))
 						{
 							GameObject.FindGameObjectWithTag("GameController").GetComponent<ObjectiveSystem>()
 								.SetObjectiveStatus(102, Objective.Status.completed);
 							GameObject.FindGameObjectWithTag("GameController").GetComponent<MenuSwitcher>().LoadMenu(2);
-							playerInfo.Freeze(true);
+							playerController.Freeze(true);
 							triggered = true;
 						}
 
@@ -43,12 +42,12 @@ namespace Items
 					case 1:
 					{
 						//Level 2 End
-						if (playerInfo.inventory.Contains("MacGuffin2"))
+						if (playerController.inventory.Contains("MacGuffin2"))
 						{
 							GameObject.FindGameObjectWithTag("GameController").GetComponent<ObjectiveSystem>()
 								.SetObjectiveStatus(202, Objective.Status.completed);
 							GameObject.FindGameObjectWithTag("GameController").GetComponent<MenuSwitcher>().LoadMenu(2);
-							playerInfo.Freeze(true);
+							playerController.Freeze(true);
 							triggered = true;
 						}
 
@@ -58,21 +57,21 @@ namespace Items
 					{
 						//Level 3 End
 						GameObject.FindGameObjectWithTag("GameController").GetComponent<MenuSwitcher>().LoadMenu(2);
-						playerInfo.Freeze(true);
+						playerController.Freeze(true);
 						triggered = true;
 						break;
 					}
 					case 3:
 					{
 						//Death Area
-						playerInfo.TakeHit(1000);
+						playerController.TakeHit(1000);
 						triggered = true;
 						break;
 					}
 					case 4:
 					{
 						//Falling Area
-						playerInfo.IsFalling(true);
+						playerController.IsFalling(true);
 						triggered = true;
 						break;
 					}

@@ -75,7 +75,7 @@ namespace AI.Sentry
 			audioManager = GameObject.FindGameObjectWithTag("GameController").GetComponent<AudioManager>();
 
 			OnDeath += OnSentryDeath;
-			player.GetComponent<PlayerInfo>().OnDeath += OnPlayerDeath;
+			player.GetComponent<PlayerController>().OnDeath += OnPlayerDeath;
 		}
 
 		void FixedUpdate()

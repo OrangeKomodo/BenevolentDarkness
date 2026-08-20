@@ -6,10 +6,9 @@ namespace AI.Guard
 {
 	public class GuardVision : MonoBehaviour
 	{
-
 		Guard guard;
 		GameObject player;
-		PlayerInfo playerInfo;
+		PlayerController playerController;
 
 		public bool boxVisible = false;
 		public bool circleVisible = false;
@@ -25,13 +24,13 @@ namespace AI.Guard
 		{
 			guard = gameObject.transform.parent.GetComponent<Guard>();
 			player = GameObject.FindGameObjectWithTag("Player");
-			playerInfo = player.GetComponent<PlayerInfo>();
+			playerController = player.GetComponent<PlayerController>();
 			layerMask = LayerMask.GetMask("Player", "Platforms", "Effected Platforms");
 		}
 
 		void FixedUpdate()
 		{
-			if (!playerInfo.disguisedAsGuard)
+			if (!playerController.disguisedAsGuard)
 			{
 				if (boxVisible || circleVisible)
 				{
@@ -45,7 +44,7 @@ namespace AI.Guard
 
 					if (playerRayHit.collider != null && playerRayHit.collider.tag.Equals("Player"))
 					{
-						guard.SeesPlayer(player.GetComponent<PlayerInfo>().visibilityFactor);
+						guard.SeesPlayer(player.GetComponent<PlayerController>().visibilityFactor);
 					}
 				}
 
@@ -54,7 +53,7 @@ namespace AI.Guard
 					guard.LostPlayer();
 				}
 
-				if (!playerInfo.inShadowSink && (!wasInRange && inRange || wasInRange && !inRange))
+				if (!playerController.inShadowSink && (!wasInRange && inRange || wasInRange && !inRange))
 				{
 					guard.PlayerInMeleeRange(inRange);
 					wasInRange = !wasInRange;

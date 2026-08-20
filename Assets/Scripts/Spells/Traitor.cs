@@ -13,7 +13,7 @@ namespace Spells
 
 		GameObject traitorMarker;
 		GameObject player;
-		PlayerInfo playerInfo;
+		PlayerController playerController;
 		SpriteRenderer spriteRenderer;
 
 		bool canTransfer = false;
@@ -24,11 +24,11 @@ namespace Spells
 		{
 			traitorMarker = gameObject.transform.GetChild(0).gameObject;
 			player = GameObject.FindGameObjectWithTag("Player");
-			playerInfo = player.GetComponent<PlayerInfo>();
+			playerController = player.GetComponent<PlayerController>();
 			spriteRenderer = traitorMarker.GetComponent<SpriteRenderer>();
 			usingController = Input.GetJoystickNames().Length > 0;
 
-			playerInfo.canAttack = false;
+			playerController.canAttack = false;
 
 			if (!usingController)
 			{
@@ -95,7 +95,7 @@ namespace Spells
 
 						if (canTransfer && Input.GetAxis("Attack") == 1f)
 						{
-							playerInfo.PlaySound("Traitor");
+							playerController.PlaySound("Traitor");
 
 							traitorMarker.SetActive(false);
 
@@ -121,7 +121,7 @@ namespace Spells
 		{
 			Cursor.lockState = CursorLockMode.Locked;
 			Cursor.visible = false;
-			playerInfo.canAttack = true;
+			playerController.canAttack = true;
 			Destroy(gameObject);
 		}
 	}

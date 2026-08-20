@@ -114,7 +114,7 @@ namespace AI.Guard
 
 			OnDeath += OnGuardDeath;
 			OnHit += OnGuardHit;
-			player.GetComponent<PlayerInfo>().OnDeath += OnPlayerDeath;
+			player.GetComponent<PlayerController>().OnDeath += OnPlayerDeath;
 		}
 
 		void FixedUpdate()
@@ -656,7 +656,7 @@ namespace AI.Guard
 
 		void OnCollisionEnter2D(Collision2D collision)
 		{
-			if (collision.collider.tag.Equals("Player") && !player.GetComponent<PlayerInfo>().inShadowSink
+			if (collision.collider.tag.Equals("Player") && !player.GetComponent<PlayerController>().inShadowSink
 			                                            && !playerDead &&
 			                                            !inStasis && !inForceField && state != State.corrupted)
 			{

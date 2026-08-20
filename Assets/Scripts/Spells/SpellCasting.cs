@@ -309,7 +309,7 @@ namespace Spells
 						EndSpell(SpellNames.mimic);
 					}
 					else if (currentSpell == SpellNames.mimic && CheckMana(mimicPrefab.manaCost)
-					                                          && !GetComponent<PlayerInfo>().isSeen)
+					                                          && !GetComponent<PlayerController>().isSeen)
 					{
 						if (currentMimicObject == null)
 						{

@@ -14,7 +14,7 @@ namespace GameManager
 
 		MoralitySystem moralitySystem;
 		MenuSwitcher menuSwitcher;
-		PlayerInfo playerInfo;
+		PlayerController playerController;
 		Guard[] guards;
 		Sentry[] sentries;
 		ItemManager itemManager;
@@ -25,7 +25,7 @@ namespace GameManager
 		{
 			moralitySystem = GetComponent<MoralitySystem>();
 			menuSwitcher = GetComponent<MenuSwitcher>();
-			playerInfo = player.GetComponent<PlayerInfo>();
+			playerController = player.GetComponent<PlayerController>();
 			guards = enemiesHolder.GetComponentsInChildren<Guard>();
 			sentries = enemiesHolder.GetComponentsInChildren<Sentry>();
 			itemManager = itemsHolder.GetComponent<ItemManager>();
@@ -43,7 +43,7 @@ namespace GameManager
 
 			if (Input.GetKeyDown(KeyCode.F5))
 			{
-				if (playerInfo.GetStatus() && menuSwitcher.selectedMenu == 0)
+				if (playerController.GetStatus() && menuSwitcher.selectedMenu == 0)
 				{
 					bool isSeen = false;
 					for (int i = 0; i < guards.Length && !isSeen; i++)
@@ -77,7 +77,7 @@ namespace GameManager
 		void QuickSaveAll()
 		{
 			moralitySystem.QuickSave();
-			playerInfo.QuickSave();
+			playerController.QuickSave();
 			
 			for (int i = 0; i < guards.Length; i++)
 			{
@@ -96,7 +96,7 @@ namespace GameManager
 		{
 			menuSwitcher.LoadMenu(0);
 			moralitySystem.QuickLoad();
-			playerInfo.QuickLoad();
+			playerController.QuickLoad();
 			
 			for (int i = 0; i < guards.Length; i++)
 			{

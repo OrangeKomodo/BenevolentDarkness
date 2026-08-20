@@ -14,7 +14,7 @@ namespace Spells
 		public Color hiddenColor;
 
 		GameObject player;
-		PlayerInfo playerInfo;
+		PlayerController playerController;
 		SpriteRenderer playerSpriteRenderer;
 
 		Vector3 playerHidePosition;
@@ -25,12 +25,12 @@ namespace Spells
 			manaDeductTick = FindObjectOfType<SpellCasting>().spellLevel * 0.5f;
 
 			player = GameObject.FindGameObjectWithTag("Player");
-			playerInfo = player.GetComponent<PlayerInfo>();
+			playerController = player.GetComponent<PlayerController>();
 			playerSpriteRenderer = player.GetComponent<SpriteRenderer>();
 
 			playerHidePosition = player.transform.position;
 
-			playerInfo.InShadowSink(true);
+			playerController.InShadowSink(true);
 			StartCoroutine(Transition(visibleColor, hiddenColor, true));
 		}
 
@@ -45,15 +45,15 @@ namespace Spells
 
 		public void EndShadowSink()
 		{
-			playerInfo.InShadowSink(false);
+			playerController.InShadowSink(false);
 			StartCoroutine(Transition(hiddenColor, visibleColor, false));
 			Destroy(gameObject, transitionTime);
 		}
 
 		IEnumerator Transition(Color start, Color end, bool hiding)
 		{
-			playerInfo.PlaySound("Shadow Sink");
-			float rawVisibility = playerInfo.rawVisibilityFactor;
+			playerController.PlaySound("Shadow Sink");
+			float rawVisibility = playerController.rawVisibilityFactor;
 
 			float startTime = Time.time;
 			float percent = 0;
@@ -63,7 +63,7 @@ namespace Spells
 
 				playerSpriteRenderer.color = Color.Lerp(start, end, percent);
 
-				playerInfo.visibilityFactor = hiding ? rawVisibility * (1f - percent) : rawVisibility * percent;
+				playerController.visibilityFactor = hiding ? rawVisibility * (1f - percent) : rawVisibility * percent;
 
 				yield return null;
 			}
