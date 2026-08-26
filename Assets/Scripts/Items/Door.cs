@@ -5,40 +5,38 @@ namespace Items
 {
 	public class Door : Item
 	{
+		public Door AdjoiningDoor;
+		public Transform Center;
+		public bool Locked;
+		public string KeyName;
 
-		public Door adjoiningDoor;
-		public Transform center;
-		public bool locked;
-		public string keyName;
+		private GameObject _player;
 
-		GameObject player;
-
-		void Start()
+		private void Start()
 		{
-			player = GameObject.FindGameObjectWithTag("Player");
-			center = transform.GetChild(0);
+			_player = GameObject.FindGameObjectWithTag("Player");
 		}
 
 		public void UseDoor(List<string> inventory)
 		{
-			if (adjoiningDoor == null)
+			if (AdjoiningDoor == null)
 			{
 				//Debug.LogError ("There is no other door");
 				return;
 			}
 
-			if (locked && inventory.Contains(keyName))
+			if (Locked && inventory.Contains(KeyName))
 			{
-				locked = false;
-				adjoiningDoor.locked = false;
-				Vector3 offset = new Vector3(player.transform.position.x - center.position.x,
-					player.transform.position.y - center.position.y, 0f);
-				player.transform.position = adjoiningDoor.center.position + offset;
+				Locked = false;
+				AdjoiningDoor.Locked = false;
+				Vector3 offset = new Vector3(_player.transform.position.x - Center.position.x,
+					_player.transform.position.y - Center.position.y, 0f);
+				_player.transform.position = AdjoiningDoor.Center.position + offset;
 			}
-			else if (!locked)
+			else if (!Locked)
 			{
-				Vector3 offset = new Vector3(player.transform.position.x - center.position.x, player.transform.position.y - center.position.y, 0f);
-				player.transform.position = adjoiningDoor.center.position + offset;
+				Vector3 offset = new Vector3(_player.transform.position.x - Center.position.x, _player.transform.position.y - Center.position.y, 0f);
+				_player.transform.position = AdjoiningDoor.Center.position + offset;
 			}
 		}
 	}

@@ -5,137 +5,130 @@ namespace Items
 {
 	[System.Serializable]
 	public class MissionItemQuickSave {
-		public bool active;
+		public bool Active;
 	}
 
 	[System.Serializable]
 	public class DoorQuickSave {
-		public bool locked;
+		public bool Locked;
 	}
 
 	[System.Serializable]
 	public class ButtonQuickSave {
-		public bool used;
+		public bool Used;
 	}
 
 	[System.Serializable]
 	public class HidingPlaceQuickSave {
-		public bool isHiding;
+		public bool IsHiding;
 	}
 
 	[System.Serializable]
 	public class TriggerAreaQuickSave {
-		public bool triggered;
+		public bool Triggered;
 	}
 
 	public class ItemManager : MonoBehaviour
 	{
-		public List<MissionItemQuickSave> missionItemQuickSave = new List<MissionItemQuickSave>();
-		public List<DoorQuickSave> doorQuickSave = new List<DoorQuickSave>();
-		public List<ButtonQuickSave> buttonQuickSave = new List<ButtonQuickSave>();
-		public List<HidingPlaceQuickSave> hidingPlaceQuickSave = new List<HidingPlaceQuickSave>();
-		public List<TriggerAreaQuickSave> triggerAreaQuickSave = new List<TriggerAreaQuickSave>();
+		public List<MissionItemQuickSave> MissionItemQuickSave = new List<MissionItemQuickSave>();
+		public List<DoorQuickSave> DoorQuickSave = new List<DoorQuickSave>();
+		public List<ButtonQuickSave> ButtonQuickSave = new List<ButtonQuickSave>();
+		public List<HidingPlaceQuickSave> HidingPlaceQuickSave = new List<HidingPlaceQuickSave>();
+		public List<TriggerAreaQuickSave> TriggerAreaQuickSave = new List<TriggerAreaQuickSave>();
 
-		Transform missionItemHolder;
-		Transform doorHolder;
-		Transform buttonHolder;
-		Transform hidingPlaceHolder;
-		Transform triggerAreaHolder;
+		public Item[] MissionItems;
+		public Door[] Doors;
+		public ButtonItem[] Buttons;
+		public HidingPlace[] HidingPlaces;
+		public TriggerArea[] TriggerAreas;
 
-		bool variablesSet = false;
+		private bool _variablesSet = false;
 
-		void Start()
+		private void Start()
 		{
 			SetVariables();
 		}
 
-		void SetVariables()
+		private void SetVariables()
 		{
-			missionItemHolder = transform.GetChild(0);
-			doorHolder = transform.GetChild(1);
-			buttonHolder = transform.GetChild(2);
-			hidingPlaceHolder = transform.GetChild(3);
-			triggerAreaHolder = transform.GetChild(4);
-
-			for (int i = 0; i < missionItemHolder.childCount; i++)
+			for (int i = 0; i < MissionItems.Length; i++)
 			{
-				missionItemQuickSave.Add(new MissionItemQuickSave());
+				MissionItemQuickSave.Add(new MissionItemQuickSave());
 			}
-			for (int i = 0; i < doorHolder.childCount; i++)
+			for (int i = 0; i < Doors.Length; i++)
 			{
-				doorQuickSave.Add(new DoorQuickSave());
+				DoorQuickSave.Add(new DoorQuickSave());
 			}
-			for (int i = 0; i < buttonHolder.childCount; i++)
+			for (int i = 0; i < Buttons.Length; i++)
 			{
-				buttonQuickSave.Add(new ButtonQuickSave());
+				ButtonQuickSave.Add(new ButtonQuickSave());
 			}
-			for (int i = 0; i < hidingPlaceHolder.childCount; i++)
+			for (int i = 0; i < HidingPlaces.Length; i++)
 			{
-				hidingPlaceQuickSave.Add(new HidingPlaceQuickSave());
+				HidingPlaceQuickSave.Add(new HidingPlaceQuickSave());
 			}
-			for (int i = 0; i < triggerAreaHolder.childCount; i++)
+			for (int i = 0; i < TriggerAreas.Length; i++)
 			{
-				triggerAreaQuickSave.Add(new TriggerAreaQuickSave());
+				TriggerAreaQuickSave.Add(new TriggerAreaQuickSave());
 			}
 
-			variablesSet = true;
+			_variablesSet = true;
 		}
 
 		public void QuickSave()
 		{
-			if (!variablesSet)
+			if (!_variablesSet)
 			{
 				SetVariables();
 			}
 
-			for (int i = 0; i < missionItemQuickSave.Count; i++)
+			for (int i = 0; i < MissionItemQuickSave.Count; i++)
 			{
-				missionItemQuickSave[i].active = missionItemHolder.GetChild(i).gameObject.activeInHierarchy;
+				MissionItemQuickSave[i].Active = MissionItems[i].gameObject.activeInHierarchy;
 			}
-			for (int i = 0; i < doorQuickSave.Count; i++)
+			for (int i = 0; i < DoorQuickSave.Count; i++)
 			{
-				doorQuickSave[i].locked = doorHolder.GetChild(i).GetChild(0).GetComponent<Door>().locked;
+				DoorQuickSave[i].Locked = Doors[i].Locked;
 			}
-			for (int i = 0; i < buttonQuickSave.Count; i++)
+			for (int i = 0; i < ButtonQuickSave.Count; i++)
 			{
-				buttonQuickSave[i].used = buttonHolder.GetChild(i).GetComponent<ButtonItem>().used;
+				ButtonQuickSave[i].Used = Buttons[i].Used;
 			}
-			for (int i = 0; i < hidingPlaceQuickSave.Count; i++)
+			for (int i = 0; i < HidingPlaceQuickSave.Count; i++)
 			{
-				hidingPlaceQuickSave[i].isHiding = hidingPlaceHolder.GetChild(i).GetComponent<HidingPlace>().isHiding;
+				HidingPlaceQuickSave[i].IsHiding = HidingPlaces[i].IsHiding;
 			}
-			for (int i = 0; i < triggerAreaQuickSave.Count; i++)
+			for (int i = 0; i < TriggerAreaQuickSave.Count; i++)
 			{
-				triggerAreaQuickSave[i].triggered = triggerAreaHolder.GetChild(i).GetComponent<TriggerArea>().triggered;
+				TriggerAreaQuickSave[i].Triggered = TriggerAreas[i].Triggered;
 			}
 		}
 
 		public void QuickLoad()
 		{
-			if (!variablesSet)
+			if (!_variablesSet)
 				SetVariables();
 
-			for (int i = 0; i < missionItemQuickSave.Count; i++)
+			for (int i = 0; i < MissionItemQuickSave.Count; i++)
 			{
-				missionItemHolder.GetChild(i).gameObject.SetActive(missionItemQuickSave[i].active);
+				MissionItems[i].gameObject.SetActive(MissionItemQuickSave[i].Active);
 			}
-			for (int i = 0; i < doorQuickSave.Count; i++)
+			for (int i = 0; i < DoorQuickSave.Count; i++)
 			{
-				doorHolder.GetChild(i).GetChild(0).GetComponent<Door>().locked = doorQuickSave[i].locked;
-				doorHolder.GetChild(i).GetChild(1).GetComponent<Door>().locked = doorQuickSave[i].locked;
+				Doors[i].Locked = DoorQuickSave[i].Locked;
 			}
 
-			for (int i = 0; i < buttonQuickSave.Count; i++)
+			for (int i = 0; i < ButtonQuickSave.Count; i++)
 			{
-				buttonHolder.GetChild(i).GetComponent<ButtonItem>().used = buttonQuickSave[i].used;
+				Buttons[i].Used = ButtonQuickSave[i].Used;
 			}
-			for (int i = 0; i < hidingPlaceQuickSave.Count; i++)
+			for (int i = 0; i < HidingPlaceQuickSave.Count; i++)
 			{
-				hidingPlaceHolder.GetChild(i).GetComponent<HidingPlace>().isHiding = hidingPlaceQuickSave[i].isHiding;
+				HidingPlaces[i].IsHiding = HidingPlaceQuickSave[i].IsHiding;
 			}
-			for (int i = 0; i < triggerAreaQuickSave.Count; i++)
+			for (int i = 0; i < TriggerAreaQuickSave.Count; i++)
 			{
-				triggerAreaHolder.GetChild(i).GetComponent<TriggerArea>().triggered = triggerAreaQuickSave[i].triggered;
+				TriggerAreas[i].Triggered = TriggerAreaQuickSave[i].Triggered;
 			}
 		}
 	}

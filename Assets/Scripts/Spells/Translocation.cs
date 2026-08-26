@@ -5,46 +5,39 @@ namespace Spells
 {
 	public class Translocation : Spell
 	{
-		public float maxDistance;
-		public bool translocationOccured;
-		public Color canTranslocate = Color.white;
-		public Color canNotTranslocate = Color.gray;
+		public SpriteRenderer TranslocationMarker;
+		
+		public float MaxDistance;
+		public bool TranslocationOccured;
+		public Color CanTranslocate = Color.white;
+		public Color CanNotTranslocate = Color.gray;
 
-		GameObject translocationMarker;
-		GameObject player;
-		PlayerController playerController;
-		SpriteRenderer spriteRenderer;
+		private bool _positionValid;
+		private bool _hittingPlatform;
+		private Vector2 _normal;
 
-		bool positionValid;
-		bool hittingPlatform;
-		Vector2 normal;
+		private bool _usingController;
 
-		bool usingController;
-
-		void Start()
+		private void Start()
 		{
-			maxDistance = FindObjectOfType<SpellCasting>().spellLevel * 5f + 5f;
-			translocationMarker = gameObject.transform.GetChild(0).gameObject;
-			player = GameObject.FindGameObjectWithTag("Player");
-			playerController = player.GetComponent<PlayerController>();
-			spriteRenderer = translocationMarker.GetComponent<SpriteRenderer>();
-			usingController = Input.GetJoystickNames().Length > 0;
+			MaxDistance = SpellCaster.SpellLevel * 5f + 5f;
+			_usingController = Input.GetJoystickNames().Length > 0;
 
-			if (!usingController)
+			if (!_usingController)
 			{
 				Cursor.lockState = CursorLockMode.None;
 				Cursor.visible = true;
 			}
 		}
 
-		void Update()
+		private void Update()
 		{
 			if (Input.GetAxis("Use Item") == 1f)
 			{
-				translocationMarker.SetActive(true);
+				TranslocationMarker.gameObject.SetActive(true);
 
 				Vector2 mouseRay;
-				if (usingController)
+				if (_usingController)
 				{
 					transform.Translate(new Vector3(Input.GetAxis("Mouse X") * transform.parent.localScale.x,
 						Input.GetAxis("Mouse Y"), 0f));
@@ -62,53 +55,52 @@ namespace Spells
 				if (mouseRayHit)
 				{
 					Vector3 targetPosition = mouseRayHit.point;
-					Vector3 playerPosition = player.transform.position;
+					Vector3 playerPosition = PlayerController.transform.position;
 
 					Debug.DrawRay(playerPosition,
 						(targetPosition - playerPosition).normalized
-						* Mathf.Clamp(Vector2.Distance(playerPosition, targetPosition), 0f, maxDistance), Color.red);
+						* Mathf.Clamp(Vector2.Distance(playerPosition, targetPosition), 0f, MaxDistance), Color.red);
 					playerRayHit = Physics2D.Raycast(playerPosition, targetPosition - playerPosition,
-						Mathf.Clamp(Vector2.Distance(playerPosition, targetPosition), 0f, maxDistance), layerMask);
+						Mathf.Clamp(Vector2.Distance(playerPosition, targetPosition), 0f, MaxDistance), layerMask);
 
 					if (playerRayHit.collider == null)
 					{
 						transform.position = mouseRayHit.point;
-						positionValid = Vector2.Distance(playerPosition, targetPosition) <= maxDistance;
+						_positionValid = Vector2.Distance(playerPosition, targetPosition) <= MaxDistance;
 					}
 					else if (playerRayHit.collider.gameObject.layer == 11 || playerRayHit.collider.gameObject.layer == 13)
 					{
 						transform.position = playerRayHit.point;
-						normal = playerRayHit.normal;
-						positionValid = true;
-						hittingPlatform = true;
+						_normal = playerRayHit.normal;
+						_positionValid = true;
+						_hittingPlatform = true;
 					}
-					//Debug.Log (playerRayHit.distance);
 				}
 
-				spriteRenderer.color = positionValid ? canTranslocate : canNotTranslocate;
-				translocationMarker.transform.Rotate(Vector3.forward);
+				TranslocationMarker.color = _positionValid ? CanTranslocate : CanNotTranslocate;
+				TranslocationMarker.transform.Rotate(Vector3.forward);
 			}
 
 			if (Input.GetAxis("Use Item") == 0f)
 			{
-				if (positionValid)
+				if (_positionValid)
 				{
-					playerController.PlaySound("Translocation");
+					PlayerController.PlaySound("Translocation");
 
-					translocationOccured = true;
+					TranslocationOccured = true;
 
-					if ((translocationMarker.transform.position.x - player.transform.position.x) * player.transform.localScale.x < 0)
+					if ((TranslocationMarker.transform.position.x - PlayerController.transform.position.x) * PlayerController.transform.localScale.x < 0)
 					{
-						player.GetComponent<PlayerController>().Flip();
+						PlayerController.Flip();
 					}
 
-					if (hittingPlatform && normal.x == 0)
+					if (_hittingPlatform && _normal.x == 0)
 					{
-						player.transform.position = transform.GetChild(normal.y == 1 ? 1 : 2).position;
+						PlayerController.transform.position = transform.GetChild(_normal.y == 1 ? 1 : 2).position;
 					}
 					else
 					{
-						player.transform.position = translocationMarker.transform.position;
+						PlayerController.transform.position = TranslocationMarker.transform.position;
 					}
 				}
 
@@ -121,11 +113,11 @@ namespace Spells
 			}
 		}
 
-		void EndTranslocation()
+		private void EndTranslocation()
 		{
 			Cursor.lockState = CursorLockMode.Locked;
 			Cursor.visible = false;
-			player.GetComponent<SpellCasting>().EndSpell(SpellCasting.SpellNames.translocation);
+			SpellCaster.EndSpell(SpellCasting.SpellNames.Translocation);
 		}
 	}
 }

@@ -7,70 +7,78 @@ namespace Spells
 {
 	public class SpellCasting : MonoBehaviour
 	{
-		public int spellLevel = 1;
+		public int SpellLevel = 1;
 
-		public Translocation translocationPrefab;
-		public ShadowSink shadowSinkPrefab;
-		public Mimic mimicPrefab;
-		public Stasis stasisPrefab;
-		public HellfireBlast hellfireBlastPrefab;
-		public ExtremeForce extremeForcePrefab;
-		public Traitor traitorPrefab;
-		public Transform firePoint;
+		public Translocation TranslocationPrefab;
+		public ShadowSink ShadowSinkPrefab;
+		public Mimic MimicPrefab;
+		public Stasis StasisPrefab;
+		public HellfireBlast HellfireBlastPrefab;
+		public ExtremeForce ExtremeForcePrefab;
+		public Traitor TraitorPrefab;
+		public Transform FirePoint;
+		public Transform InGameHUD;
+		public Image ManaBar;
 
-		Translocation currentTranslocationObject;
-		ShadowSink currentShadowSinkObject;
-		Mimic currentMimicObject;
-		Stasis currentStasisObject;
-		Traitor currentTraitorObject;
+		public SpellNames CurrentSpell;
+		public bool Hidden;
 
-		public Transform inGameHUD;
-		public Image manaBar;
+		public int ManaCap;
+		public int CurrentMana;
+		public float ManaRestoreTick;
+		public int ManaRestoreAmount;
+		public float ManaRestoreBegin;
+		private float _nextManaRestoreTime;
 
-		public SpellNames currentSpell;
-		public bool hidden;
+		private PlayerController _playerController;
+		private Rigidbody2D _rigidbody;
 
-		public int manaCap;
-		public int currentMana;
-		public float manaRestoreTick;
-		public int manaRestoreAmount;
-		float manaRestoreBegin = 3f;
-		float nextManaRestoreTime;
+		private Translocation _currentTranslocationObject;
+		private ShadowSink _currentShadowSinkObject;
+		private Mimic _currentMimicObject;
+		private Stasis _currentStasisObject;
+		private Traitor _currentTraitorObject;
 
-		bool canSpellcast = true;
+		private bool _canSpellCast = true;
 
-		bool costingMana;
-		float manaDeductTick;
-		int manaTickCost;
-		float nextManaDeductTime;
+		private bool _costingMana;
+		private float _manaDeductTick;
+		private int _manaTickCost;
+		private float _nextManaDeductTime;
 
-		Vector3 shadowSinkPlayerPosition;
+		private Vector3 _shadowSinkPlayerPosition;
 
-		bool triggerReleased = true;
+		private bool _triggerReleased = true;
 
 		public enum SpellNames
 		{
-			translocation,
-			shadowSink,
-			mimic,
-			stasis,
-			hellfireBlast,
-			extremeForce,
-			traitor
-		};
+			Translocation,
+			ShadowSink,
+			Mimic,
+			Stasis,
+			HellfireBlast,
+			ExtremeForce,
+			Traitor
+		}
 
-		void Update()
+		private void Start()
 		{
-			if (costingMana)
+			_playerController = GetComponent<PlayerController>();
+			_rigidbody = GetComponent<Rigidbody2D>();
+		}
+
+		private void Update()
+		{
+			if (_costingMana)
 			{
-				if (Time.time >= nextManaDeductTime)
+				if (Time.time >= _nextManaDeductTime)
 				{
 					ManaDeductTick();
 				}
 			}
 			else
 			{
-				if (Time.time >= nextManaRestoreTime)
+				if (Time.time >= _nextManaRestoreTime)
 				{
 					ManaRestore();
 				}
@@ -79,129 +87,129 @@ namespace Spells
 			EquipSpell();
 			CastSpell();
 
-			manaBar.fillAmount = (float)currentMana / (float)manaCap;
+			ManaBar.fillAmount = (float)CurrentMana / (float)ManaCap;
 		}
 
-		void ManaDeductTick()
+		private void ManaDeductTick()
 		{
-			if (currentMana > 0)
+			if (CurrentMana > 0)
 			{
-				if (currentMana - manaTickCost < 0)
+				if (CurrentMana - _manaTickCost < 0)
 				{
-					currentMana = 0;
+					CurrentMana = 0;
 				}
 				else
 				{
-					currentMana -= manaTickCost;
+					CurrentMana -= _manaTickCost;
 				}
 			}
 
-			if (currentMana == 0)
+			if (CurrentMana == 0)
 			{
-				EndSpell(currentSpell);
+				EndSpell(CurrentSpell);
 			}
 
-			nextManaDeductTime = Time.time + manaDeductTick;
+			_nextManaDeductTime = Time.time + _manaDeductTick;
 		}
 
-		void ManaRestore()
+		private void ManaRestore()
 		{
-			if (currentMana < manaCap)
+			if (CurrentMana < ManaCap)
 			{
-				if (currentMana + manaRestoreAmount > manaCap)
+				if (CurrentMana + ManaRestoreAmount > ManaCap)
 				{
-					currentMana = manaCap;
+					CurrentMana = ManaCap;
 				}
 				else
 				{
-					currentMana += manaRestoreAmount;
+					CurrentMana += ManaRestoreAmount;
 				}
 			}
 
-			nextManaRestoreTime = Time.time + manaRestoreTick;
+			_nextManaRestoreTime = Time.time + ManaRestoreTick;
 		}
 
-		void EquipSpell()
+		private void EquipSpell()
 		{
 			if (Input.GetKeyDown(KeyCode.Alpha1))
 			{
-				if (currentSpell != SpellNames.translocation)
+				if (CurrentSpell != SpellNames.Translocation)
 				{
-					EndSpell(currentSpell);
+					EndSpell(CurrentSpell);
 				}
 
-				currentSpell = SpellNames.translocation;
-				inGameHUD.GetComponent<InGameManagement>().ChangeOutline(0);
+				CurrentSpell = SpellNames.Translocation;
+				InGameManagement.Instance.ChangeOutline(0);
 			}
 
 			if (Input.GetKeyDown(KeyCode.Alpha2))
 			{
-				if (currentSpell != SpellNames.shadowSink)
+				if (CurrentSpell != SpellNames.ShadowSink)
 				{
-					EndSpell(currentSpell);
+					EndSpell(CurrentSpell);
 				}
 
-				currentSpell = SpellNames.shadowSink;
-				inGameHUD.GetComponent<InGameManagement>().ChangeOutline(1);
+				CurrentSpell = SpellNames.ShadowSink;
+				InGameManagement.Instance.ChangeOutline(1);
 			}
 
 			if (Input.GetKeyDown(KeyCode.Alpha3))
 			{
-				if (currentSpell != SpellNames.hellfireBlast)
+				if (CurrentSpell != SpellNames.HellfireBlast)
 				{
-					EndSpell(currentSpell);
+					EndSpell(CurrentSpell);
 				}
 
-				currentSpell = SpellNames.hellfireBlast;
-				inGameHUD.GetComponent<InGameManagement>().ChangeOutline(2);
+				CurrentSpell = SpellNames.HellfireBlast;
+				InGameManagement.Instance.ChangeOutline(2);
 			}
 
-			if (spellLevel >= 2)
+			if (SpellLevel >= 2)
 			{
 				if (Input.GetKeyDown(KeyCode.Alpha4))
 				{
-					if (currentSpell != SpellNames.mimic)
+					if (CurrentSpell != SpellNames.Mimic)
 					{
-						EndSpell(currentSpell);
+						EndSpell(CurrentSpell);
 					}
 
-					currentSpell = SpellNames.mimic;
-					inGameHUD.GetComponent<InGameManagement>().ChangeOutline(3);
+					CurrentSpell = SpellNames.Mimic;
+					InGameManagement.Instance.ChangeOutline(3);
 				}
 
 				if (Input.GetKeyDown(KeyCode.Alpha5))
 				{
-					if (currentSpell != SpellNames.extremeForce)
+					if (CurrentSpell != SpellNames.ExtremeForce)
 					{
-						EndSpell(currentSpell);
+						EndSpell(CurrentSpell);
 					}
 
-					currentSpell = SpellNames.extremeForce;
-					inGameHUD.GetComponent<InGameManagement>().ChangeOutline(4);
+					CurrentSpell = SpellNames.ExtremeForce;
+					InGameManagement.Instance.ChangeOutline(4);
 				}
 
-				if (spellLevel >= 3)
+				if (SpellLevel >= 3)
 				{
 					if (Input.GetKeyDown(KeyCode.Alpha6))
 					{
-						if (currentSpell != SpellNames.stasis)
+						if (CurrentSpell != SpellNames.Stasis)
 						{
-							EndSpell(currentSpell);
+							EndSpell(CurrentSpell);
 						}
 
-						currentSpell = SpellNames.stasis;
-						inGameHUD.GetComponent<InGameManagement>().ChangeOutline(5);
+						CurrentSpell = SpellNames.Stasis;
+						InGameManagement.Instance.ChangeOutline(5);
 					}
 
 					if (Input.GetKeyDown(KeyCode.Alpha7))
 					{
-						if (currentSpell != SpellNames.traitor)
+						if (CurrentSpell != SpellNames.Traitor)
 						{
-							EndSpell(currentSpell);
+							EndSpell(CurrentSpell);
 						}
 
-						currentSpell = SpellNames.traitor;
-						inGameHUD.GetComponent<InGameManagement>().ChangeOutline(6);
+						CurrentSpell = SpellNames.Traitor;
+						InGameManagement.Instance.ChangeOutline(6);
 					}
 				}
 			}
@@ -213,219 +221,224 @@ namespace Spells
 			{
 				case 0:
 				{
-					if (currentSpell != SpellNames.translocation)
+					if (CurrentSpell != SpellNames.Translocation)
 					{
-						EndSpell(currentSpell);
+						EndSpell(CurrentSpell);
 					}
-					currentSpell = SpellNames.translocation;
+					CurrentSpell = SpellNames.Translocation;
 					break;
 				}
 				case 1:
 				{
-					if (currentSpell != SpellNames.shadowSink)
+					if (CurrentSpell != SpellNames.ShadowSink)
 					{
-						EndSpell(currentSpell);
+						EndSpell(CurrentSpell);
 					}
-					currentSpell = SpellNames.shadowSink;
+					CurrentSpell = SpellNames.ShadowSink;
 					break;
 				}
 				case 2:
 				{
-					if (currentSpell != SpellNames.hellfireBlast)
+					if (CurrentSpell != SpellNames.HellfireBlast)
 					{
-						EndSpell(currentSpell);
+						EndSpell(CurrentSpell);
 					}
-					currentSpell = SpellNames.hellfireBlast;
+					CurrentSpell = SpellNames.HellfireBlast;
 					break;
 				}
 				case 3:
 				{
-					if (currentSpell != SpellNames.mimic)
+					if (CurrentSpell != SpellNames.Mimic)
 					{
-						EndSpell(currentSpell);
+						EndSpell(CurrentSpell);
 					}
-					currentSpell = SpellNames.mimic;
+					CurrentSpell = SpellNames.Mimic;
 					break;
 				}
 				case 4:
 				{
-					if (currentSpell != SpellNames.extremeForce)
+					if (CurrentSpell != SpellNames.ExtremeForce)
 					{
-						EndSpell(currentSpell);
+						EndSpell(CurrentSpell);
 					}
-					currentSpell = SpellNames.extremeForce;
+					CurrentSpell = SpellNames.ExtremeForce;
 					break;
 				}
 				case 5:
 				{
-					if (currentSpell != SpellNames.stasis)
+					if (CurrentSpell != SpellNames.Stasis)
 					{
-						EndSpell(currentSpell);
+						EndSpell(CurrentSpell);
 					}
-					currentSpell = SpellNames.stasis;
+					CurrentSpell = SpellNames.Stasis;
 					break;
 				}
 				case 6:
 				{
-					if (currentSpell != SpellNames.traitor)
+					if (CurrentSpell != SpellNames.Traitor)
 					{
-						EndSpell(currentSpell);
+						EndSpell(CurrentSpell);
 					}
-					currentSpell = SpellNames.traitor;
+					CurrentSpell = SpellNames.Traitor;
 					break;
 				}
 			}
 		}
 
-		void CastSpell()
+		private void CastSpell()
 		{
-			if (canSpellcast)
+			if (!_canSpellCast)
 			{
-				if (Input.GetAxis("Use Item") == 1f && triggerReleased)
+				return;
+			}
+			
+			if (Input.GetAxis("Use Item") == 1f && _triggerReleased)
+			{
+				_triggerReleased = false;
+				if (CurrentSpell == SpellNames.Translocation && CheckMana(TranslocationPrefab.ManaCost))
 				{
-					triggerReleased = false;
-					if (currentSpell == SpellNames.translocation && CheckMana(translocationPrefab.manaCost))
-					{
-						currentTranslocationObject = Instantiate(translocationPrefab,
-							transform.position + new Vector3(5f * transform.localScale.x, 0f, 0f), transform.rotation,
-							transform);
-						EndSpell(SpellNames.shadowSink);
-						EndSpell(SpellNames.mimic);
-					}
-					else if (currentSpell == SpellNames.shadowSink && CheckMana(shadowSinkPrefab.manaCost))
-					{
-						if (currentShadowSinkObject == null && gameObject.GetComponent<Rigidbody2D>().linearVelocity.x == 0f)
-						{
-							currentShadowSinkObject =
-								Instantiate(shadowSinkPrefab, transform.position, transform.rotation);
-							DeductMana(currentShadowSinkObject.manaCost);
-							hidden = true;
-							costingMana = true;
-							manaDeductTick = currentShadowSinkObject.manaDeductTick;
-							manaTickCost = currentShadowSinkObject.manaTickCost;
-							nextManaDeductTime = Time.time + manaDeductTick;
-						}
-
-						EndSpell(SpellNames.mimic);
-					}
-					else if (currentSpell == SpellNames.mimic && CheckMana(mimicPrefab.manaCost)
-					                                          && !GetComponent<PlayerController>().isSeen)
-					{
-						if (currentMimicObject == null)
-						{
-							Vector3 mimicPosition =
-								transform.position + new Vector3(5f * transform.localScale.x, 0f, 0f);
-							currentMimicObject = Instantiate(mimicPrefab, mimicPosition, transform.rotation, transform);
-						}
-
-						EndSpell(SpellNames.shadowSink);
-					}
-					else if (currentSpell == SpellNames.hellfireBlast &&
-					         CheckMana(hellfireBlastPrefab.manaCost))
-					{
-						GameObject hellfireBlastObject = Instantiate(hellfireBlastPrefab.gameObject, firePoint.position,
-							Quaternion.LookRotation(Vector3.forward * (transform.localScale.x / Mathf.Abs(transform.localScale.x))));
-						Destroy(hellfireBlastObject, 10f);
-						DeductMana(hellfireBlastPrefab.manaCost);
-						EndSpell(SpellNames.shadowSink);
-						EndSpell(SpellNames.mimic);
-					}
-					else if (currentSpell == SpellNames.extremeForce && CheckMana(extremeForcePrefab.manaCost))
-					{
-						Quaternion spawnRotation = Quaternion.LookRotation(Vector3.forward
-						                                                   * (transform.localScale.x
-						                                                      / Mathf.Abs(transform.localScale.x)));
-						GameObject extremeForceObject = Instantiate(extremeForcePrefab.gameObject, firePoint.position,
-							spawnRotation);
-						Destroy(extremeForceObject, 3f);
-
-						DeductMana(extremeForcePrefab.manaCost);
-						EndSpell(SpellNames.shadowSink);
-						EndSpell(SpellNames.mimic);
-					}
-					else if (currentSpell == SpellNames.stasis && CheckMana(stasisPrefab.manaCost))
-					{
-						currentStasisObject = Instantiate(stasisPrefab,
-							transform.position + new Vector3(5f * transform.localScale.x, 2.5f, 0f),
-							transform.rotation);
-						EndSpell(SpellNames.shadowSink);
-						EndSpell(SpellNames.mimic);
-					}
-					else if (currentSpell == SpellNames.traitor && CheckMana(traitorPrefab.manaCost))
-					{
-						if (currentTraitorObject == null)
-						{
-							currentTraitorObject = Instantiate(traitorPrefab,
-								transform.position + new Vector3(5f * transform.localScale.x, 0f, 0f),
-								transform.rotation, transform);
-						}
-
-						EndSpell(SpellNames.shadowSink);
-						EndSpell(SpellNames.mimic);
-					}
+					_currentTranslocationObject = Instantiate(TranslocationPrefab,
+						transform.position + new Vector3(5f * transform.localScale.x, 0f, 0f), transform.rotation,
+						transform);
+					_currentTranslocationObject.Init(_playerController, this);
+					EndSpell(SpellNames.ShadowSink);
+					EndSpell(SpellNames.Mimic);
 				}
-
-				if (Input.GetAxis("Use Item") == 0f)
+				else if (CurrentSpell == SpellNames.ShadowSink && CheckMana(ShadowSinkPrefab.ManaCost))
 				{
-					triggerReleased = true;
-					if (currentSpell == SpellNames.mimic && currentMimicObject != null
-					                                     && !(currentMimicObject as Mimic).disguised)
+					if (_currentShadowSinkObject == null && _rigidbody.linearVelocity.x == 0f)
 					{
-						EndSpell(SpellNames.mimic);
-						Destroy(currentMimicObject.gameObject);
+						_currentShadowSinkObject =
+							Instantiate(ShadowSinkPrefab, transform.position, transform.rotation);
+						_currentShadowSinkObject.Init(_playerController, this);
+						DeductMana(_currentShadowSinkObject.ManaCost);
+						Hidden = true;
+						_costingMana = true;
+						_manaDeductTick = _currentShadowSinkObject.ManaDeductTick;
+						_manaTickCost = _currentShadowSinkObject.ManaTickCost;
+						_nextManaDeductTime = Time.time + _manaDeductTick;
 					}
-					else if (currentSpell == SpellNames.traitor && currentTraitorObject != null)
+
+					EndSpell(SpellNames.Mimic);
+				}
+				else if (CurrentSpell == SpellNames.Mimic && CheckMana(MimicPrefab.ManaCost) && !_playerController.IsSeen)
+				{
+					if (_currentMimicObject == null)
 					{
-						EndSpell(SpellNames.traitor);
-						Destroy(currentTraitorObject.gameObject);
+						Vector3 mimicPosition =
+							transform.position + new Vector3(5f * transform.localScale.x, 0f, 0f);
+						_currentMimicObject = Instantiate(MimicPrefab, mimicPosition, transform.rotation, transform);
+						_currentMimicObject.Init(_playerController, this);
 					}
+
+					EndSpell(SpellNames.ShadowSink);
+				}
+				else if (CurrentSpell == SpellNames.HellfireBlast && CheckMana(HellfireBlastPrefab.ManaCost))
+				{
+					HellfireBlast hellfireBlastObject = Instantiate(HellfireBlastPrefab, FirePoint.position,
+						Quaternion.LookRotation(Vector3.forward * (transform.localScale.x / Mathf.Abs(transform.localScale.x))));
+					hellfireBlastObject.Init(_playerController, this);
+					Destroy(hellfireBlastObject.gameObject, 10f);
+					DeductMana(HellfireBlastPrefab.ManaCost);
+					EndSpell(SpellNames.ShadowSink);
+					EndSpell(SpellNames.Mimic);
+				}
+				else if (CurrentSpell == SpellNames.ExtremeForce && CheckMana(ExtremeForcePrefab.ManaCost))
+				{
+					Quaternion spawnRotation = Quaternion.LookRotation(Vector3.forward
+					                                                   * (transform.localScale.x
+					                                                      / Mathf.Abs(transform.localScale.x)));
+					ExtremeForce extremeForceObject = Instantiate(ExtremeForcePrefab, FirePoint.position, spawnRotation);
+					extremeForceObject.Init(_playerController, this);
+					Destroy(extremeForceObject.gameObject, 3f);
+
+					DeductMana(ExtremeForcePrefab.ManaCost);
+					EndSpell(SpellNames.ShadowSink);
+					EndSpell(SpellNames.Mimic);
+				}
+				else if (CurrentSpell == SpellNames.Stasis && CheckMana(StasisPrefab.ManaCost))
+				{
+					_currentStasisObject = Instantiate(StasisPrefab,
+						transform.position + new Vector3(5f * transform.localScale.x, 2.5f, 0f),
+						transform.rotation);
+					_currentStasisObject.Init(_playerController, this);
+					EndSpell(SpellNames.ShadowSink);
+					EndSpell(SpellNames.Mimic);
+				}
+				else if (CurrentSpell == SpellNames.Traitor && CheckMana(TraitorPrefab.ManaCost))
+				{
+					if (_currentTraitorObject == null)
+					{
+						_currentTraitorObject = Instantiate(TraitorPrefab,
+							transform.position + new Vector3(5f * transform.localScale.x, 0f, 0f),
+							transform.rotation, transform);
+						_currentTraitorObject.Init(_playerController, this);
+					}
+
+					EndSpell(SpellNames.ShadowSink);
+					EndSpell(SpellNames.Mimic);
+				}
+			}
+
+			if (Input.GetAxis("Use Item") == 0f)
+			{
+				_triggerReleased = true;
+				if (CurrentSpell == SpellNames.Mimic && _currentMimicObject != null && !(_currentMimicObject as Mimic).Disguised)
+				{
+					EndSpell(SpellNames.Mimic);
+					Destroy(_currentMimicObject.gameObject);
+				}
+				else if (CurrentSpell == SpellNames.Traitor && _currentTraitorObject != null)
+				{
+					EndSpell(SpellNames.Traitor);
+					Destroy(_currentTraitorObject.gameObject);
 				}
 			}
 		}
 
-		bool CheckMana(int manaCost)
+		private bool CheckMana(int manaCost)
 		{
-			return manaCost <= currentMana;
+			return manaCost <= CurrentMana;
 		}
 
-		void DeductMana(int manaCost)
+		private void DeductMana(int manaCost)
 		{
-			currentMana -= manaCost;
-			nextManaRestoreTime = Time.time + manaRestoreBegin;
+			CurrentMana -= manaCost;
+			_nextManaRestoreTime = Time.time + ManaRestoreBegin;
 		}
 
 		public void EndSpell(SpellNames spell)
 		{
-			if (spell == SpellNames.translocation && currentTranslocationObject != null)
+			if (spell == SpellNames.Translocation && _currentTranslocationObject != null)
 			{
-				if (currentTranslocationObject.translocationOccured)
+				if (_currentTranslocationObject.TranslocationOccured)
 				{
-					DeductMana(currentTranslocationObject.manaCost);
+					DeductMana(_currentTranslocationObject.ManaCost);
 				}
 
-				Destroy(currentTranslocationObject.gameObject);
+				Destroy(_currentTranslocationObject.gameObject);
 			}
 
-			if (spell == SpellNames.shadowSink && currentShadowSinkObject != null)
+			if (spell == SpellNames.ShadowSink && _currentShadowSinkObject != null)
 			{
-				currentShadowSinkObject.EndShadowSink();
-				hidden = false;
-				costingMana = false;
-				manaDeductTick = 0f;
-				manaTickCost = 0;
+				_currentShadowSinkObject.EndShadowSink();
+				Hidden = false;
+				_costingMana = false;
+				_manaDeductTick = 0f;
+				_manaTickCost = 0;
 			}
 
-			if (spell == SpellNames.mimic && currentMimicObject != null)
+			if (spell == SpellNames.Mimic && _currentMimicObject != null)
 			{
-				currentMimicObject.EndMimic();
-				costingMana = false;
-				manaDeductTick = 0f;
-				manaTickCost = 0;
+				_currentMimicObject.EndMimic();
+				_costingMana = false;
+				_manaDeductTick = 0f;
+				_manaTickCost = 0;
 			}
 
-			if (spell == SpellNames.traitor && currentTraitorObject != null)
+			if (spell == SpellNames.Traitor && _currentTraitorObject != null)
 			{
-				currentTraitorObject.EndTraitor();
+				_currentTraitorObject.EndTraitor();
 			}
 		}
 
@@ -433,29 +446,29 @@ namespace Spells
 		{
 			if (!_canSpellcast)
 			{
-				EndSpell(currentSpell);
+				EndSpell(CurrentSpell);
 			}
 
-			canSpellcast = _canSpellcast;
+			this._canSpellCast = _canSpellcast;
 		}
 
 		public void Disguised()
 		{
-			DeductMana(currentMimicObject.manaCost);
-			costingMana = true;
-			manaDeductTick = currentMimicObject.manaDeductTick;
-			manaTickCost = currentMimicObject.manaTickCost;
-			nextManaDeductTime = Time.time + manaDeductTick;
+			DeductMana(_currentMimicObject.ManaCost);
+			_costingMana = true;
+			_manaDeductTick = _currentMimicObject.ManaDeductTick;
+			_manaTickCost = _currentMimicObject.ManaTickCost;
+			_nextManaDeductTime = Time.time + _manaDeductTick;
 		}
 
 		public void StasisOccured()
 		{
-			DeductMana(currentStasisObject.manaCost);
+			DeductMana(_currentStasisObject.ManaCost);
 		}
 
 		public void Corrupted()
 		{
-			DeductMana(currentTraitorObject.manaCost);
+			DeductMana(_currentTraitorObject.ManaCost);
 		}
 	}
 }

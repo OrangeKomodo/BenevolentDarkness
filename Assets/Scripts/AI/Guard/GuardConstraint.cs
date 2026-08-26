@@ -5,47 +5,51 @@ namespace AI.Guard
 {
 	public class GuardConstraint : MonoBehaviour
 	{
+		public bool RightConstraint;
+		
+		private readonly List<GameObject> _constrainedGuards = new List<GameObject>();
 
-		public bool rightConstraint;
-		public List<GameObject> sentries = new List<GameObject>();
-
-		void FixedUpdate()
+		private void FixedUpdate()
 		{
-			if (sentries.Count > 0)
+			if (_constrainedGuards.Count == 0)
 			{
-				for (int i = 0; i < sentries.Count; i++)
+				return;
+			}
+				
+			for (int i = 0; i < _constrainedGuards.Count; i++)
+			{
+				Transform guardTransform = _constrainedGuards[i].transform;
+				
+				if (RightConstraint)
 				{
-					if (rightConstraint)
+					if (guardTransform.position.x > transform.position.x)
 					{
-						if (sentries[i].transform.position.x > transform.position.x)
-						{
-							sentries[i].transform.position = new Vector2(transform.position.x, sentries[i].transform.position.y);
-						}
+						guardTransform.position = new Vector2(transform.position.x, guardTransform.position.y);
 					}
-					else
-					{
-						if (sentries[i].transform.position.x < transform.position.x)
-						{
-							sentries[i].transform.position = new Vector2(transform.position.x, sentries[i].transform.position.y);
-						}
-					}
+					
+					continue;
+				}
+				
+				if (guardTransform.position.x < transform.position.x)
+				{
+					guardTransform.position = new Vector2(transform.position.x, guardTransform.position.y);
 				}
 			}
 		}
 
-		void OnTriggerEnter2D(Collider2D collider)
+		private void OnTriggerEnter2D(Collider2D otherCollider)
 		{
-			if (collider.name.Equals("Guard Actual") && !sentries.Contains(collider.gameObject))
+			if (otherCollider.name.Equals("Guard Actual") && !_constrainedGuards.Contains(otherCollider.gameObject))
 			{
-				sentries.Add(collider.gameObject);
+				_constrainedGuards.Add(otherCollider.gameObject);
 			}
 		}
 
-		void OnTriggerExit2D(Collider2D collider)
+		private void OnTriggerExit2D(Collider2D otherCollider)
 		{
-			if (collider.name.Equals("Guard Actual") && sentries.Contains(collider.gameObject))
+			if (otherCollider.name.Equals("Guard Actual") && _constrainedGuards.Contains(otherCollider.gameObject))
 			{
-				sentries.Remove(collider.gameObject);
+				_constrainedGuards.Remove(otherCollider.gameObject);
 			}
 		}
 	}

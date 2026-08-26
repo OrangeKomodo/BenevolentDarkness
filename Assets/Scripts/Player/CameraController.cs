@@ -6,64 +6,64 @@ namespace Player
 	{
 
 		[Tooltip("A reference to the target that the camera will follow")]
-		public Transform target;
+		public Transform Target;
 
 		[Tooltip("Camera smoothing variable (lower is slower)")]
-		public float smoothSpeed = 10f;
+		public float SmoothSpeed = 10f;
 
 		[Tooltip("Camera offset from the target (X is right and left, and Y is up)")]
-		public Vector2 offset;
+		public Vector2 Offset;
 
-		[Tooltip("Camera horizontal boundries in the world (X is left boundry, and Y right boundry)")]
-		public Vector2 horizontalBoundries;
+		[Tooltip("Camera horizontal boundaries in the world (X is left boundry, and Y right boundry)")]
+		public Vector2 HorizontalBoundaries;
 
-		Transform startingTarget;
-		Vector2 startingOffset;
-		float startingSmoothSpeed;
+		private Transform _startingTarget;
+		private Vector2 _startingOffset;
+		private float _startingSmoothSpeed;
 
-		float m_OffsetZ;
-		Vector3 m_LookAheadPos;
+		private float _mOffsetZ;
+		private Vector3 _mLookAheadPos;
 
-		void Start()
+		private void Start()
 		{
-			startingTarget = target;
-			startingOffset = offset;
-			startingSmoothSpeed = smoothSpeed;
+			_startingTarget = Target;
+			_startingOffset = Offset;
+			_startingSmoothSpeed = SmoothSpeed;
 
 			//Finds the Z offset.
-			m_OffsetZ = (transform.position - target.position).z;
+			_mOffsetZ = (transform.position - Target.position).z;
 		}
 
-		void FixedUpdate()
+		private void FixedUpdate()
 		{
 			//Gets the scale of the player. If it's positive, the player is facing right and vice versa.
-			float targetScale = target.localScale.x;
+			float targetScale = Target.localScale.x;
 			//Gets the absolute value of the target's scale.
 			float targetScalePositive = Mathf.Abs(targetScale);
 
 			//Finds how far ahead of the player the camera should be.
-			m_LookAheadPos = Vector3.right * (offset.x * (targetScale / targetScalePositive));
+			_mLookAheadPos = Vector3.right * (Offset.x * (targetScale / targetScalePositive));
 			//Finds the exact position the camera should be focused on.
-			Vector3 aheadTargetPos = target.position + m_LookAheadPos + Vector3.forward * m_OffsetZ;
+			Vector3 aheadTargetPos = Target.position + _mLookAheadPos + Vector3.forward * _mOffsetZ;
 			//Lerps to that position.
-			Vector3 newPos = Vector3.Lerp(transform.position, aheadTargetPos, smoothSpeed * Time.deltaTime);
+			Vector3 newPos = Vector3.Lerp(transform.position, aheadTargetPos, SmoothSpeed * Time.deltaTime);
 			//Sets the camera's position with the Y offset.
-			transform.position = new Vector3(Mathf.Clamp(newPos.x, horizontalBoundries.x, horizontalBoundries.y),
-				target.position.y + offset.y, newPos.z);
+			transform.position = new Vector3(Mathf.Clamp(newPos.x, HorizontalBoundaries.x, HorizontalBoundaries.y),
+				Target.position.y + Offset.y, newPos.z);
 		}
 
 		public void NewTarget(Transform newTarget, Vector2 newOffset, float newSmoothSpeed)
 		{
-			target = newTarget;
-			offset = newOffset;
-			smoothSpeed = newSmoothSpeed;
+			Target = newTarget;
+			Offset = newOffset;
+			SmoothSpeed = newSmoothSpeed;
 		}
 
 		public void ResetTarget()
 		{
-			target = startingTarget;
-			offset = startingOffset;
-			smoothSpeed = startingSmoothSpeed;
+			Target = _startingTarget;
+			Offset = _startingOffset;
+			SmoothSpeed = _startingSmoothSpeed;
 		}
 	}
 }

@@ -405,25 +405,31 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cdf17ee3ce5ac1c4eb51d6d3511e5aea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  startingHealth: 150
-  health: 0
-  dead: 0
-  baseVisibilityFactor: 0.1
-  visibilityFactor: 0.1
-  rawVisibilityFactor: 0.1
-  lightTotals: 0
-  inShadowSink: 0
-  disguisedAsGuard: 0
-  canAttack: 1
-  isSeen: 0
-  healthBar: {fileID: 0}
-  effectedPlatforms: {fileID: 0}
-  enemiesHolder: {fileID: 0}
-  canvas: {fileID: 0}
-  inventory: []
-  lights: []
-  items: []
-  hidingPlaceLayerMasks:
+  StartingHealth: 150
+  Health: 150
+  Dead: 0
+  Spellcaster: {fileID: 114342578977663014}
+  CameraController: {fileID: 0}
+  PlatformerCharacter: {fileID: 114078852195877126}
+  PlayerSprite: {fileID: 212497421499945530}
+  Rigidbody: {fileID: 50817542306629364}
+  Animator: {fileID: 95168340800278466}
+  BaseVisibilityFactor: 0.1
+  VisibilityFactor: 0.1
+  RawVisibilityFactor: 0.1
+  LightTotals: 0
+  InShadowSink: 0
+  DisguisedAsGuard: 0
+  CanAttack: 1
+  IsSeen: 0
+  HealthBar: {fileID: 0}
+  AffectedPlatforms: []
+  EnemiesHolder: {fileID: 0}
+  Canvas: {fileID: 0}
+  Inventory: []
+  Lights: []
+  Items: []
+  HidingPlaceLayerMasks:
   - serializedVersion: 2
     m_Bits: 4294967295
   - serializedVersion: 2
@@ -440,30 +446,31 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6b8bdd2b8d7214bd0b3c5a0676134bde, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  spellLevel: 3
-  translocationPrefab: {fileID: 114808775738033226, guid: c2a393241c2d83948a0ac2b50c55b6ae,
+  SpellLevel: 3
+  TranslocationPrefab: {fileID: 114808775738033226, guid: c2a393241c2d83948a0ac2b50c55b6ae,
     type: 3}
-  shadowSinkPrefab: {fileID: 114411305414306156, guid: b1e58e243d89bef448f6882fa2347009,
+  ShadowSinkPrefab: {fileID: 114411305414306156, guid: b1e58e243d89bef448f6882fa2347009,
     type: 3}
-  mimicPrefab: {fileID: 114967027383669410, guid: 839071becfa21af46bb1f98ff6d41eba,
+  MimicPrefab: {fileID: 114967027383669410, guid: 839071becfa21af46bb1f98ff6d41eba,
     type: 3}
-  stasisPrefab: {fileID: 114406642203275472, guid: d21c97aad22f45d4491aa0083b6a9d04,
+  StasisPrefab: {fileID: 114406642203275472, guid: d21c97aad22f45d4491aa0083b6a9d04,
     type: 3}
-  hellfireBlastPrefab: {fileID: 114338250045110084, guid: 94a7f7b3280bc2c4fb51a562d88f641e,
+  HellfireBlastPrefab: {fileID: 114338250045110084, guid: 94a7f7b3280bc2c4fb51a562d88f641e,
     type: 3}
-  extremeForcePrefab: {fileID: 114289215814462372, guid: 0f25f50f9cc957e4eb8416fe3724cce1,
+  ExtremeForcePrefab: {fileID: 114289215814462372, guid: 0f25f50f9cc957e4eb8416fe3724cce1,
     type: 3}
-  traitorPrefab: {fileID: 114417209598975356, guid: b1770e0c03696144d9d64ddb31d0e2ed,
+  TraitorPrefab: {fileID: 114417209598975356, guid: b1770e0c03696144d9d64ddb31d0e2ed,
     type: 3}
-  firePoint: {fileID: 4616135726968854}
-  inGameHUD: {fileID: 0}
-  manaBar: {fileID: 0}
-  currentSpell: 0
-  hidden: 0
-  manaCap: 150
-  currentMana: 150
-  manaRestoreTick: 0.5
-  manaRestoreAmount: 1
+  FirePoint: {fileID: 4616135726968854}
+  InGameHUD: {fileID: 0}
+  ManaBar: {fileID: 0}
+  CurrentSpell: 0
+  Hidden: 0
+  ManaCap: 150
+  CurrentMana: 150
+  ManaRestoreTick: 0.5
+  ManaRestoreAmount: 1
+  ManaRestoreBegin: 0
 --- !u!114 &114352418811882260
 MonoBehaviour:
   m_ObjectHideFlags: 0

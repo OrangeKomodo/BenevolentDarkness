@@ -10,9 +10,9 @@ public class SentryStop : MonoBehaviour
 	public float idleTime = 0f;
 	public Transform nextStop;
 
-	void OnTriggerEnter2D(Collider2D collider)
+	private void OnTriggerEnter2D(Collider2D collider)
 	{
-		if (collider.gameObject.Equals(sentry.gameObject) && sentry.nextStop == transform)
+		if (collider.gameObject.Equals(sentry.gameObject) && sentry.NextStop == transform)
 		{
 			ForceUpdate();
 		}

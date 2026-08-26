@@ -4,81 +4,87 @@ using UnityEngine.UI;
 
 namespace UI
 {
-	public class MainMenuManager : MonoBehaviour {
+	public class MainMenuManager : MonoBehaviour
+	{
+		public Button[] Buttons;
 
-		AudioManager audioManager;
-		MenuSwitcher menuSwitcher;
+		public Color Selected = Color.white;
+		public Color NotSelected = Color.gray;
 
-		Color selected = Color.white;
-		Color notSelected = Color.gray;
+		private bool _usingController;
 
-		bool usingController;
+		private int _buttonIndex = 0;
+		private float _nextChangeTime;
 
-		int buttonIndex = 0;
-		float nextChangeTime;
-
-		void Start () {
-			audioManager = GameObject.FindGameObjectWithTag("GameController").GetComponent<AudioManager>();
-			menuSwitcher = GameObject.FindGameObjectWithTag ("GameController").GetComponent<MenuSwitcher> ();
-			usingController = Input.GetJoystickNames ().Length > 0;
-			if (usingController) {
-				ChangeButton (buttonIndex);
+		private void Start()
+		{
+			_usingController = Input.GetJoystickNames().Length > 0;
+			if (_usingController)
+			{
+				ChangeButton(_buttonIndex);
 				Cursor.lockState = CursorLockMode.Locked;
 				Cursor.visible = false;
 			}
 		}
 
-		void Update () {
-			if (usingController) {
+		private void Update()
+		{
+			if (_usingController)
+			{
 				float controllerY = -Input.GetAxis("Vertical");
-				if (nextChangeTime <= Time.realtimeSinceStartup && Mathf.Abs(controllerY) > 0.19f) {
-					audioManager.PlaySound("Swish");
-					buttonIndex = (3 + (buttonIndex + (int)(controllerY / Mathf.Abs(controllerY)))) % 3;
-					ChangeButton(buttonIndex);
-					nextChangeTime = Time.realtimeSinceStartup + 0.2f;
+				if (_nextChangeTime <= Time.realtimeSinceStartup && Mathf.Abs(controllerY) > 0.19f)
+				{
+					AudioManager.Instance.PlaySound("Swish");
+					_buttonIndex = (3 + (_buttonIndex + (int)(controllerY / Mathf.Abs(controllerY)))) % 3;
+					ChangeButton(_buttonIndex);
+					_nextChangeTime = Time.realtimeSinceStartup + 0.2f;
 				}
 			}
 
 			if (Input.GetButtonDown("Jump"))
 			{
-				SelectButton (buttonIndex);
+				SelectButton(_buttonIndex);
 			}
 
 			if (Input.GetButtonDown("Exit"))
 			{
-				LoadMenu (0);
+				LoadMenu(0);
 			}
 		}
 
-		public void LoadMenu (int menuIndex) {
-			audioManager.PlaySound("Select");
-			menuSwitcher.LoadMenu (menuIndex);
+		public void LoadMenu(int menuIndex)
+		{
+			AudioManager.Instance.PlaySound("Select");
+			MenuSwitcher.Instance.LoadMenu(menuIndex);
 		}
 
-		public void QuitGame () {
-			audioManager.PlaySound("Select");
-			Application.Quit ();
+		public void QuitGame()
+		{
+			AudioManager.Instance.PlaySound("Select");
+			Application.Quit();
 		}
 
-		void ChangeButton (int newButton) {
+		private void ChangeButton(int newButton)
+		{
 			for (int i = 0; i < 3; i++)
 			{
-				transform.GetChild (i + 1).GetComponent<Image> ().color = newButton == i ? selected : notSelected;
+				Buttons[i].image.color = newButton == i ? Selected : NotSelected;
 			}
 		}
 
-		void SelectButton (int button) {
+		private void SelectButton(int button)
+		{
 			if (button == 0)
 			{
-				LoadMenu (2);
+				LoadMenu(2);
 			}
 			else if (button == 1)
 			{
-				LoadMenu (3);
+				LoadMenu(3);
 			}
 			else if (button == 2)
 			{
-				QuitGame ();
+				QuitGame();
 			}
 		}
 	}

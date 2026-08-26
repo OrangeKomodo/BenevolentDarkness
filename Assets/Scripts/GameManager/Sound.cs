@@ -31,20 +31,39 @@ namespace GameManager
 
         public void Play()
         {
+            if (source == null)
+            {
+                return;
+            }
+            
             source.Play();
         }
 
         public void Stop()
         {
+            if (source == null)
+            {
+                return;
+            }
+
             source.Stop();
         }
 
         public void Pause(bool pause)
         {
+            if (source == null)
+            {
+                return;
+            }
+
             if (pause)
+            {
                 source.Pause();
+            }
             else
+            {
                 source.UnPause();
+            }
         }
     }
 }

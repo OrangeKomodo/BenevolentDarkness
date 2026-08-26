@@ -6,198 +6,205 @@ using UnityEngine;
 
 namespace AI.Guard
 {
-	
 	public class Guard : LivingEntity
 	{
-		public enum State
+		public enum GuardState
 		{
-			unaware,
-			suspicious,
-			chasing,
-			alerted,
-			dead,
-			unconscious,
-			corrupted
+			Unaware,
+			Suspicious,
+			Chasing,
+			Alerted,
+			Dead,
+			Unconscious,
+			Corrupted
 		}
 		
 		struct GuardQuickSave
 		{
-			public Vector2 position;
-			public float direction;
-			public Transform nextStop;
-			public float health;
-			public State state;
-			public float suspicionPercentage;
+			public Vector2 Position;
+			public float Direction;
+			public Transform NextStop;
+			public float Health;
+			public GuardState State;
+			public float SuspicionPercentage;
 		}
 
-		public State state = State.unaware;
-		public GameObject guardStopsHolder;
-		public Transform nextStop;
-		public float walkSpeed;
-		public float runSpeed;
-		[Range(0, 1)] public float suspicionPercentage = 0f;
-		public bool seesPlayer = false;
-		public bool canMimic = true;
-		public int damage;
-		public Transform attackPos;
-		public float attackRange;
-		public float startTimeBetweenAttack;
-		public LayerMask whatAreEnemies;
-		public LayerMask whatAreFriends;
-		public LayerMask whatIsGround;
-		public Transform suspicionSpriteMask;
+		public GuardState State = GuardState.Unaware;
+		public GameObject GuardStopsHolder;
+		public Transform NextStop;
+		public float WalkSpeed;
+		public float RunSpeed;
+		[Range(0, 1)]
+		public float SuspicionPercentage = 0f;
+		public bool SeesPlayer = false;
+		public bool CanMimic = true;
+		public int Damage;
+		public Transform AttackPos;
+		public float AttackRange;
+		public float StartTimeBetweenAttack;
+		public LayerMask WhatAreEnemies;
+		public LayerMask WhatAreFriends;
+		public LayerMask WhatIsGround;
+		public Transform SuspicionSpriteMask;
 
-		List<Transform> fellowGuards = new List<Transform>();
-		Transform closestGuard;
+		private List<Transform> _fellowGuards = new List<Transform>();
+		private Transform _closestGuard;
 
-		GameObject player;
-		Rigidbody2D rb;
-		Animator anim;
-		AudioManager audioManager;
-		Transform floor;
-		GuardQuickSave guardQuickSave;
+		private GameObject _player;
+		private Rigidbody2D _rigidbody;
+		private Animator _animator;
+		private BoxCollider2D _collider;
+		private Transform _floor;
+		private GuardQuickSave _guardQuickSave;
 
-		float timeBetweenAttack;
+		private float _timeBetweenAttack;
 
-		bool idling;
-		bool playerInMeleeRange;
-		bool playerDead = false;
-		bool inStasis = false;
-		bool inForceField = false;
+		private bool _idling;
+		private bool _playerInMeleeRange;
+		private bool _playerDead;
+		private bool _inStasis = false;
+		private bool _inForceField = false;
+		private bool _deathManaged = false;
 
-		float idleTime;
-		Vector2 idleDirection;
-		float idleFinishTime;
+		private float _idleTime;
+		private Vector2 _idleDirection;
+		private float _idleFinishTime;
 
-		bool playerIsHiding = false;
-		float playerVisibilityFactor = 0f;
-		float seesPlayerRate = 5f;
-		float losesPlayerRate = 5f;
+		private bool _playerIsHiding = false;
+		private float _playerVisibilityFactor = 0f;
+		private float _seesPlayerRate = 5f;
+		private float _losesPlayerRate = 5f;
 
-		Vector3 lastKnownLocation;
-		float giveUpTime = 5f;
-		float lastSeenTime;
-		bool canSpot = true;
+		private Vector3 _lastKnownLocation;
+		private float _giveUpTime = 5f;
+		private float _lastSeenTime;
+		private bool _canSpot = true;
 
-		float alertedTime = 7f;
-		float alertedEndTime;
-		bool searchUnderway = false;
-		bool confused = false;
-		const int numberOfOscillations = 3;
-		float[] oscillationTimes = new float[3];
-		int oscillationsOccured = 0;
+		private float _alertedTime = 7f;
+		private float _alertedEndTime;
+		private bool _searchUnderway = false;
+		private bool _confused = false;
+		private const int NumberOfOscillations = 3;
+		private float[] _oscillationTimes = new float[3];
+		private int _oscillationsOccured = 0;
 
-		bool guardFound = false;
-		Vector3 downedGuard;
+		private bool _guardFound = false;
+		private Vector3 _downedGuard;
 
-		float maxVelocity;
+		private float _maxVelocity;
 
 		protected override void Start()
 		{
 			base.Start();
-			player = GameObject.FindGameObjectWithTag("Player");
-			rb = gameObject.GetComponent<Rigidbody2D>();
-			anim = GetComponent<Animator>();
-			audioManager = FindObjectOfType<AudioManager>();
-			floor = transform.parent.parent;
-			for (int i = 0; i < floor.childCount; i++)
+			
+			_player = GameObject.FindGameObjectWithTag("Player");
+			_rigidbody = GetComponent<Rigidbody2D>();
+			_animator = GetComponent<Animator>();
+			_collider = GetComponent<BoxCollider2D>();
+			_floor = transform.parent.parent;
+			for (int i = 0; i < _floor.childCount; i++)
 			{
-				if (floor.GetChild(i).GetChild(0) != transform && floor.GetChild(i).GetChild(0).name.Contains("Guard"))
+				if (_floor.GetChild(i).GetChild(0) != transform && _floor.GetChild(i).GetChild(0).name.Contains("Guard"))
 				{
-					fellowGuards.Add(floor.GetChild(i).GetChild(0));
+					_fellowGuards.Add(_floor.GetChild(i).GetChild(0));
 				}
 			}
 			
-			guardQuickSave = new GuardQuickSave();
+			_guardQuickSave = new GuardQuickSave();
 
-			lastKnownLocation = transform.position;
+			_lastKnownLocation = transform.position;
 
-			OnDeath += OnGuardDeath;
 			OnHit += OnGuardHit;
-			player.GetComponent<PlayerController>().OnDeath += OnPlayerDeath;
+			_player.GetComponent<PlayerController>().OnDeath += OnPlayerDeath;
 		}
 
-		void FixedUpdate()
+		private void OnApplicationQuit()
 		{
-			if (!playerDead && state != State.corrupted)
+			OnHit -= OnGuardHit;
+			_player.GetComponent<PlayerController>().OnDeath -= OnPlayerDeath;
+		}
+
+		private void FixedUpdate()
+		{
+			if (!_playerDead && State != GuardState.Corrupted)
 			{
-				if (state == State.dead || state == State.unconscious)
+				if (State == GuardState.Dead || State == GuardState.Unconscious)
 				{
-					if (!dead)
+					if (!_deathManaged)
 					{
-						rb.linearVelocity = Vector2.zero;
-						suspicionPercentage = 0f;
+						_rigidbody.linearVelocity = Vector2.zero;
+						SuspicionPercentage = 0f;
 						//GetComponent<SpriteRenderer> ().color = state == State.dead ? Color.red : Color.blue;
-						GetComponent<BoxCollider2D>().isTrigger = true;
+						_collider.isTrigger = true;
 						for (int i = 0; i < transform.childCount; i++)
 						{
 							transform.GetChild(i).gameObject.SetActive(false);
 						}
-						guardStopsHolder.SetActive(false);
+						GuardStopsHolder.SetActive(false);
+
+						_deathManaged = true;
 					}
 
-					if (rb.gravityScale > 0f)
+					if (_rigidbody.gravityScale > 0f)
 					{
 						Debug.DrawRay(transform.position, -Vector2.up * (transform.parent.localScale.y * 1.25f),
 							Color.green);
 						if (Physics2D.Raycast(transform.position, -Vector2.up, transform.parent.localScale.y * 1.25f,
-							    whatIsGround))
+							    WhatIsGround))
 						{
-							rb.gravityScale = 0f;
-							rb.linearVelocity = Vector2.zero;
-							rb.constraints = RigidbodyConstraints2D.FreezePositionX |
+							_rigidbody.gravityScale = 0f;
+							_rigidbody.linearVelocity = Vector2.zero;
+							_rigidbody.constraints = RigidbodyConstraints2D.FreezePositionX |
 							                 RigidbodyConstraints2D.FreezePositionY;
 						}
 					}
-
-					dead = true;
 				}
-				else if (!inStasis)
+				else if (!_inStasis)
 				{
-					if (!inForceField)
+					if (!_inForceField)
 					{
-						if (state == State.unaware)
+						if (State == GuardState.Unaware)
 						{
-							if (!idling)
+							if (!_idling)
 							{
 								//transform.position = new Vector2 (Vector2.MoveTowards (transform.position, nextStop.position, walkSpeed * Time.fixedDeltaTime).x, transform.position.y);
-								rb.linearVelocity = new Vector2(
-									GetDirection(transform.position, nextStop.position) * walkSpeed,
+								_rigidbody.linearVelocity = new Vector2(
+									GetDirection(transform.position, NextStop.position) * WalkSpeed,
 									0f);
 							}
-							else if (Time.time > idleFinishTime)
+							else if (Time.time > _idleFinishTime)
 							{
-								idling = false;
+								_idling = false;
 								ChangeDirection();
 							}
 						}
 
 						PlayerAwareness();
 
-						if (state == State.chasing)
+						if (State == GuardState.Chasing)
 						{
 							PlayerSeen();
 						}
 
-						if (state == State.alerted)
+						if (State == GuardState.Alerted)
 						{
-							SearchingForPlayer(guardFound ? downedGuard : lastKnownLocation);
+							SearchingForPlayer(_guardFound ? _downedGuard : _lastKnownLocation);
 						}
 					}
-					else if (Mathf.Abs(rb.linearVelocity.magnitude) > maxVelocity)
-						maxVelocity = Mathf.Abs(rb.linearVelocity.magnitude);
+					else if (Mathf.Abs(_rigidbody.linearVelocity.magnitude) > _maxVelocity)
+						_maxVelocity = Mathf.Abs(_rigidbody.linearVelocity.magnitude);
 				}
 			}
-			else if (state == State.corrupted)
+			else if (State == GuardState.Corrupted)
 			{
 				//Debug.Log ((closestGuard == transform) + " " + closestGuard.position + " " + transform.position);
-				if (closestGuard != transform)
+				if (_closestGuard != transform)
 				{
-					State closestGuardState = closestGuard.GetComponent<Guard>().state;
-					if (closestGuardState != State.corrupted && closestGuardState != State.unconscious &&
-					    closestGuardState != State.dead)
+					GuardState closestGuardGuardState = _closestGuard.GetComponent<Guard>().State;
+					if (closestGuardGuardState != GuardState.Corrupted && closestGuardGuardState != GuardState.Unconscious &&
+					    closestGuardGuardState != GuardState.Dead)
 					{
-						AttackGuard(closestGuard);
+						AttackGuard(_closestGuard);
 					}
 					else
 					{
@@ -211,22 +218,22 @@ namespace AI.Guard
 				}
 			}
 
-			anim.SetFloat("Speed", Mathf.Abs(rb.linearVelocity.x));
+			_animator.SetFloat("Speed", Mathf.Abs(_rigidbody.linearVelocity.x));
 		}
 
 		////////////////////////////////////////////////////////////////////////////////////IDLE FUNCTIONS////////////////////////////////////////////////////////////////////////////////////////////
 
 		//Takes information from the Guard Stop once one has been reached to determine the Guard's behavior.
-		public void StopReached(float _idleTime, Vector2 _idleDirection, Transform _nextStop)
+		public void StopReached(float idleTime, Vector2 idleDirection, Transform nextStop)
 		{
-			if (!playerDead && !inStasis && state != State.corrupted)
+			if (!Dead && !_inStasis && State != GuardState.Corrupted)
 			{
-				if (state != State.chasing && state != State.alerted)
+				if (State != GuardState.Chasing && State != GuardState.Alerted)
 				{
-					idleTime = _idleTime;
-					idleDirection = _idleDirection;
-					nextStop = _nextStop;
-					if (_idleTime > 0f)
+					_idleTime = idleTime;
+					_idleDirection = idleDirection;
+					NextStop = nextStop;
+					if (idleTime > 0f)
 					{
 						Idle();
 					}
@@ -239,25 +246,25 @@ namespace AI.Guard
 		}
 
 		//Stops the Guard in place for a set amount of time while patrolling.
-		void Idle()
+		private void Idle()
 		{
-			idleFinishTime = Time.time + idleTime;
-			transform.localScale = new Vector3(Mathf.Abs(transform.localScale.x) * idleDirection.x,
+			_idleFinishTime = Time.time + _idleTime;
+			transform.localScale = new Vector3(Mathf.Abs(transform.localScale.x) * _idleDirection.x,
 				transform.localScale.y, 0);
 			//anim.SetInteger ("Walk State", 0);
-			idling = true;
+			_idling = true;
 		}
 
 		//Flips the direction of the Guard while patrolling to look at the next stop.
-		void ChangeDirection()
+		private void ChangeDirection()
 		{
-			float newDirection = GetDirection(transform.position, nextStop.position);
+			float newDirection = GetDirection(transform.position, NextStop.position);
 			transform.localScale =
 				new Vector3(Mathf.Abs(transform.localScale.x) * newDirection, transform.localScale.y, 0);
 		}
 
 		//Returns a 1 or a -1 depending on where the target is in repect to the object on the x axis.
-		float GetDirection(Vector3 currentPosition, Vector3 targetPosition)
+		private float GetDirection(Vector3 currentPosition, Vector3 targetPosition)
 		{
 			return targetPosition.x - currentPosition.x == 0f
 				? 1f
@@ -267,97 +274,96 @@ namespace AI.Guard
 		//////////////////////////////////////////////////////////////////////////////PLAYER PERCEPTION FUNCTIONS/////////////////////////////////////////////////////////////////////////////////////
 
 		//Is called by the Guard Vision when the Guard sees the player.
-		public void SeesPlayer(float _playerVisibilityFactor)
+		public void CheckSeesPlayer(float playerVisibilityFactor)
 		{
-			if (_playerVisibilityFactor > 0 && !playerIsHiding)
+			if (playerVisibilityFactor > 0 && !_playerIsHiding)
 			{
-				playerVisibilityFactor = _playerVisibilityFactor;
-				seesPlayer = true;
+				this._playerVisibilityFactor = playerVisibilityFactor;
+				SeesPlayer = true;
 			}
 		}
 
 		//Is called by the Guard Vision when the Guard no longer sees the player.
 		public void LostPlayer()
 		{
-			seesPlayer = false;
+			SeesPlayer = false;
 		}
 
 		//Takes information from the Guard Vision and uses it to determine the Guard's behavior.
-		void PlayerAwareness()
+		private void PlayerAwareness()
 		{
-			if (!playerDead && !inStasis && !inForceField && state != State.corrupted)
+			if (!Dead && !_inStasis && !_inForceField && State != GuardState.Corrupted)
 			{
-				if (seesPlayer && suspicionPercentage < 1)
+				if (SeesPlayer && SuspicionPercentage < 1)
 				{
-					suspicionPercentage += playerVisibilityFactor * seesPlayerRate / 100f;
+					SuspicionPercentage += _playerVisibilityFactor * _seesPlayerRate / 100f;
 				}
 
-				if (!seesPlayer && suspicionPercentage > 0 && state != State.alerted)
+				if (!SeesPlayer && SuspicionPercentage > 0 && State != GuardState.Alerted)
 				{
-					if (state == State.suspicious)
+					if (State == GuardState.Suspicious)
 					{
-						losesPlayerRate = 2.5f;
+						_losesPlayerRate = 2.5f;
 					}
-					else if (state == State.chasing)
+					else if (State == GuardState.Chasing)
 					{
-						losesPlayerRate = 1f;
+						_losesPlayerRate = 1f;
 					}
-					suspicionPercentage -= losesPlayerRate / 100f;
+					SuspicionPercentage -= _losesPlayerRate / 100f;
 				}
 
-				suspicionPercentage = Mathf.Clamp(suspicionPercentage, 0, 1);
+				SuspicionPercentage = Mathf.Clamp(SuspicionPercentage, 0, 1);
 
-				suspicionSpriteMask.localPosition = new Vector3(0f, suspicionPercentage * 0.625f, 0f);
+				SuspicionSpriteMask.localPosition = new Vector3(0f, SuspicionPercentage * 0.625f, 0f);
 
-				if (state != State.unaware && suspicionPercentage == 0f)
+				if (State != GuardState.Unaware && SuspicionPercentage == 0f)
 				{
-					state = State.unaware;
+					State = GuardState.Unaware;
 					//anim.SetInteger ("Walk State", 1);
-					canSpot = true;
+					_canSpot = true;
 				}
 
-				if (state == State.unaware && suspicionPercentage > 0.5f)
+				if (State == GuardState.Unaware && SuspicionPercentage > 0.5f)
 				{
-					state = State.suspicious;
+					State = GuardState.Suspicious;
 				}
 
-				if (state == State.suspicious && suspicionPercentage < 0.5f ||
-				    state == State.alerted && suspicionPercentage == 0)
+				if (State == GuardState.Suspicious && SuspicionPercentage < 0.5f ||
+				    State == GuardState.Alerted && SuspicionPercentage == 0)
 				{
-					state = State.unaware;
+					State = GuardState.Unaware;
 					//anim.SetInteger ("Walk State", 1);
-					canSpot = true;
+					_canSpot = true;
 				}
 
-				if (suspicionPercentage == 1f)
+				if (SuspicionPercentage == 1f)
 				{
-					if (state != State.chasing && !guardFound)
+					if (State != GuardState.Chasing && !_guardFound)
 					{
-						if (canSpot)
+						if (_canSpot)
 						{
-							GameObject.FindGameObjectWithTag("GameController").GetComponent<MoralitySystem>()
-								.timesSpotted++;
-							audioManager.PlaySound("Guard Surprise");
-							anim.SetTrigger("Surprised");
+							MoralitySystem.Instance.TimesSpotted++;
+							AudioManager.Instance.PlaySound("Guard Surprise");
+							_animator.SetTrigger("Surprised");
 						}
 
-						canSpot = false;
+						_canSpot = false;
 
-						for (int i = 0; i < fellowGuards.Count; i++)
+						for (int i = 0; i < _fellowGuards.Count; i++)
 						{
-							if (fellowGuards[i] != transform)
+							if (_fellowGuards[i] != transform)
 							{
-								fellowGuards[i].GetComponent<Guard>().PlayerSeenByOther();
+								_fellowGuards[i].GetComponent<Guard>().PlayerSeenByOther();
 							}
 						}
 					}
 
-					state = State.chasing;
+					State = GuardState.Chasing;
 				}
 
-				if (state == State.chasing && !seesPlayer || guardFound)
+				if (State == GuardState.Chasing && !SeesPlayer || _guardFound)
 				{
-					state = State.alerted;
+					State = GuardState.Alerted;
 				}
 			}
 		}
@@ -367,131 +373,131 @@ namespace AI.Guard
 		//Is called by the Guard Vision when the player is right in front of the Guard.
 		public void PlayerInMeleeRange(bool inRange)
 		{
-			playerInMeleeRange = inRange;
-			if (!playerDead && inRange && player.tag.Equals("Player") && !inStasis && !inForceField &&
-			    state != State.corrupted)
+			_playerInMeleeRange = inRange;
+			if (!Dead && inRange && _player.tag.Equals("Player") && !_inStasis && !_inForceField &&
+			    State != GuardState.Corrupted)
 			{
-				suspicionPercentage = 1f;
+				SuspicionPercentage = 1f;
 			}
 		}
 
 		//Is called when another guard on the same floor has seen the player.
 		public void PlayerSeenByOther()
 		{
-			if (state != State.dead && state != State.unconscious && !playerDead && !inStasis && !inForceField &&
-			    state != State.corrupted)
+			if (State != GuardState.Dead && State != GuardState.Unconscious && !Dead && !_inStasis && !_inForceField &&
+			    State != GuardState.Corrupted)
 			{
-				suspicionPercentage = 1f;
-				state = State.alerted;
-				lastKnownLocation = player.transform.position;
-				lastSeenTime = Time.time;
+				SuspicionPercentage = 1f;
+				State = GuardState.Alerted;
+				_lastKnownLocation = _player.transform.position;
+				_lastSeenTime = Time.time;
 				transform.localScale =
 					new Vector3(
-						Mathf.Abs(transform.localScale.x) * GetDirection(transform.position, player.transform.position),
+						Mathf.Abs(transform.localScale.x) * GetDirection(transform.position, _player.transform.position),
 						transform.localScale.y, 0);
-				state = State.chasing;
-				audioManager.PlaySound("Guard Surprise");
+				State = GuardState.Chasing;
+				AudioManager.Instance.PlaySound("Guard Surprise");
 			}
 		}
 
 		//Is called when the guard finds an incapacitated compatriot.
 		public void FoundGuard(Guard fellowGuard)
 		{
-			if (state != State.chasing && !playerDead && !inStasis && !inForceField && state != State.corrupted)
+			if (State != GuardState.Chasing && !Dead && !_inStasis && !_inForceField && State != GuardState.Corrupted)
 			{
-				suspicionPercentage = 1f;
+				SuspicionPercentage = 1f;
 				transform.localScale =
 					new Vector3(
 						Mathf.Abs(transform.localScale.x) *
 						GetDirection(transform.position, fellowGuard.transform.position), transform.localScale.y, 0);
-				guardFound = true;
-				downedGuard = fellowGuard.transform.position;
-				audioManager.PlaySound("Guard Surprise");
-				anim.SetTrigger("Surprised");
+				_guardFound = true;
+				_downedGuard = fellowGuard.transform.position;
+				AudioManager.Instance.PlaySound("Guard Surprise");
+				_animator.SetTrigger("Surprised");
 			}
 		}
 
 		//Chases the player around and attacks them while the player is in sight and alerts other guards on the same floor.
-		void PlayerSeen()
+		private void PlayerSeen()
 		{
-			if (state != State.dead && !playerDead && !inStasis && !inForceField && state != State.corrupted)
+			if (State != GuardState.Dead && !Dead && !_inStasis && !_inForceField && State != GuardState.Corrupted)
 			{
-				idling = false;
-				if (playerInMeleeRange)
+				_idling = false;
+				if (_playerInMeleeRange)
 				{
-					if (timeBetweenAttack <= 0)
+					if (_timeBetweenAttack <= 0)
 					{
 						Collider2D[] enemiesToDamage =
-							Physics2D.OverlapCircleAll(attackPos.position, attackRange, whatAreEnemies);
-						enemiesToDamage[0].GetComponent<LivingEntity>().TakeHit(damage);
-						timeBetweenAttack = startTimeBetweenAttack;
-						audioManager.PlaySound("Swipe");
-						anim.SetTrigger("Attacking");
+							Physics2D.OverlapCircleAll(AttackPos.position, AttackRange, WhatAreEnemies);
+						enemiesToDamage[0].GetComponent<LivingEntity>().TakeHit(Damage);
+						_timeBetweenAttack = StartTimeBetweenAttack;
+						AudioManager.Instance.PlaySound("Swipe");
+						_animator.SetTrigger("Attacking");
 					}
 					else
-						timeBetweenAttack -= Time.deltaTime;
+						_timeBetweenAttack -= Time.deltaTime;
 				}
 				else
 				{
 					//transform.position = new Vector2 (Vector2.MoveTowards (transform.position, player.transform.position, runSpeed * Time.fixedDeltaTime).x, transform.position.y);
-					rb.linearVelocity = new Vector2(GetDirection(transform.position, player.transform.position) * runSpeed,
+					_rigidbody.linearVelocity = new Vector2(GetDirection(transform.position, _player.transform.position) * RunSpeed,
 						0f);
 				}
 
-				if (seesPlayer)
+				if (SeesPlayer)
 				{
-					lastKnownLocation = player.transform.position;
-					lastSeenTime = Time.time;
+					_lastKnownLocation = _player.transform.position;
+					_lastSeenTime = Time.time;
 				}
 			}
 		}
 
 		//Searches for the player. Works while the guard is aware that the player is around, but can't see them currently.
-		void SearchingForPlayer(Vector3 searchArea)
+		private void SearchingForPlayer(Vector3 searchArea)
 		{
-			if (guardFound && Vector2.Distance(transform.position, searchArea) > 0.1f ||
-			    Time.time < lastSeenTime + giveUpTime)
+			if (_guardFound && Vector2.Distance(transform.position, searchArea) > 0.1f ||
+			    Time.time < _lastSeenTime + _giveUpTime)
 			{
 				//transform.position = new Vector2 (Vector2.MoveTowards (transform.position, searchArea, runSpeed * Time.fixedDeltaTime).x, transform.position.y);
-				rb.linearVelocity = new Vector2(GetDirection(transform.position, searchArea) * runSpeed, 0f);
-				alertedEndTime = Time.time + alertedTime;
+				_rigidbody.linearVelocity = new Vector2(GetDirection(transform.position, searchArea) * RunSpeed, 0f);
+				_alertedEndTime = Time.time + _alertedTime;
 			}
-			else if (alertedEndTime >= Time.time)
+			else if (_alertedEndTime >= Time.time)
 			{
-				if (!searchUnderway)
+				if (!_searchUnderway)
 				{
-					guardFound = false;
-					searchUnderway = true;
-					for (int i = 0; i < numberOfOscillations; i++)
+					_guardFound = false;
+					_searchUnderway = true;
+					for (int i = 0; i < NumberOfOscillations; i++)
 					{
-						oscillationTimes[i] = Time.time + alertedTime / numberOfOscillations * (i + 1);
+						_oscillationTimes[i] = Time.time + _alertedTime / NumberOfOscillations * (i + 1);
 					}
 				}
 				else
 				{
 					//Confusion period where the Guard stays in place but looks back and forth. If the guard doesn't see the player after so many seconds, have it return to patrol.
-					if (!confused)
+					if (!_confused)
 					{
-						anim.SetTrigger("Confused");
-						confused = true;
+						_animator.SetTrigger("Confused");
+						_confused = true;
 					}
 
-					if (oscillationsOccured < oscillationTimes.Length
-					    && Time.time > oscillationTimes[oscillationsOccured])
+					if (_oscillationsOccured < _oscillationTimes.Length
+					    && Time.time > _oscillationTimes[_oscillationsOccured])
 					{
 						transform.localScale = new Vector3(transform.localScale.x * -1, transform.localScale.y, 0);
-						oscillationsOccured++;
+						_oscillationsOccured++;
 					}
 				}
 			}
 			else
 			{
-				searchUnderway = false;
-				oscillationsOccured = 0;
-				state = State.suspicious;
-				if (transform.GetComponent<BoxCollider2D>().IsTouching(nextStop.GetComponent<BoxCollider2D>()))
+				_searchUnderway = false;
+				_oscillationsOccured = 0;
+				State = GuardState.Suspicious;
+				if (_collider.IsTouching(NextStop.GetComponent<BoxCollider2D>()))
 				{
-					nextStop.GetComponent<GuardStop>().ForceUpdate();
+					NextStop.GetComponent<GuardStop>().ForceUpdate();
 				}
 				else
 				{
@@ -501,17 +507,17 @@ namespace AI.Guard
 		}
 
 		//Seeks and attacks the closest Guard while corrupted
-		void AttackGuard(Transform fellowGuard)
+		private void AttackGuard(Transform fellowGuard)
 		{
-			if (state == State.corrupted && !playerDead && !inStasis && !inForceField)
+			if (State == GuardState.Corrupted && !Dead && !_inStasis && !_inForceField)
 			{
 				if (transform.GetChild(0).GetComponent<CircleCollider2D>()
 				    .IsTouching(fellowGuard.GetComponent<BoxCollider2D>()))
 				{
-					if (timeBetweenAttack <= 0)
+					if (_timeBetweenAttack <= 0)
 					{
 						Collider2D[] friendsToDamage =
-							Physics2D.OverlapCircleAll(attackPos.position, attackRange, whatAreFriends);
+							Physics2D.OverlapCircleAll(AttackPos.position, AttackRange, WhatAreFriends);
 						for (int i = 0; i < friendsToDamage.Length; i++)
 						{
 							if (friendsToDamage[i].transform != transform
@@ -521,32 +527,32 @@ namespace AI.Guard
 							}
 						}
 
-						audioManager.PlaySound("Swipe");
-						anim.SetTrigger("Attacking");
-						timeBetweenAttack = startTimeBetweenAttack;
+						AudioManager.Instance.PlaySound("Swipe");
+						_animator.SetTrigger("Attacking");
+						_timeBetweenAttack = StartTimeBetweenAttack;
 					}
 					else
 					{
-						timeBetweenAttack -= Time.deltaTime;
+						_timeBetweenAttack -= Time.deltaTime;
 					}
 				}
 				else
 				{
 					//transform.position = new Vector2 (Vector2.MoveTowards (transform.position, fellowGuard.position, runSpeed * Time.fixedDeltaTime).x, transform.position.y);
-					rb.linearVelocity = new Vector2(GetDirection(transform.position, fellowGuard.position) * runSpeed, 0f);
+					_rigidbody.linearVelocity = new Vector2(GetDirection(transform.position, fellowGuard.position) * RunSpeed, 0f);
 					transform.localScale =
 						new Vector3(
-							Mathf.Abs(transform.localScale.x) * GetDirection(transform.position, closestGuard.position),
+							Mathf.Abs(transform.localScale.x) * GetDirection(transform.position, _closestGuard.position),
 							transform.localScale.y, 0);
 				}
 			}
 		}
 
 		//Draws the red circle gizmo to show the Guard's attack range.
-		void OnDrawGizmosSelected()
+		private void OnDrawGizmosSelected()
 		{
 			Gizmos.color = Color.red;
-			Gizmos.DrawWireSphere(attackPos.position, attackRange);
+			Gizmos.DrawWireSphere(AttackPos.position, AttackRange);
 		}
 
 		//////////////////////////////////////////////////////////////////////////////PLAYER ABILITY FUNCTIONS////////////////////////////////////////////////////////////////////////////////////////
@@ -554,44 +560,44 @@ namespace AI.Guard
 		//Is called when the player has entered a natural hiding place to force the guard to lose them.
 		public void PlayerHiding(bool _playerIsHiding)
 		{
-			playerIsHiding = _playerIsHiding;
+			this._playerIsHiding = _playerIsHiding;
 			LostPlayer();
 		}
 
 		//Is called if the Guard is in a Stasis Bubble.
 		public void InStasis(bool _inStasis)
 		{
-			inStasis = _inStasis;
-			anim.speed = _inStasis ? 0f : 1f;
+			this._inStasis = _inStasis;
+			_animator.speed = _inStasis ? 0f : 1f;
 		}
 
 		//Is called when the Guard is corrupted by the Traitor ability.
 		public void Corrupt()
 		{
-			state = State.corrupted;
+			State = GuardState.Corrupted;
 			//GetComponent<SpriteRenderer> ().color = Color.yellow;
-			suspicionSpriteMask.parent.gameObject.SetActive(false);
+			SuspicionSpriteMask.parent.gameObject.SetActive(false);
 			FindClosestGuard();
-			anim.SetBool("Corrupted", true);
-			anim.SetTrigger("Cursed");
+			_animator.SetBool("Corrupted", true);
+			_animator.SetTrigger("Cursed");
 		}
 
 		//Finds the closest Guard to attack.
-		void FindClosestGuard()
+		private void FindClosestGuard()
 		{
-			closestGuard = transform;
+			_closestGuard = transform;
 			float closestGuardDistance = 0f;
-			if (fellowGuards.Count > 0)
+			if (_fellowGuards.Count > 0)
 			{
-				for (int i = 0; i < fellowGuards.Count; i++)
+				for (int i = 0; i < _fellowGuards.Count; i++)
 				{
-					float currentDistance = Vector2.Distance(transform.position, fellowGuards[i].position);
-					State fellowGuardState = fellowGuards[i].GetComponent<Guard>().state;
+					float currentDistance = Vector2.Distance(transform.position, _fellowGuards[i].position);
+					GuardState fellowGuardGuardState = _fellowGuards[i].GetComponent<Guard>().State;
 					if ((closestGuardDistance == 0 || currentDistance < closestGuardDistance) &&
-					    fellowGuardState != State.corrupted && fellowGuardState != State.unconscious &&
-					    fellowGuardState != State.dead)
+					    fellowGuardGuardState != GuardState.Corrupted && fellowGuardGuardState != GuardState.Unconscious &&
+					    fellowGuardGuardState != GuardState.Dead)
 					{
-						closestGuard = fellowGuards[i];
+						_closestGuard = _fellowGuards[i];
 						closestGuardDistance = currentDistance;
 					}
 				}
@@ -602,93 +608,103 @@ namespace AI.Guard
 		///////////////////////////////////////////////////////////////////////////////////EVENT FUNCTIONS////////////////////////////////////////////////////////////////////////////////////////////
 
 		//Sets the guard's state to alert when it's been hit.
-		public void OnGuardHit(float timeHit, float startingHealth, float currentHealth)
+		private void OnGuardHit(float timeHit, float startingHealth, float currentHealth)
 		{
-			if (!playerDead && !inStasis && !inForceField && state != State.corrupted)
+			if (Dead || _inStasis || _inForceField || State == GuardState.Corrupted || currentHealth <= 0f)
 			{
-				if (currentHealth > 0f)
-				{
-					audioManager.PlaySound("Guard Hurt");
-					suspicionPercentage = 1f;
-					transform.localScale =
-						new Vector3(
-							Mathf.Abs(transform.localScale.x)
-							* GetDirection(transform.position, player.transform.position),
-							transform.localScale.y, 0);
-					state = State.alerted;
-				}
+				return;
 			}
+			
+			AudioManager.Instance.PlaySound("Guard Hurt");
+			SuspicionPercentage = 1f;
+			transform.localScale =
+				new Vector3(
+					Mathf.Abs(transform.localScale.x) * GetDirection(transform.position, _player.transform.position),
+					transform.localScale.y, 0);
+			State = GuardState.Alerted;
+		}
+
+		public override void TakeHit(float damage)
+		{
+			base.TakeHit(damage);
+		}
+
+		public override void Heal(float heals)
+		{
+			base.Heal(heals);
 		}
 
 		//Sets the Guard and the Guard Stops inactive upon its death.
-		public void OnGuardDeath()
+		protected override void Die()
 		{
-			if (state == State.corrupted)
+			base.Die();
+			
+			if (State == GuardState.Corrupted)
 			{
-				audioManager.PlaySound("Corrupted Guard Death");
+				AudioManager.Instance.PlaySound("Corrupted Guard Death");
 			}
 
-			state = State.dead;
-			anim.speed = 1f;
-			anim.SetTrigger("Dies");
-			anim.SetBool("Dead", true);
-			GameObject.FindGameObjectWithTag("GameController").GetComponent<MoralitySystem>().enemiesKilled++;
+			State = GuardState.Dead;
+			_animator.speed = 1f;
+			_animator.SetTrigger("Dies");
+			_animator.SetBool("Dead", true);
+			MoralitySystem.Instance.EnemiesKilled++;
 		}
 
 		//Calls when the guard is knocked unconscious.
 		public void OnGuardUnconscious()
 		{
-			anim.speed = 1f;
-			anim.SetTrigger("Unconscious");
-			anim.SetBool("Dead", true);
-			state = State.unconscious;
+			_animator.speed = 1f;
+			_animator.SetTrigger("Unconscious");
+			_animator.SetBool("Dead", true);
+			State = GuardState.Unconscious;
 		}
 
 		//Calls when the player dies.
-		void OnPlayerDeath()
+		private void OnPlayerDeath()
 		{
-			playerDead = true;
-			state = State.unaware;
-			suspicionPercentage = 0f;
+			_playerDead = true;
+			State = GuardState.Unaware;
+			SuspicionPercentage = 0f;
 		}
 
 		/////////////////////////////////////////////////////////////////////////////////COLLISION FUNCTIONS//////////////////////////////////////////////////////////////////////////////////////////
 
-		void OnCollisionEnter2D(Collision2D collision)
+		private void OnCollisionEnter2D(Collision2D collision)
 		{
-			if (collision.collider.tag.Equals("Player") && !player.GetComponent<PlayerController>().inShadowSink
-			                                            && !playerDead &&
-			                                            !inStasis && !inForceField && state != State.corrupted)
+			if (collision.collider.tag.Equals("Player") && !_player.GetComponent<PlayerController>().InShadowSink
+			                                            && !Dead && !_inStasis && !_inForceField
+			                                            && State != GuardState.Corrupted)
 			{
-				suspicionPercentage = 1f;
-				state = State.alerted;
-				lastKnownLocation = player.transform.position;
-				lastSeenTime = Time.time;
+				SuspicionPercentage = 1f;
+				State = GuardState.Alerted;
+				_lastKnownLocation = _player.transform.position;
+				_lastSeenTime = Time.time;
 				transform.localScale =
 					new Vector3(
-						Mathf.Abs(transform.localScale.x) * GetDirection(transform.position, player.transform.position),
+						Mathf.Abs(transform.localScale.x) * GetDirection(transform.position, _player.transform.position),
 						transform.localScale.y, 0);
 			}
-			else if (Mathf.Abs(rb.linearVelocity.x) <= 0.01f)
+			else if (Mathf.Abs(_rigidbody.linearVelocity.x) <= 0.01f)
 			{
 				if ((collision.collider.gameObject.layer == 11 || collision.collider.gameObject.layer == 12 ||
-				     collision.collider.gameObject.layer == 13) && maxVelocity >= 30f)
+				     collision.collider.gameObject.layer == 13) && _maxVelocity >= 30f)
 				{
-					GetComponent<LivingEntity>().TakeHit(1000f);
+					TakeHit(1000f);
 				}
 				else if ((collision.collider.name.Contains("Crate") || collision.collider.name.Contains("Desk")) &&
-				         maxVelocity >= 10f)
+				         _maxVelocity >= 10f)
 				{
 					OnGuardUnconscious();
 				}
 			}
 		}
 
-		void OnTriggerEnter2D(Collider2D collider)
+		private void OnTriggerEnter2D(Collider2D otherCollider)
 		{
-			if (collider.name.Contains("Extreme Force"))
+			if (otherCollider.name.Contains("Extreme Force"))
 			{
-				inForceField = true;
+				_inForceField = true;
 			}
 		}
 
@@ -696,37 +712,36 @@ namespace AI.Guard
 
 		public void QuickSave()
 		{
-			guardQuickSave.position = transform.position;
-			guardQuickSave.direction = transform.localScale.x;
-			guardQuickSave.nextStop = nextStop;
-			guardQuickSave.health = health;
-			guardQuickSave.state = state;
-			guardQuickSave.suspicionPercentage = suspicionPercentage;
+			_guardQuickSave.Position = transform.position;
+			_guardQuickSave.Direction = transform.localScale.x;
+			_guardQuickSave.NextStop = NextStop;
+			_guardQuickSave.Health = Health;
+			_guardQuickSave.State = State;
+			_guardQuickSave.SuspicionPercentage = SuspicionPercentage;
 		}
 
 		public void QuickLoad()
 		{
-			transform.position = guardQuickSave.position;
+			transform.position = _guardQuickSave.Position;
 			transform.localScale =
-				new Vector3(guardQuickSave.direction, transform.localScale.y, transform.localScale.z);
-			nextStop = guardQuickSave.nextStop;
-			health = guardQuickSave.health;
-			state = guardQuickSave.state;
-			playerDead = false;
-			anim.SetBool("Dead", false);
-			suspicionPercentage = guardQuickSave.suspicionPercentage;
-			if (dead && state != State.dead && state != State.unconscious)
+				new Vector3(_guardQuickSave.Direction, transform.localScale.y, transform.localScale.z);
+			NextStop = _guardQuickSave.NextStop;
+			Health = _guardQuickSave.Health;
+			State = _guardQuickSave.State;
+			_playerDead = false;
+			_animator.SetBool("Dead", false);
+			SuspicionPercentage = _guardQuickSave.SuspicionPercentage;
+			if (Dead && State != GuardState.Dead && State != GuardState.Unconscious)
 			{
-				//GetComponent<SpriteRenderer> ().color = Color.white;
-				GetComponent<BoxCollider2D>().isTrigger = false;
+				_collider.isTrigger = false;
 				for (int i = 0; i < transform.childCount; i++)
 				{
 					transform.GetChild(i).gameObject.SetActive(true);
 				}
 
-				guardStopsHolder.SetActive(true);
-				rb.constraints = RigidbodyConstraints2D.None | RigidbodyConstraints2D.FreezeRotation;
-				dead = false;
+				GuardStopsHolder.SetActive(true);
+				_rigidbody.constraints = RigidbodyConstraints2D.None | RigidbodyConstraints2D.FreezeRotation;
+				Dead = false;
 			}
 		}
 	}

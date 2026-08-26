@@ -1,30 +1,34 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using AI.Guard;
-using UnityEngine;
+﻿using UnityEngine;
 
-public class GuardStop : MonoBehaviour {
+namespace AI.Guard
+{
+	public class GuardStop : MonoBehaviour
+	{
 
-	public Guard guard;
-	public bool stationary;
-	public float idleTime = 0f;
-	public Vector2 idleDirection;
-	public Transform nextStop;
+		public Guard Guard;
+		public bool Stationary;
+		public float IdleTime = 0f;
+		public Vector2 IdleDirection;
+		public Transform NextStop;
 
-	void OnTriggerEnter2D(Collider2D collider){
-		if (collider.gameObject.Equals (guard.gameObject) && guard.nextStop == transform) {
-			ForceUpdate ();
-		}
-	}
-
-	public void ForceUpdate () {
-		if (stationary)
+		private void OnTriggerEnter2D(Collider2D otherCollider)
 		{
-			guard.StopReached (Mathf.Infinity, idleDirection, transform);
+			if (otherCollider.gameObject.Equals(Guard.gameObject) && Guard.NextStop == transform)
+			{
+				ForceUpdate();
+			}
 		}
-		else
+
+		public void ForceUpdate()
 		{
-			guard.StopReached (idleTime, idleDirection, nextStop);
+			if (Stationary)
+			{
+				Guard.StopReached(Mathf.Infinity, IdleDirection, transform);
+			}
+			else
+			{
+				Guard.StopReached(IdleTime, IdleDirection, NextStop);
+			}
 		}
 	}
 }

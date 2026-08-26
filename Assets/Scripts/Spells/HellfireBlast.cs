@@ -1,37 +1,42 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using AI.Guard;
+﻿using AI.Guard;
+using GameManager;
 using Player;
-using Spells;
 using UnityEngine;
 
-public class HellfireBlast : Spell
+namespace Spells
 {
-
-	public float damageDone;
-	public float speed;
-
-	Rigidbody2D rb;
-
-	void Start()
+	public class HellfireBlast : Spell
 	{
-		GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerController>().PlaySound("Hellfire Blast");
-		damageDone = FindObjectOfType<SpellCasting>().spellLevel * 20f;
-		rb = GetComponent<Rigidbody2D>();
+		public float DamageDone;
+		public float Speed;
 
-		rb.linearVelocity = transform.right * speed;
-	}
+		private Rigidbody2D _rigidbody;
 
-	void OnTriggerEnter2D(Collider2D collider)
-	{
-		if (collider.tag.Equals("Enemy"))
+		public override void Init(PlayerController playerController, SpellCasting spellCaster)
 		{
-			collider.GetComponent<Guard>().TakeHit(damageDone);
-			Destroy(gameObject);
+			base.Init(playerController, spellCaster);
+			DamageDone *= spellCaster.SpellLevel;
 		}
-		else if (collider.tag.Equals("Wall") || collider.tag.Equals("Platform"))
+
+		private void Start()
 		{
-			Destroy(gameObject);
+			AudioManager.Instance.PlaySound("Hellfire Blast");
+			_rigidbody = GetComponent<Rigidbody2D>();
+
+			_rigidbody.linearVelocity = transform.right * Speed;
+		}
+
+		private void OnTriggerEnter2D(Collider2D otherCollider)
+		{
+			if (otherCollider.tag.Equals("Enemy"))
+			{
+				otherCollider.GetComponent<Guard>().TakeHit(DamageDone);
+				Destroy(gameObject);
+			}
+			else if (otherCollider.tag.Equals("Wall") || otherCollider.tag.Equals("Platform"))
+			{
+				Destroy(gameObject);
+			}
 		}
 	}
 }

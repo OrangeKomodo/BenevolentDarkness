@@ -3,14 +3,14 @@ using UnityEngine;
 
 namespace UI
 {
-	public class ControlsManagment : MonoBehaviour {
+	public class ControlsManagement : MonoBehaviour {
 
-		public MenuSwitcher menuSwitcher;
+		public MenuSwitcher MenuSwitcher;
 	
 		// Update is called once per frame
-		void Update () {
+		private void Update () {
 			if (Input.GetKeyDown (KeyCode.Escape)) {
-				menuSwitcher.LoadMenu (1);
+				MenuSwitcher.LoadMenu (1);
 			}
 		}
 	}

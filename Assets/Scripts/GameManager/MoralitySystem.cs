@@ -1,29 +1,37 @@
-﻿using UnityEngine;
-
+﻿
 namespace GameManager
 {
-	public class MoralitySystem : MonoBehaviour {
+	public class MoralitySystem : Singleton<MoralitySystem>
+	{
 
 		[System.Serializable]
-		public class StatsQuickSave {
+		public class StatsQuickSave
+		{
 
-			public int enemiesKilled;
-			public int timesSpotted;
-		}
-	
-		public int enemiesKilled = 0;
-		public int timesSpotted = 0;
-
-		public StatsQuickSave statsQuickSave;
-
-		public void QuickSave () {
-			statsQuickSave.enemiesKilled = enemiesKilled;
-			statsQuickSave.timesSpotted = timesSpotted;
+			public int EnemiesKilled;
+			public int TimesSpotted;
 		}
 
-		public void QuickLoad () {
-			enemiesKilled = statsQuickSave.enemiesKilled;
-			timesSpotted = statsQuickSave.timesSpotted;
+		public int EnemiesKilled = 0;
+		public int TimesSpotted = 0;
+
+		private StatsQuickSave _statsQuickSave;
+
+		private void Start()
+		{
+			_statsQuickSave = new StatsQuickSave();
+		}
+
+		public void QuickSave()
+		{
+			_statsQuickSave.EnemiesKilled = EnemiesKilled;
+			_statsQuickSave.TimesSpotted = TimesSpotted;
+		}
+
+		public void QuickLoad()
+		{
+			EnemiesKilled = _statsQuickSave.EnemiesKilled;
+			TimesSpotted = _statsQuickSave.TimesSpotted;
 		}
 	}
 }

@@ -1,8 +1,7 @@
-﻿using UnityEngine;
-
+﻿
 namespace GameManager
 {
-	public class ObjectiveSystem : MonoBehaviour
+	public class ObjectiveSystem : Singleton<ObjectiveSystem>
 	{
 		public Objective[] Objectives;
 
@@ -11,7 +10,7 @@ namespace GameManager
 			int objectiveIndex = FindObjectiveIndex(objectiveNumber);
 			Objectives[objectiveIndex].SetStatus(newStatus);
 
-			if (newStatus == Objective.Status.completed)
+			if (newStatus == Objective.Status.Completed)
 			{
 				for (int i = 0; i < Objectives[objectiveIndex].NextObjectives.Length; i++)
 				{

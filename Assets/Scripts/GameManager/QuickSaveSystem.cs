@@ -6,59 +6,55 @@ using UnityEngine;
 
 namespace GameManager
 {
-	public class QuickSaveSystem : MonoBehaviour
+	public class QuickSaveSystem : Singleton<QuickSaveSystem>
 	{
-		public Transform player;
-		public Transform enemiesHolder;
-		public Transform itemsHolder;
+		public Transform Player;
+		public Transform EnemiesHolder;
+		public Transform ItemsHolder;
 
-		MoralitySystem moralitySystem;
-		MenuSwitcher menuSwitcher;
-		PlayerController playerController;
-		Guard[] guards;
-		Sentry[] sentries;
-		ItemManager itemManager;
+		private PlayerController _playerController;
+		private Guard[] _guards;
+		private Sentry[] _sentries;
+		private ItemManager _itemManager;
 
-		bool started = false;
+		private bool _started = false;
 
 		void Start()
 		{
-			moralitySystem = GetComponent<MoralitySystem>();
-			menuSwitcher = GetComponent<MenuSwitcher>();
-			playerController = player.GetComponent<PlayerController>();
-			guards = enemiesHolder.GetComponentsInChildren<Guard>();
-			sentries = enemiesHolder.GetComponentsInChildren<Sentry>();
-			itemManager = itemsHolder.GetComponent<ItemManager>();
+			_playerController = Player.GetComponent<PlayerController>();
+			_guards = EnemiesHolder.GetComponentsInChildren<Guard>();
+			_sentries = EnemiesHolder.GetComponentsInChildren<Sentry>();
+			_itemManager = ItemsHolder.GetComponent<ItemManager>();
 
 			//QuickSaveAll ();
 		}
 
-		void Update()
+		private void Update()
 		{
-			if (Time.time > 0.1f && !started)
+			if (Time.time > 0.1f && !_started)
 			{
 				QuickSaveAll();
-				started = true;
+				_started = true;
 			}
 
 			if (Input.GetKeyDown(KeyCode.F5))
 			{
-				if (playerController.GetStatus() && menuSwitcher.selectedMenu == 0)
+				if (_playerController.GetStatus() && MenuSwitcher.Instance.SelectedMenu == 0)
 				{
 					bool isSeen = false;
-					for (int i = 0; i < guards.Length && !isSeen; i++)
+					for (int i = 0; i < _guards.Length && !isSeen; i++)
 					{
 						if (!isSeen)
 						{
-							isSeen = guards[i].suspicionPercentage > 0f;
+							isSeen = _guards[i].SuspicionPercentage > 0f;
 						}
 					}
 
-					for (int i = 0; i < sentries.Length; i++)
+					for (int i = 0; i < _sentries.Length; i++)
 					{
 						if (!isSeen)
 						{
-							isSeen = sentries[i].suspicionPercentage > 0f;
+							isSeen = _sentries[i].SuspicionPercentage > 0f;
 						}
 					}
 
@@ -74,41 +70,41 @@ namespace GameManager
 			}
 		}
 
-		void QuickSaveAll()
+		private void QuickSaveAll()
 		{
-			moralitySystem.QuickSave();
-			playerController.QuickSave();
+			MoralitySystem.Instance.QuickSave();
+			_playerController.QuickSave();
 			
-			for (int i = 0; i < guards.Length; i++)
+			for (int i = 0; i < _guards.Length; i++)
 			{
-				guards[i].QuickSave();
+				_guards[i].QuickSave();
 			}
 
-			for (int i = 0; i < sentries.Length; i++)
+			for (int i = 0; i < _sentries.Length; i++)
 			{
-				sentries[i].QuickSave();
+				_sentries[i].QuickSave();
 			}
 			
-			itemManager.QuickSave();
+			_itemManager.QuickSave();
 		}
 
 		public void QuickLoadAll()
 		{
-			menuSwitcher.LoadMenu(0);
-			moralitySystem.QuickLoad();
-			playerController.QuickLoad();
+			MenuSwitcher.Instance.LoadMenu(0);
+			MoralitySystem.Instance.QuickLoad();
+			_playerController.QuickLoad();
 			
-			for (int i = 0; i < guards.Length; i++)
+			for (int i = 0; i < _guards.Length; i++)
 			{
-				guards[i].QuickLoad();
+				_guards[i].QuickLoad();
 			}
 
-			for (int i = 0; i < sentries.Length; i++)
+			for (int i = 0; i < _sentries.Length; i++)
 			{
-				sentries[i].QuickLoad();
+				_sentries[i].QuickLoad();
 			}
 			
-			itemManager.QuickLoad();
+			_itemManager.QuickLoad();
 		}
 	}
 }

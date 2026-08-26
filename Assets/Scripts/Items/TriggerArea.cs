@@ -4,95 +4,95 @@ using UnityEngine;
 
 namespace Items
 {
-	public class TriggerArea : Item
+	public class TriggerArea : MonoBehaviour
 	{
-		public int functionNumber;
-		public bool singleTrigger = false;
-		public bool triggered = false;
+		public int FunctionNumber;
+		public bool SingleTrigger = false;
+		public bool Triggered = false;
 
-		PlayerController playerController;
+		private PlayerController _playerController;
 
-		bool playerIn = false;
+		private bool _playerIn = false;
 
-		void Start()
+		private void Start()
 		{
-			playerController = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerController>();
+			_playerController = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerController>();
 		}
 
-		public void PerformFunction()
+		private void OnTriggerEnter2D(Collider2D otherCollider)
 		{
-			if (singleTrigger && !triggered || !singleTrigger)
+			if (otherCollider.tag.Equals("Player") && !_playerIn)
 			{
-				switch (functionNumber)
-				{
-					case 0:
-					{
-						//Level 1 End
-						if (playerController.inventory.Contains("MacGuffin"))
-						{
-							GameObject.FindGameObjectWithTag("GameController").GetComponent<ObjectiveSystem>()
-								.SetObjectiveStatus(102, Objective.Status.completed);
-							GameObject.FindGameObjectWithTag("GameController").GetComponent<MenuSwitcher>().LoadMenu(2);
-							playerController.Freeze(true);
-							triggered = true;
-						}
-
-						break;
-					}
-					case 1:
-					{
-						//Level 2 End
-						if (playerController.inventory.Contains("MacGuffin2"))
-						{
-							GameObject.FindGameObjectWithTag("GameController").GetComponent<ObjectiveSystem>()
-								.SetObjectiveStatus(202, Objective.Status.completed);
-							GameObject.FindGameObjectWithTag("GameController").GetComponent<MenuSwitcher>().LoadMenu(2);
-							playerController.Freeze(true);
-							triggered = true;
-						}
-
-						break;
-					}
-					case 2:
-					{
-						//Level 3 End
-						GameObject.FindGameObjectWithTag("GameController").GetComponent<MenuSwitcher>().LoadMenu(2);
-						playerController.Freeze(true);
-						triggered = true;
-						break;
-					}
-					case 3:
-					{
-						//Death Area
-						playerController.TakeHit(1000);
-						triggered = true;
-						break;
-					}
-					case 4:
-					{
-						//Falling Area
-						playerController.IsFalling(true);
-						triggered = true;
-						break;
-					}
-				}
-			}
-		}
-
-		void OnTriggerEnter2D(Collider2D collider)
-		{
-			if (collider.tag.Equals("Player") && !playerIn)
-			{
-				playerIn = true;
+				_playerIn = true;
 				PerformFunction();
 			}
 		}
 
-		void OnTriggerExit2D(Collider2D collider)
+		private void OnTriggerExit2D(Collider2D otherCollider)
 		{
-			if (collider.tag.Equals("Player"))
+			if (otherCollider.tag.Equals("Player") && _playerIn)
 			{
-				playerIn = false;
+				_playerIn = false;
+			}
+		}
+
+		private void PerformFunction()
+		{
+			if (SingleTrigger && Triggered)
+			{
+				return;
+			}
+			
+			switch (FunctionNumber)
+			{
+				case 0:
+				{
+					//Level 1 End
+					if (_playerController.Inventory.Contains("Ledger"))
+					{
+						ObjectiveSystem.Instance.SetObjectiveStatus(102, Objective.Status.Completed);
+						MenuSwitcher.Instance.LoadMenu(2);
+						_playerController.Freeze(true);
+						Triggered = true;
+					}
+
+					break;
+				}
+				case 1:
+				{
+					//Level 2 End
+					if (_playerController.Inventory.Contains("Chalice"))
+					{
+						ObjectiveSystem.Instance.SetObjectiveStatus(202, Objective.Status.Completed);
+						MenuSwitcher.Instance.LoadMenu(2);
+						_playerController.Freeze(true);
+						Triggered = true;
+					}
+
+					break;
+				}
+				case 2:
+				{
+					//Level 3 End
+					MenuSwitcher.Instance.LoadMenu(2);
+					_playerController.Freeze(true);
+					Triggered = true;
+					break;
+				}
+				case 3:
+				{
+					//Death Area
+					_playerController.TakeHit(1000);
+					Triggered = true;
+					break;
+				}
+				case 4:
+				{
+					//Falling Area
+					_playerController.IsFalling(true);
+					Triggered = true;
+					break;
+				}
 			}
 		}
 	}

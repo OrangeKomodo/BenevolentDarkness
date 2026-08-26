@@ -14,17 +14,17 @@ namespace AI.Sentry
 
 		LayerMask layerMask;
 
-		void Start()
+		private void Start()
 		{
 			sentry = gameObject.transform.parent.GetComponent<Sentry>();
 			player = GameObject.FindGameObjectWithTag("Player");
 			playerController = player.GetComponent<PlayerController>();
-			layerMask = LayerMask.GetMask("Player", "Platforms", "Effected Platforms");
+			layerMask = LayerMask.GetMask("Player", "Platforms", "Affected Platforms");
 		}
 
-		void Update()
+		private void Update()
 		{
-			if (!playerController.disguisedAsGuard)
+			if (!playerController.DisguisedAsGuard)
 			{
 				if (boxVisible || circleVisible)
 				{
@@ -38,7 +38,7 @@ namespace AI.Sentry
 
 					if (playerRayHit.collider != null && playerRayHit.collider.tag.Equals("Player"))
 					{
-						sentry.SeesPlayer(player.GetComponent<PlayerController>().visibilityFactor);
+						sentry.CheckSeesPlayer(player.GetComponent<PlayerController>().VisibilityFactor);
 					}
 				}
 
@@ -49,7 +49,7 @@ namespace AI.Sentry
 			}
 		}
 
-		void OnTriggerEnter2D(Collider2D collider)
+		private void OnTriggerEnter2D(Collider2D collider)
 		{
 			if (collider.tag.Equals("Player"))
 			{

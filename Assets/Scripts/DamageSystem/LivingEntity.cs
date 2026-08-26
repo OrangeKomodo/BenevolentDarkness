@@ -2,67 +2,77 @@
 
 namespace DamageSystem
 {
-	public class LivingEntity : MonoBehaviour, IDamageable
+	public class LivingEntity : MonoBehaviour
 	{
-
-		public float startingHealth;
-		[SerializeField] protected float health;
-		public bool dead;
+		[SerializeField]
+		protected float StartingHealth;
+		[SerializeField]
+		protected float Health;
+		[SerializeField]
+		protected bool Dead;
 
 		public event System.Action OnDeath;
 		public event System.Action<float, float, float> OnHit;
-		//public event System.Action<float, float> OnHeal;
+		public event System.Action<float, float> OnHeal;
 
 		protected virtual void Start()
 		{
-			health = startingHealth;
+			Health = StartingHealth;
 		}
 
-		public void TakeHit(float damage)
+		public virtual void TakeHit(float damage)
 		{
-			health -= damage;
-			if (gameObject.tag == "Player")
+			if (Dead)
 			{
-				//FindObjectOfType<AudioManager> ().PlaySound ("Grunt_" + Random.Range (1, 10));
-				OnHit(Time.time, startingHealth, health);
+				return;
 			}
 
-			if (gameObject.name.Contains("Guard"))
-			{
-				OnHit(Time.time, startingHealth, health);
-			}
+			Health -= damage;
+			OnHit?.Invoke(Time.time, StartingHealth, Health);
 
-			if (health <= 0 && !dead)
+			if (Health <= 0)
 			{
 				Die();
 			}
 		}
 
-		public void Heal(float heals)
+		public virtual void Heal(float heals)
 		{
-			if (gameObject.tag == "Player" && health != startingHealth)
+			if (Dead)
 			{
-				if (heals + health >= startingHealth)
-					health = startingHealth;
-				else
-					health += heals;
+				return;
 			}
+
+			if (Health >= StartingHealth)
+			{
+				return;
+			}
+
+			OnHeal?.Invoke(StartingHealth, Health);
+			
+			if (heals + Health >= StartingHealth)
+			{
+				Health = StartingHealth;
+				return;
+			}
+			
+			Health += heals;
 		}
 
-		public bool GetStatus()
+		protected virtual void Die()
 		{
-			return !dead;
+			if (Dead)
+			{
+				return;
+			}
+			
+			Dead = true;
+			OnDeath?.Invoke();
 		}
 
-		protected void Die()
+		public virtual bool GetStatus()
 		{
-			if (!dead)
-			{
-				if (OnDeath != null)
-				{
-					OnDeath();
-				}
-			}
+			return !Dead;
 		}
 	}
 }

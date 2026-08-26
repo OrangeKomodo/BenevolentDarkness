@@ -3,40 +3,31 @@ using UnityEngine.SceneManagement;
 
 namespace GameManager
 {
-	public class MenuSwitcher : MonoBehaviour
+	public class MenuSwitcher : Singleton<MenuSwitcher>
 	{
+		public Transform Canvas;
+		public int SelectedMenu = 0;
 
-		public Transform canvas;
-		public int selectedMenu = 0;
-
-		void Start()
+		private void Start()
 		{
 			Time.timeScale = 1f;
 			if (SceneManager.GetActiveScene().name.Equals("Main Menu"))
 			{
 				LoadMenu(PlayerPrefs.GetInt("MainMenuSetting", 0));
 				PlayerPrefs.DeleteKey("MainMenuSetting");
+				return;
 			}
-			else
-			{
-				LoadMenu(selectedMenu);
-			}
+			
+			LoadMenu(SelectedMenu);
 		}
 
 		public void LoadMenu(int newMenu)
 		{
 			int x = 0;
-			selectedMenu = newMenu;
-			foreach (Transform menu in canvas)
+			SelectedMenu = newMenu;
+			foreach (Transform menu in Canvas)
 			{
-				if (x == selectedMenu)
-				{
-					menu.gameObject.SetActive(true);
-				}
-				else
-				{
-					menu.gameObject.SetActive(false);
-				}
+				menu.gameObject.SetActive(x == SelectedMenu);
 
 				x++;
 			}

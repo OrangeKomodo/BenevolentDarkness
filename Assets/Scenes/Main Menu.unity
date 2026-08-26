@@ -130,7 +130,6 @@ GameObject:
   m_Component:
   - component: {fileID: 70395016}
   - component: {fileID: 70395015}
-  - component: {fileID: 70395014}
   m_Layer: 5
   m_Name: Game Manager
   m_TagString: GameController
@@ -138,20 +137,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &70395014
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 70395013}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 562732cc6a0837c41923dcb6b3822d77, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  canvas: {fileID: 1283849441}
-  selectedMenu: 0
 --- !u!114 &70395015
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -528,12 +513,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!224 &1283849441 stripped
-RectTransform:
-  m_CorrespondingSourceObject: {fileID: 6232224101406037285, guid: bff3d2b0b422f2d4aaaf09dc0177ca07,
-    type: 3}
-  m_PrefabInstance: {fileID: 1540464349886599567}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1540464349886599567
 PrefabInstance:
   m_ObjectHideFlags: 0

@@ -1,196 +1,190 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using AI.Guard;
-using Player;
-using Spells;
+﻿using AI.Guard;
 using UnityEngine;
 
-public class Mimic : Spell
+namespace Spells
 {
-
-	public int manaTickCost;
-	public float manaDeductTick;
-
-	public float maxTransferDistance;
-
-	public float transferTime;
-
-	//public float disguiseTime;
-	public bool disguised;
-
-	public Color canMimic = Color.white;
-	public Color canNotMimic = Color.gray;
-	//public Color transfering = Color.blue;
-
-	GameObject mimicMarker;
-	GameObject player;
-	PlayerController playerController;
-	SpellCasting spellCaster;
-	SpriteRenderer spriteRenderer;
-
-	bool canTransfer = false;
-	bool isTransfering = false;
-	float transferStartTime;
-	float transferEndTime;
-	float percentTransfered;
-	float startPercentage;
-
-	float markerSizeMin = 0.5f;
-	float markerSizeMax = 1.0f;
-
-	bool usingController;
-
-	void Start()
+	public class Mimic : Spell
 	{
-		manaDeductTick = (FindObjectOfType<SpellCasting>().spellLevel - 1f) * 0.5f;
-		mimicMarker = gameObject.transform.GetChild(0).gameObject;
-		player = GameObject.FindGameObjectWithTag("Player");
-		playerController = player.GetComponent<PlayerController>();
-		spellCaster = FindObjectOfType<SpellCasting>();
-		spriteRenderer = mimicMarker.GetComponent<SpriteRenderer>();
-		usingController = Input.GetJoystickNames().Length > 0;
+		public int ManaTickCost;
+		public float ManaDeductTick;
 
-		playerController.canAttack = false;
+		public float MaxTransferDistance;
 
-		if (!usingController)
+		public float TransferTime;
+
+		//public float disguiseTime;
+		public bool Disguised;
+
+		public Color CanMimic = Color.white;
+		public Color CanNotMimic = Color.gray;
+		//public Color Transfering = Color.blue;
+
+		private GameObject _mimicMarker;
+		private SpriteRenderer _spriteRenderer;
+
+		private bool _canTransfer = false;
+		private bool _isTransferring = false;
+		private float _transferStartTime;
+		private float _transferEndTime;
+		private float _percentTransferred;
+		private float _startPercentage;
+
+		private readonly float _markerSizeMin = 0.5f;
+		private readonly float _markerSizeMax = 1.0f;
+
+		private bool _usingController;
+
+		private void Start()
 		{
-			Cursor.lockState = CursorLockMode.None;
-			Cursor.visible = true;
-		}
-	}
+			ManaDeductTick = (SpellCaster.SpellLevel - 1f) * 0.5f;
+			_mimicMarker = gameObject.transform.GetChild(0).gameObject;
+			_spriteRenderer = _mimicMarker.GetComponent<SpriteRenderer>();
+			_usingController = Input.GetJoystickNames().Length > 0;
 
-	void FixedUpdate()
-	{
-		if (!disguised)
-		{
-			mimicMarker.SetActive(true);
+			PlayerController.CanAttack = false;
 
-			Vector2 mouseRay;
-			if (usingController)
+			if (!_usingController)
 			{
-				transform.Translate(new Vector3(Input.GetAxis("Mouse X") * transform.parent.localScale.x,
-					Input.GetAxis("Mouse Y"), 0f));
-				mouseRay = transform.position;
+				Cursor.lockState = CursorLockMode.None;
+				Cursor.visible = true;
 			}
-			else
-				mouseRay = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+		}
 
-			RaycastHit2D mouseRayHit = Physics2D.Raycast(mouseRay, Vector2.zero, 100f);
-			RaycastHit2D playerRayHit;
-			LayerMask layerMask = LayerMask.GetMask("Enemies", "Platforms", "Walls");
-
-			if (mouseRayHit)
+		private void FixedUpdate()
+		{
+			if (!Disguised)
 			{
-				Vector3 targetPosition = mouseRayHit.point;
-				Vector3 playerPosition = player.transform.position;
+				_mimicMarker.SetActive(true);
 
-				Debug.DrawRay(playerPosition,
-					(targetPosition - playerPosition).normalized
-					* Mathf.Clamp(Vector2.Distance(playerPosition, targetPosition), 0f, maxTransferDistance),
-					Color.blue);
-				playerRayHit = Physics2D.Raycast(playerPosition, targetPosition - playerPosition,
-					Mathf.Clamp(Vector2.Distance(playerPosition, targetPosition), 0f, maxTransferDistance), layerMask);
-
-				if (playerRayHit.collider == null && !(mouseRayHit.collider.gameObject.layer == 9
-				                                       && playerRayHit.collider.gameObject.layer == 9))
+				Vector2 mouseRay;
+				if (_usingController)
 				{
-					if (canTransfer)
-						canTransfer = false;
-					if (isTransfering)
-					{
-						transferEndTime = Time.time;
-						startPercentage = percentTransfered;
-						isTransfering = false;
-						//Debug.Log (transferEndTime + " " + percentTransfered);
-					}
-
-					mimicMarker.transform.position = mouseRayHit.point;
-					if (percentTransfered > 0)
-						percentTransfered =
-							1f - ((Time.time - transferEndTime) / transferTime + (1f - startPercentage));
-
+					transform.Translate(new Vector3(Input.GetAxis("Mouse X") * transform.parent.localScale.x,
+						Input.GetAxis("Mouse Y"), 0f));
+					mouseRay = transform.position;
 				}
 				else
+					mouseRay = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+
+				RaycastHit2D mouseRayHit = Physics2D.Raycast(mouseRay, Vector2.zero, 100f);
+				RaycastHit2D playerRayHit;
+				LayerMask layerMask = LayerMask.GetMask("Enemies", "Platforms", "Walls");
+
+				if (mouseRayHit)
 				{
-					if ("Guard Actual Backside".Contains(playerRayHit.collider.name))
+					Vector3 targetPosition = mouseRayHit.point;
+					Vector3 playerPosition = PlayerController.transform.position;
+
+					Debug.DrawRay(playerPosition,
+						(targetPosition - playerPosition).normalized
+						* Mathf.Clamp(Vector2.Distance(playerPosition, targetPosition), 0f, MaxTransferDistance),
+						Color.blue);
+					playerRayHit = Physics2D.Raycast(playerPosition, targetPosition - playerPosition,
+						Mathf.Clamp(Vector2.Distance(playerPosition, targetPosition), 0f, MaxTransferDistance), layerMask);
+
+					if (playerRayHit.collider == null && !(mouseRayHit.collider.gameObject.layer == 9
+					                                       && playerRayHit.collider.gameObject.layer == 9))
 					{
-						Transform guard = playerRayHit.collider.name.Equals("Backside")
-							? playerRayHit.collider.transform.parent
-							: playerRayHit.transform;
-
-						//Debug.Log (playerRayHit.collider.name);
-						mimicMarker.transform.position = guard.GetChild(4).position;
-
-						if (!canTransfer && guard.GetComponent<Guard>().canMimic)
-							canTransfer = true;
-
-						if (canTransfer && Input.GetAxis("Attack") == 1f)
+						if (_canTransfer)
+							_canTransfer = false;
+						if (_isTransferring)
 						{
-							if (!isTransfering)
-							{
-								transferStartTime = Time.time;
-								startPercentage = percentTransfered;
-								isTransfering = true;
-							}
+							_transferEndTime = Time.time;
+							_startPercentage = _percentTransferred;
+							_isTransferring = false;
+							//Debug.Log (transferEndTime + " " + percentTransfered);
+						}
 
-							percentTransfered = (Time.time - transferStartTime) / transferTime + startPercentage;
+						_mimicMarker.transform.position = mouseRayHit.point;
+						if (_percentTransferred > 0)
+							_percentTransferred =
+								1f - ((Time.time - _transferEndTime) / TransferTime + (1f - _startPercentage));
+
+					}
+					else
+					{
+						if ("Guard Actual Backside".Contains(playerRayHit.collider.name))
+						{
+							Transform guard = playerRayHit.collider.name.Equals("Backside")
+								? playerRayHit.collider.transform.parent
+								: playerRayHit.transform;
+
+							//Debug.Log (playerRayHit.collider.name);
+							_mimicMarker.transform.position = guard.GetChild(4).position;
+
+							if (!_canTransfer && guard.GetComponent<Guard>().CanMimic)
+								_canTransfer = true;
+
+							if (_canTransfer && Input.GetAxis("Attack") == 1f)
+							{
+								if (!_isTransferring)
+								{
+									_transferStartTime = Time.time;
+									_startPercentage = _percentTransferred;
+									_isTransferring = true;
+								}
+
+								_percentTransferred = (Time.time - _transferStartTime) / TransferTime + _startPercentage;
+							}
 						}
 					}
-				}
 
-				//Debug.Log (playerRayHit.distance);
-				percentTransfered = Mathf.Clamp(percentTransfered, 0, 1);
+					//Debug.Log (playerRayHit.distance);
+					_percentTransferred = Mathf.Clamp(_percentTransferred, 0, 1);
 
-				if (percentTransfered == 1f)
-				{
-					//Debug.Log ("Transfer Complete");
-					mimicMarker.SetActive(false);
-					disguised = true;
-					spellCaster.Disguised();
-					player.layer = 9;
-
-					//DISGUISE HERE
-					playerController.PlaySound("Mimic");
-					playerController.InDisguise(true);
-					playerController.canAttack = true;
-
-					if (!usingController)
+					if (_percentTransferred == 1f)
 					{
-						Cursor.lockState = CursorLockMode.Locked;
-						Cursor.visible = false;
-					}
-				}
+						//Debug.Log ("Transfer Complete");
+						_mimicMarker.SetActive(false);
+						Disguised = true;
+						SpellCaster.Disguised();
+						PlayerController.gameObject.layer = 9;
 
-				spriteRenderer.color = canTransfer ? canMimic : canNotMimic;
-				if (isTransfering)
-					mimicMarker.transform.localScale = new Vector2(1, 1)
-					                                   * ((markerSizeMax - markerSizeMin) * percentTransfered
-					                                      + markerSizeMin);
+						//DISGUISE HERE
+						PlayerController.PlaySound("Mimic");
+						PlayerController.InDisguise(true);
+						PlayerController.CanAttack = true;
+
+						if (!_usingController)
+						{
+							Cursor.lockState = CursorLockMode.Locked;
+							Cursor.visible = false;
+						}
+					}
+
+					_spriteRenderer.color = _canTransfer ? CanMimic : CanNotMimic;
+					if (_isTransferring)
+						_mimicMarker.transform.localScale = new Vector2(1, 1)
+						                                   * ((_markerSizeMax - _markerSizeMin) * _percentTransferred
+						                                      + _markerSizeMin);
+				}
+			}
+
+			if (Input.GetKeyDown(KeyCode.F) || Input.GetButtonDown("Exit")
+			                                || (Input.GetAxis("Use Item") == 0f && !Disguised))
+			{
+				SpellCaster.EndSpell(SpellCasting.SpellNames.Mimic);
 			}
 		}
 
-		if (Input.GetKeyDown(KeyCode.F) || Input.GetButtonDown("Exit")
-		                                || (Input.GetAxis("Use Item") == 0f && !disguised))
-			spellCaster.EndSpell(SpellCasting.SpellNames.mimic);
-	}
-
-	public void EndMimic()
-	{
-		//UNDISGUISE
-		if (disguised)
+		public void EndMimic()
 		{
-			player.layer = 8;
-			playerController.PlaySound("Mimic");
-			playerController.InDisguise(false);
-		}
+			//UNDISGUISE
+			if (Disguised)
+			{
+				PlayerController.gameObject.layer = 8;
+				PlayerController.PlaySound("Mimic");
+				PlayerController.InDisguise(false);
+			}
 
-		playerController.canAttack = true;
-		if (!usingController)
-		{
-			Cursor.lockState = CursorLockMode.Locked;
-			Cursor.visible = false;
-		}
+			PlayerController.CanAttack = true;
+			if (!_usingController)
+			{
+				Cursor.lockState = CursorLockMode.Locked;
+				Cursor.visible = false;
+			}
 
-		Destroy(gameObject);
+			Destroy(gameObject);
+		}
 	}
 }

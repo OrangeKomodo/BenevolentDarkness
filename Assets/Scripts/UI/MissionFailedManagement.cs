@@ -5,98 +5,120 @@ using UnityEngine.UI;
 
 namespace UI
 {
-	public class MissionFailedManagement : MonoBehaviour {
+	public class MissionFailedManagement : Singleton<MissionFailedManagement>
+	{
+		public Text CauseText;
+		public Button[] Buttons;
+		
+		public Color Selected = Color.white;
+		public Color NotSelected = Color.gray;
 
-		AudioManager audioManager;
+		private bool _usingController;
 
-		Color selected = Color.white;
-		Color notSelected = Color.gray;
+		private int _buttonIndex = 0;
+		private float _nextChangeTime;
 
-		bool usingController;
-
-		int buttonIndex = 0;
-		float nextChangeTime;
-
-		void Start () {
-			audioManager = GameObject.FindGameObjectWithTag("GameController").GetComponent<AudioManager>();
-			audioManager.StopSound("Alarm");
-			usingController = Input.GetJoystickNames ().Length > 0;
-			if (usingController) {
+		private void Start()
+		{
+			_usingController = Input.GetJoystickNames().Length > 0;
+			if (_usingController)
+			{
 				Cursor.lockState = CursorLockMode.Locked;
 				Cursor.visible = false;
-				ChangeButton(buttonIndex);
+				ChangeButton(_buttonIndex);
 			}
 		}
 
-		void Update () {
-			if (usingController) {
+		private void Update()
+		{
+			if (_usingController)
+			{
 				float controllerY = -Input.GetAxis("Vertical");
-				if (nextChangeTime <= Time.realtimeSinceStartup && Mathf.Abs(controllerY) > 0.19f) {
-					audioManager.PlaySound("Swish");
-					buttonIndex = (3 + (buttonIndex + (int)(controllerY / Mathf.Abs(controllerY)))) % 3;
-					ChangeButton(buttonIndex);
-					nextChangeTime = Time.realtimeSinceStartup + 0.2f;
+				if (_nextChangeTime <= Time.realtimeSinceStartup && Mathf.Abs(controllerY) > 0.19f)
+				{
+					AudioManager.Instance.PlaySound("Swish");
+					_buttonIndex = (3 + _buttonIndex + (int)(controllerY / Mathf.Abs(controllerY))) % 3;
+					ChangeButton(_buttonIndex);
+					_nextChangeTime = Time.realtimeSinceStartup + 0.2f;
 				}
 			}
 
 			if (Input.GetButtonDown("Jump"))
 			{
-				SelectButton (buttonIndex);
+				SelectButton(_buttonIndex);
 			}
 		}
 
-		public void SetCause (int causeIndex) {
+		private void OnEnable()
+		{
+			if (AudioManager.Instance == null)
+			{
+				return;
+			}
+			
+			AudioManager.Instance.StopSound("Alarm");
+		}
+
+		public void SetCause(int causeIndex)
+		{
 			string causeText = "";
 
-			switch (causeIndex) {
-				case 0:{
+			switch (causeIndex)
+			{
+				case 0:
+				{
 					causeText = "You Died!";
 					break;
 				}
 			}
 
-			transform.GetChild (2).GetComponent<Text> ().text = causeText;
+			CauseText.text = causeText;
 		}
 
-		public void LoadLastSave () {
-			//GameObject.FindGameObjectWithTag ("GameController").GetComponent<MenuSwitcher> ().LoadMenu (0);
-			GameObject.FindGameObjectWithTag ("GameController").GetComponent<QuickSaveSystem> ().QuickLoadAll ();
+		public void LoadLastSave()
+		{
+			QuickSaveSystem.Instance.QuickLoadAll();
 		}
 
-		public void RestartLevel () {
-			audioManager.PlaySound("Select");
-			SceneManager.LoadScene (SceneManager.GetActiveScene ().name);
+		public void RestartLevel()
+		{
+			AudioManager.Instance.PlaySound("Select");
+			SceneManager.LoadScene(SceneManager.GetActiveScene().name);
 		}
 
-		public void MainMenu () {
-			audioManager.PlaySound("Select");
-			SceneManager.LoadScene ("Main Menu");
+		public void MainMenu()
+		{
+			AudioManager.Instance.PlaySound("Select");
+			SceneManager.LoadScene("Main Menu");
 		}
 
-		public void QuitGame () {
-			audioManager.PlaySound("Select");
-			Application.Quit ();
+		public void QuitGame()
+		{
+			AudioManager.Instance.PlaySound("Select");
+			Application.Quit();
 		}
 
-		void ChangeButton (int newButton) {
-			for (int i = 0; i < 3; i++)
+		private void ChangeButton(int newButton)
+		{
+			for (int i = 0; i < Buttons.Length; i++)
 			{
-				transform.GetChild (i + 4).GetComponent<Image> ().color = newButton == i ? selected : notSelected;
+				Buttons[i].image.color = newButton == i ? Selected : NotSelected;
 			}
 		}
 
-		void SelectButton (int button) {
+		private void SelectButton(int button)
+		{
 			if (button == 0)
 			{
-				RestartLevel ();
+				RestartLevel();
 			}
 			else if (button == 1)
 			{
-				MainMenu ();
+				MainMenu();
 			}
 			else if (button == 2)
 			{
-				QuitGame ();
+				QuitGame();
 			}
 		}
 	}

@@ -2,42 +2,27 @@
 
 namespace GameManager
 {
-	public class AudioManager : MonoBehaviour
+	public class AudioManager : Singleton<AudioManager>
 	{
-
-		public static AudioManager instance;
-
 		[SerializeField] Sound[] sound;
 
-		void Awake()
-		{
-			if (instance == null)
-			{
-				instance = this;
-			}
-			else if (instance != this)
-			{
-				Destroy(gameObject);
-			}
-		}
-
-		void Start()
+		private void Start()
 		{
 			for (int x = 0; x < sound.Length; x++)
 			{
-				GameObject _go = new GameObject("Sound_" + x + "_" + sound[x].clipName);
-				_go.transform.SetParent(this.transform);
-				sound[x].SetSource(_go.AddComponent<AudioSource>());
+				GameObject audioGameObject = new GameObject("Sound_" + x + "_" + sound[x].clipName);
+				audioGameObject.transform.SetParent(this.transform);
+				sound[x].SetSource(audioGameObject.AddComponent<AudioSource>());
 				if (sound[x].playOnAwake)
 					sound[x].Play();
 			}
 		}
 
-		public void PlaySound(string _name)
+		public void PlaySound(string clipName)
 		{
 			for (int x = 0; x < sound.Length; x++)
 			{
-				if (sound[x].clipName == _name)
+				if (sound[x].clipName == clipName)
 				{
 					sound[x].Play();
 					return;
@@ -47,11 +32,11 @@ namespace GameManager
 			//Debug.LogError("There is no sound called: " + _name);
 		}
 
-		public void StopSound(string _name)
+		public void StopSound(string clipName)
 		{
 			for (int x = 0; x < sound.Length; x++)
 			{
-				if (sound[x].clipName == _name)
+				if (sound[x].clipName == clipName)
 				{
 					sound[x].Stop();
 					return;
@@ -61,11 +46,11 @@ namespace GameManager
 			//Debug.LogError("There is no sound called: " + _name);
 		}
 
-		public void PauseSound(string _name, bool pause)
+		public void PauseSound(string clipName, bool pause)
 		{
 			for (int x = 0; x < sound.Length; x++)
 			{
-				if (sound[x].clipName == _name)
+				if (sound[x].clipName == clipName)
 				{
 					sound[x].Pause(pause);
 					return;

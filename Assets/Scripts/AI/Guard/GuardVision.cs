@@ -6,119 +6,120 @@ namespace AI.Guard
 {
 	public class GuardVision : MonoBehaviour
 	{
-		Guard guard;
-		GameObject player;
-		PlayerController playerController;
+		private Guard _guard;
+		private GameObject _player;
+		private PlayerController _playerController;
 
-		public bool boxVisible = false;
-		public bool circleVisible = false;
-		bool inRange = false;
-		bool wasInRange = false;
+		public bool BoxVisible = false;
+		public bool CircleVisible = false;
+		private bool _inRange = false;
+		private bool _wasInRange = false;
 
-		LayerMask layerMask;
+		private LayerMask _layerMask;
 
-		List<Guard> visibleGuards = new List<Guard>();
-		List<Guard> incapacitatedGuards = new List<Guard>();
+		private List<Guard> _visibleGuards = new List<Guard>();
+		private List<Guard> _incapacitatedGuards = new List<Guard>();
 
-		void Start()
+		private void Start()
 		{
-			guard = gameObject.transform.parent.GetComponent<Guard>();
-			player = GameObject.FindGameObjectWithTag("Player");
-			playerController = player.GetComponent<PlayerController>();
-			layerMask = LayerMask.GetMask("Player", "Platforms", "Effected Platforms");
+			_guard = gameObject.transform.parent.GetComponent<Guard>();
+			_player = GameObject.FindGameObjectWithTag("Player");
+			_playerController = _player.GetComponent<PlayerController>();
+			_layerMask = LayerMask.GetMask("Player", "Platforms", "Affected Platforms");
 		}
 
-		void FixedUpdate()
+		private void FixedUpdate()
 		{
-			if (!playerController.disguisedAsGuard)
+			if (!_playerController.DisguisedAsGuard)
 			{
-				if (boxVisible || circleVisible)
+				if (BoxVisible || CircleVisible)
 				{
 					Debug.DrawRay(transform.position,
-						(player.transform.position - transform.position).normalized
-						* Mathf.Clamp(Vector2.Distance(transform.position, player.transform.position), 0f, 15f),
+						(_player.transform.position - transform.position).normalized
+						* Mathf.Clamp(Vector2.Distance(transform.position, _player.transform.position), 0f, 15f),
 						Color.yellow);
 					RaycastHit2D playerRayHit = Physics2D.Raycast(transform.position,
-						player.transform.position - transform.position,
-						Mathf.Clamp(Vector2.Distance(transform.position, player.transform.position), 0f, 15f), layerMask);
+						_player.transform.position - transform.position,
+						Mathf.Clamp(Vector2.Distance(transform.position, _player.transform.position), 0f, 15f), _layerMask);
 
 					if (playerRayHit.collider != null && playerRayHit.collider.tag.Equals("Player"))
 					{
-						guard.SeesPlayer(player.GetComponent<PlayerController>().visibilityFactor);
+						_guard.CheckSeesPlayer(_player.GetComponent<PlayerController>().VisibilityFactor);
 					}
 				}
 
-				if (!boxVisible && !circleVisible && guard.seesPlayer)
+				if (!BoxVisible && !CircleVisible && _guard.SeesPlayer)
 				{
-					guard.LostPlayer();
+					_guard.LostPlayer();
 				}
 
-				if (!playerController.inShadowSink && (!wasInRange && inRange || wasInRange && !inRange))
+				if (!_playerController.InShadowSink && (!_wasInRange && _inRange || _wasInRange && !_inRange))
 				{
-					guard.PlayerInMeleeRange(inRange);
-					wasInRange = !wasInRange;
+					_guard.PlayerInMeleeRange(_inRange);
+					_wasInRange = !_wasInRange;
 				}
 			}
 
-			if (visibleGuards.Count > 0)
+			if (_visibleGuards.Count > 0)
 			{
-				for (int i = 0; i < visibleGuards.Count; i++)
+				for (int i = 0; i < _visibleGuards.Count; i++)
 				{
-					Guard fellowGuard = visibleGuards[i];
-					if ((fellowGuard.state == Guard.State.dead || fellowGuard.state == Guard.State.unconscious)
-					    && !incapacitatedGuards.Contains(fellowGuard)
+					Guard fellowGuard = _visibleGuards[i];
+					if ((fellowGuard.State == Guard.GuardState.Dead || fellowGuard.State == Guard.GuardState.Unconscious)
+					    && !_incapacitatedGuards.Contains(fellowGuard)
 					    && fellowGuard.transform.parent.parent == transform.parent.parent.parent)
 					{
-						incapacitatedGuards.Add(fellowGuard);
-						guard.FoundGuard(fellowGuard);
+						_incapacitatedGuards.Add(fellowGuard);
+						_guard.FoundGuard(fellowGuard);
 					}
 				}
 			}
 		}
 
-		void OnTriggerEnter2D(Collider2D collider)
+		private void OnTriggerEnter2D(Collider2D otherCollider)
 		{
-			if (collider.tag.Equals("Player"))
+			if (otherCollider.tag.Equals("Player"))
 			{
-				if (collider.Equals(player.GetComponent<BoxCollider2D>()))
+				if (otherCollider.Equals(_player.GetComponent<BoxCollider2D>()))
 				{
-					boxVisible = true;
+					BoxVisible = true;
 				}
-				else if (collider.Equals(player.GetComponent<CircleCollider2D>()))
+				else if (otherCollider.Equals(_player.GetComponent<CircleCollider2D>()))
 				{
-					circleVisible = true;
+					CircleVisible = true;
 				}
-				inRange = GetComponent<CircleCollider2D>().IsTouching(player.GetComponent<BoxCollider2D>())
-				          || GetComponent<CircleCollider2D>().IsTouching(player.GetComponent<CircleCollider2D>());
+				
+				_inRange = GetComponent<CircleCollider2D>().IsTouching(_player.GetComponent<BoxCollider2D>())
+				          || GetComponent<CircleCollider2D>().IsTouching(_player.GetComponent<CircleCollider2D>());
 			}
 
-			if (collider.name.Equals("Guard Actual") && !visibleGuards.Contains(collider.GetComponent<Guard>()))
+			if (otherCollider.name.Equals("Guard Actual") && !_visibleGuards.Contains(otherCollider.GetComponent<Guard>()))
 			{
-				visibleGuards.Add(collider.GetComponent<Guard>());
+				_visibleGuards.Add(otherCollider.GetComponent<Guard>());
 			}
 		}
 
-		void OnTriggerExit2D(Collider2D collider)
+		private void OnTriggerExit2D(Collider2D otherCollider)
 		{
-			if (collider.tag.Equals("Player"))
+			if (otherCollider.tag.Equals("Player"))
 			{
-				if (collider.Equals(player.GetComponent<BoxCollider2D>()) && !GetComponent<PolygonCollider2D>()
-					    .IsTouching(player.GetComponent<BoxCollider2D>()))
+				if (otherCollider.Equals(_player.GetComponent<BoxCollider2D>()) && !GetComponent<PolygonCollider2D>()
+					    .IsTouching(_player.GetComponent<BoxCollider2D>()))
 				{
-					boxVisible = false;
+					BoxVisible = false;
 				}
-				else if (collider.Equals(player.GetComponent<CircleCollider2D>()))
+				else if (otherCollider.Equals(_player.GetComponent<CircleCollider2D>()))
 				{
-					circleVisible = false;
+					CircleVisible = false;
 				}
+
+				_inRange = GetComponent<CircleCollider2D>().IsTouching(_player.GetComponent<BoxCollider2D>())
+				           || GetComponent<CircleCollider2D>().IsTouching(_player.GetComponent<CircleCollider2D>());
 			}
 
-			inRange = GetComponent<CircleCollider2D>().IsTouching(player.GetComponent<BoxCollider2D>())
-			          || GetComponent<CircleCollider2D>().IsTouching(player.GetComponent<CircleCollider2D>());
-
-			if (collider.name.Equals("Guard Actual") && visibleGuards.Contains(collider.GetComponent<Guard>()))
+			if (otherCollider.name.Equals("Guard Actual") && _visibleGuards.Contains(otherCollider.GetComponent<Guard>()))
 			{
-				visibleGuards.Remove(collider.GetComponent<Guard>());
+				_visibleGuards.Remove(otherCollider.GetComponent<Guard>());
 			}
 		}
 	}

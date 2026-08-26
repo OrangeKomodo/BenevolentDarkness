@@ -21,14 +21,14 @@ namespace Player
 
 		bool triggerReleased = true;
 
-		void Start()
+		private void Start()
 		{
 			playerController = GetComponent<PlayerController>();
 		}
 
-		void FixedUpdate()
+		private void FixedUpdate()
 		{
-			if (playerController.canAttack)
+			if (playerController.CanAttack)
 			{
 				RaycastHit2D playerRayHit;
 				Debug.DrawRay(transform.position, transform.right * (transform.localScale.x / Mathf.Abs(transform.localScale.x)), Color.magenta);
@@ -36,7 +36,7 @@ namespace Player
 			
 				if (playerRayHit.collider != null && playerRayHit.collider.name.Equals("Backside"))
 				{
-					if (!seesBackside && !playerController.disguisedAsGuard)
+					if (!seesBackside && !playerController.DisguisedAsGuard)
 					{
 						transform.GetComponent<PlayerController>().LoadAttackIcons(true);
 						seesBackside = true;
@@ -102,7 +102,7 @@ namespace Player
 			}
 		}
 
-		void OnDrawGizmosSelected()
+		private void OnDrawGizmosSelected()
 		{
 			Gizmos.color = Color.red;
 			Gizmos.DrawWireSphere(attackPos.position, attackRange);

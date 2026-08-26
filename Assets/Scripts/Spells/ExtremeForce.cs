@@ -1,25 +1,22 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using Player;
-using Spells;
-using UnityEngine;
+﻿using UnityEngine;
 
-public class ExtremeForce : Spell
+namespace Spells
 {
-
-	BoxCollider2D boxCollider;
-
-	void Start()
+	public class ExtremeForce : Spell
 	{
-		GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerController>().PlaySound("Extreme Force");
+		public BoxCollider2D BoxCollider;
+		public AreaEffector2D AreaEffector2D;
 
-		boxCollider = GetComponent<BoxCollider2D>();
+		private void Start()
+		{
+			PlayerController.PlaySound("Extreme Force");
 
-		float wallDistance = Physics2D.Raycast(transform.position, transform.right, 200f, LayerMask.GetMask("Walls"))
-			.distance - 3f;
-		boxCollider.size = new Vector2(wallDistance, boxCollider.size.y);
-		boxCollider.offset = new Vector2(wallDistance / 2f, boxCollider.offset.y);
+			float wallDistance = Physics2D.Raycast(transform.position, transform.right, 200f, LayerMask.GetMask("Walls"))
+				.distance - 3f;
+			BoxCollider.size = new Vector2(wallDistance, BoxCollider.size.y);
+			BoxCollider.offset = new Vector2(wallDistance / 2f, BoxCollider.offset.y);
 
-		GetComponent<AreaEffector2D>().forceAngle = transform.rotation.y == 1f ? 180 : 0;
+			AreaEffector2D.forceAngle = transform.rotation.y == 1f ? 180 : 0;
+		}
 	}
 }

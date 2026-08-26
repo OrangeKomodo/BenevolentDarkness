@@ -1,74 +1,68 @@
 ﻿using System.Collections;
-using Player;
 using UnityEngine;
 
 namespace Spells
 {
 	public class ShadowSink : Spell
 	{
-		public int manaTickCost;
-		public float manaDeductTick;
+		public int ManaTickCost;
+		public float ManaDeductTick;
 
-		public float transitionTime = 0.5f;
-		public Color visibleColor;
-		public Color hiddenColor;
+		public float TransitionTime = 0.5f;
+		public Color VisibleColor;
+		public Color HiddenColor;
 
-		GameObject player;
-		PlayerController playerController;
-		SpriteRenderer playerSpriteRenderer;
+		private SpriteRenderer _playerSpriteRenderer;
 
-		Vector3 playerHidePosition;
-		bool hidden = false;
+		private Vector3 _playerHidePosition;
+		private bool _hidden = false;
 
-		void Start()
+		private void Start()
 		{
-			manaDeductTick = FindObjectOfType<SpellCasting>().spellLevel * 0.5f;
+			ManaDeductTick = SpellCaster.SpellLevel * 0.5f;
 
-			player = GameObject.FindGameObjectWithTag("Player");
-			playerController = player.GetComponent<PlayerController>();
-			playerSpriteRenderer = player.GetComponent<SpriteRenderer>();
+			_playerSpriteRenderer = PlayerController.PlayerSprite;
+			_playerHidePosition = PlayerController.transform.position;
 
-			playerHidePosition = player.transform.position;
-
-			playerController.InShadowSink(true);
-			StartCoroutine(Transition(visibleColor, hiddenColor, true));
+			PlayerController.ShadowSink(true);
+			StartCoroutine(Transition(VisibleColor, HiddenColor, true));
 		}
 
-		void Update()
+		private void Update()
 		{
-			if ((Input.GetAxis("Use Item") == 1f && hidden) || playerHidePosition != player.transform.position
-			                                                || Input.GetButtonDown("Exit"))
+			if ((Input.GetAxis("Use Item") == 1f && _hidden)
+			    || _playerHidePosition != PlayerController.transform.position || Input.GetButtonDown("Exit"))
 			{
-				FindObjectOfType<SpellCasting>().EndSpell(SpellCasting.SpellNames.shadowSink);
+				SpellCaster.EndSpell(SpellCasting.SpellNames.ShadowSink);
 			}
 		}
 
 		public void EndShadowSink()
 		{
-			playerController.InShadowSink(false);
-			StartCoroutine(Transition(hiddenColor, visibleColor, false));
-			Destroy(gameObject, transitionTime);
+			PlayerController.ShadowSink(false);
+			StartCoroutine(Transition(HiddenColor, VisibleColor, false));
+			Destroy(gameObject, TransitionTime);
 		}
 
-		IEnumerator Transition(Color start, Color end, bool hiding)
+		private IEnumerator Transition(Color start, Color end, bool hiding)
 		{
-			playerController.PlaySound("Shadow Sink");
-			float rawVisibility = playerController.rawVisibilityFactor;
+			PlayerController.PlaySound("Shadow Sink");
+			float rawVisibility = PlayerController.RawVisibilityFactor;
 
 			float startTime = Time.time;
 			float percent = 0;
 			while (percent < 1)
 			{
-				percent = (Time.time - startTime) / transitionTime;
+				percent = (Time.time - startTime) / TransitionTime;
 
-				playerSpriteRenderer.color = Color.Lerp(start, end, percent);
+				_playerSpriteRenderer.color = Color.Lerp(start, end, percent);
 
-				playerController.visibilityFactor = hiding ? rawVisibility * (1f - percent) : rawVisibility * percent;
+				PlayerController.VisibilityFactor = hiding ? rawVisibility * (1f - percent) : rawVisibility * percent;
 
 				yield return null;
 			}
 
-			hidden = hiding;
+			_hidden = hiding;
 		}
 	}
 }

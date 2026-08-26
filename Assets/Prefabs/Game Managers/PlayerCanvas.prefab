@@ -58,7 +58,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 0}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -767,7 +767,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 0}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -936,7 +936,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 0}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -1013,7 +1013,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 0}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -1581,6 +1581,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b1d70ebcb0c5256438d90473ff5f2563, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Buttons:
+  - {fileID: 114198787571463632}
+  - {fileID: 114484131742519634}
+  - {fileID: 114634287627280750}
+  - {fileID: 114536323270813130}
+  Selected: {r: 0.5568628, g: 0.5568628, b: 0.5568628, a: 1}
+  NotSelected: {r: 0.28627452, g: 0.28627452, b: 0.28627452, a: 1}
 --- !u!1 &1347115788494598
 GameObject:
   m_ObjectHideFlags: 0
@@ -1641,7 +1648,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 0}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -2094,7 +2101,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 75f4d0d0c0dd00647b1ff869b4607f54, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  numberOfGuards: 5
+  EnemiesKilledText: {fileID: 114693889826940838}
+  TimesSpottedText: {fileID: 114771324851018448}
+  PacifistToggle: {fileID: 114244805278217930}
+  ShadowToggle: {fileID: 114734332967717064}
+  WantedLevelText: {fileID: 114745358866719084}
+  RetryText: {fileID: 114451330594449392}
+  MainMenuText: {fileID: 114775595918401350}
+  NumberOfGuards: 0
 --- !u!1 &1443257484223148
 GameObject:
   m_ObjectHideFlags: 0
@@ -2153,7 +2167,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 0}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -2516,7 +2530,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 0}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -2726,7 +2740,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 0}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -2818,7 +2832,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 0}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -2940,7 +2954,7 @@ GameObject:
   - component: {fileID: 224330692138445868}
   - component: {fileID: 222724854937421494}
   m_Layer: 5
-  m_Name: Equipped Items
+  m_Name: Abilities Icons
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3302,7 +3316,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 0}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -3565,6 +3579,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 22145d4c659844248aac5cc616ce3bff, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  CauseText: {fileID: 114706467594336020}
+  Buttons:
+  - {fileID: 114292090545529270}
+  - {fileID: 114080522745273162}
+  - {fileID: 114438538149690606}
+  Selected: {r: 0.5568628, g: 0.5568628, b: 0.5568628, a: 1}
+  NotSelected: {r: 0.28627452, g: 0.28627452, b: 0.28627452, a: 1}
 --- !u!1 &1716586211793618
 GameObject:
   m_ObjectHideFlags: 0
@@ -3771,6 +3792,39 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a0417d8aaa3592148992a09ed5e8f096, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  StartingMissionText: 
+  AbilitiesAssets:
+  - Image: {fileID: 114002549390193426}
+    BackgroundImage: {fileID: 114687187516495748}
+    Outline: {fileID: 114328480901548528}
+  - Image: {fileID: 114821071854053256}
+    BackgroundImage: {fileID: 114480432739978936}
+    Outline: {fileID: 114571350419880536}
+  - Image: {fileID: 114000466530269260}
+    BackgroundImage: {fileID: 114576852874920314}
+    Outline: {fileID: 114227078674516244}
+  - Image: {fileID: 114577904529390720}
+    BackgroundImage: {fileID: 114383033340953860}
+    Outline: {fileID: 114052710647126800}
+  - Image: {fileID: 114053383845142368}
+    BackgroundImage: {fileID: 114479368581911548}
+    Outline: {fileID: 114352449020757966}
+  - Image: {fileID: 114886088224796024}
+    BackgroundImage: {fileID: 114803851229000072}
+    Outline: {fileID: 114443501302600658}
+  - Image: {fileID: 114742565024273886}
+    BackgroundImage: {fileID: 114484336050511072}
+    Outline: {fileID: 114551795702678302}
+  UseAssets:
+    Image: {fileID: 114270899934581244}
+    Text: {fileID: 114507027820674190}
+  SubdueAssets:
+    Image: {fileID: 114914276751207330}
+    Text: {fileID: 114875254372863616}
+  KillAssets:
+    Image: {fileID: 114402805869737138}
+    Text: {fileID: 114004076115857832}
+  MissionText: {fileID: 114549932040460840}
 --- !u!1 &1746226215534182
 GameObject:
   m_ObjectHideFlags: 0
@@ -3831,7 +3885,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 0}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -3897,7 +3951,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -4.3, y: 0}
+  m_AnchoredPosition: {x: -3.2, y: 0}
   m_SizeDelta: {x: 90, y: 90}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &222386361564150752
@@ -3921,14 +3975,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 0}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: f43e4fe86cc64784cb28ba344d1fe991, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 41bda0d14e6e07044bbd1f347872b773, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -4391,7 +4445,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 0}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -4939,7 +4993,7 @@ GameObject:
   - component: {fileID: 222761734942683902}
   - component: {fileID: 114693889826940838}
   m_Layer: 5
-  m_Name: Guards Killed Text
+  m_Name: Enemies Killed Text
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -5005,7 +5059,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: 'Guards Killed: '
+  m_Text: 'Enemies Killed: '
 --- !u!1 &1971601023525166
 GameObject:
   m_ObjectHideFlags: 0
@@ -5330,7 +5384,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 0}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1

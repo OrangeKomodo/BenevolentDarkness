@@ -16,213 +16,86 @@ namespace Player
 	public class PlayerController : LivingEntity
 	{
 		[Serializable]
-		struct PlayerQuickSave {
+		private struct PlayerQuickSave {
 
-			public Vector2 position;
-			public float direction;
-			public float health;
-			public int mana;
-			public bool frozen;
-			public SpellCasting.SpellNames spell;
-			public List<string> inventory;
+			public Vector2 Position;
+			public float Direction;
+			public float Health;
+			public int Mana;
+			public bool Frozen;
+			public SpellCasting.SpellNames Spell;
+			public List<string> Inventory;
 		}
+		
+		public SpellCasting Spellcaster;
+		public CameraController CameraController;
+		public PlatformerCharacter2D PlatformerCharacter;
+		public SpriteRenderer PlayerSprite;
+		public Rigidbody2D Rigidbody;
+		public Animator Animator;
 	
-		public float baseVisibilityFactor = 0.1f;
-		[Range(0, 1)] public float visibilityFactor = 0.1f;
-		public float rawVisibilityFactor = 0.1f;
-		public float lightTotals = 0f;
-		public bool inShadowSink = false;
-		public bool disguisedAsGuard = false;
-		public bool canAttack = true;
-		public bool isSeen = false;
-		public Image healthBar;
-		public Transform effectedPlatforms;
-		public Transform enemiesHolder;
-		public Transform canvas;
+		public float BaseVisibilityFactor = 0.1f;
+		[Range(0, 1)]
+		public float VisibilityFactor = 0.1f;
+		public float RawVisibilityFactor = 0.1f;
+		public float LightTotals = 0f;
+		public bool InShadowSink = false;
+		public bool DisguisedAsGuard = false;
+		public bool CanAttack = true;
+		public bool IsSeen = false;
+		public Image HealthBar;
+		public PlatformEffector2D[] AffectedPlatforms;
+		public Transform EnemiesHolder;
+		public Transform Canvas;
 
-		public List<string> inventory = new List<string>();
-		public List<GameObject> lights = new List<GameObject>();
-		public List<GameObject> items = new List<GameObject>();
+		public List<string> Inventory = new List<string>();
+		public List<LightArea> Lights = new List<LightArea>();
+		public List<Item> Items = new List<Item>();
 
-		public LayerMask[] hidingPlaceLayerMasks;
+		public LayerMask[] HidingPlaceLayerMasks;
+		
+		private PlayerQuickSave _playerQuickSave;
+		
+		private Guard[] _guards;
+		private Sentry[] _sentries;
 
-		AudioManager audioManager;
-		SpellCasting spellcaster;
-		PlatformerCharacter2D platformerCharacter;
-		Rigidbody2D rb;
-		Animator anim;
-		PlayerQuickSave playerQuickSave;
+		private const float HealthRegenTime = 3f;
+		private const float HealthRegenTick = 0.5f;
+		private const float HealthRegenPerTick = 2f;
+		private float _healthRegenBegin;
 
-		Guard[] guards;
-		Sentry[] sentries;
+		private bool _canUse = false;
+		private bool _falling = false;
 
-		Transform inGameHUD;
-		Transform missionFailedMenu;
-
-		float healthRegenTime = 3f;
-		float healthRegenBegin;
-		float healthRegenTick = 0.5f;
-		float healthRegenPerTick = 2f;
-
-		bool canUse = false;
-		bool falling = false;
-
-		float timeOfDeath = 0f;
-		bool deathScreenLoaded = false;
+		private float _timeOfDeath = 0f;
+		private bool _deathScreenLoaded = false;
 
 		protected override void Start()
 		{
 			base.Start();
-			audioManager = GameObject.FindGameObjectWithTag("GameController").GetComponent<AudioManager>();
-			spellcaster = GetComponent<SpellCasting>();
-			platformerCharacter = GetComponent<PlatformerCharacter2D>();
-			rb = GetComponent<Rigidbody2D>();
-			anim = GetComponent<Animator>();
 
-			playerQuickSave = new PlayerQuickSave();
-			playerQuickSave.inventory = new List<string>();
+			_playerQuickSave = new PlayerQuickSave();
+			_playerQuickSave.Inventory = new List<string>();
 
-			guards = enemiesHolder.GetComponentsInChildren<Guard>();
-			sentries = enemiesHolder.GetComponentsInChildren<Sentry>();
-			inGameHUD = canvas.GetChild(0);
-			missionFailedMenu = canvas.GetChild(3);
+			_guards = EnemiesHolder.GetComponentsInChildren<Guard>();
+			_sentries = EnemiesHolder.GetComponentsInChildren<Sentry>();
 
 			Cursor.lockState = CursorLockMode.Locked;
 			Cursor.visible = false;
 
-			OnDeath += OnPlayerDeath;
 			OnHit += OnPlayerHit;
 		}
 
-		void Update()
+		private void OnApplicationQuit()
 		{
-			if (!dead)
+			OnHit -= OnPlayerHit;
+		}
+
+		private void Update()
+		{
+			if (Dead)
 			{
-				lightTotals = 0f;
-				for (int i = 0; i < lights.Count; i++)
-				{
-					float radius = lights[i].GetComponent<CircleCollider2D>().radius;
-					float distance = Vector2.Distance(transform.position, lights[i].transform.position);
-					lightTotals += radius * (radius - distance) / 50;
-				}
-
-				rawVisibilityFactor = baseVisibilityFactor + lightTotals;
-
-				if (!spellcaster.hidden)
-				{
-					visibilityFactor = rawVisibilityFactor;
-				}
-				else
-				{
-					visibilityFactor = 0f;
-				}
-
-				if (health < startingHealth && healthRegenBegin <= Time.time)
-				{
-					Heal(healthRegenPerTick);
-					healthBar.fillAmount = health / startingHealth;
-					healthRegenBegin = Time.time + healthRegenTick;
-				}
-
-				if (items.Count > 0)
-				{
-					if (!canUse)
-					{
-						inGameHUD.GetComponent<InGameManagement>().LoadUseIcon(true);
-						canUse = true;
-					}
-
-					Item currentItem = items[0].GetComponent<Item>();
-					if (currentItem.type.ToString().Equals("missionItem"))
-					{
-						if (Input.GetButtonDown("Use"))
-						{
-							PlaySound("Swipe");
-							inventory.Add(currentItem.itemName);
-							currentItem.gameObject.SetActive(false);
-							if (currentItem.itemName.Equals("MacGuffin"))
-							{
-								GameObject.FindGameObjectWithTag("GameController").GetComponent<ObjectiveSystem>()
-									.SetObjectiveStatus(101, Objective.Status.completed);
-								inGameHUD.GetComponent<InGameManagement>().LoadMissionText("Make your way to the Exit");
-							}
-							if (currentItem.itemName.Equals("MacGuffin2"))
-							{
-								GameObject.FindGameObjectWithTag("GameController").GetComponent<ObjectiveSystem>()
-									.SetObjectiveStatus(201, Objective.Status.completed);
-								inGameHUD.GetComponent<InGameManagement>().LoadMissionText("Make your way to the Exit");
-							}
-
-							items.Remove(currentItem.gameObject);
-						}
-					}
-					else if (currentItem.type.ToString().Equals("button"))
-					{
-						if (Input.GetButtonDown("Use"))
-						{
-							PlaySound("Use Button");
-							currentItem.gameObject.GetComponent<ButtonItem>().UseButton();
-						}
-					}
-					else if (currentItem.type.ToString().Equals("door"))
-					{
-						if (Input.GetButtonDown("Use"))
-						{
-							PlaySound("Door");
-							currentItem.gameObject.GetComponent<Door>().UseDoor(inventory);
-						}
-					}
-					else if (currentItem.type.ToString().Equals("hidingPlace") && !disguisedAsGuard)
-					{
-						if (Input.GetButtonDown("Use"))
-						{
-							currentItem.gameObject.GetComponent<HidingPlace>().Hide();
-						}
-					}
-
-					if (Input.GetButtonDown("Use") && !disguisedAsGuard)
-					{
-						anim.SetTrigger("Use");
-					}
-				}
-				else if (canUse)
-				{
-					inGameHUD.GetComponent<InGameManagement>().LoadUseIcon(false);
-					canUse = false;
-				}
-
-				if (Input.GetAxis("Vertical") < -0.5f)
-				{
-					for (int i = 0; i < effectedPlatforms.childCount; i++)
-					{
-						if (effectedPlatforms.GetChild(i).gameObject.layer == 12)
-						{
-							effectedPlatforms.GetChild(i).GetComponent<PlatformEffector2D>().rotationalOffset = 180f;
-						}
-					}
-				}
-
-				if (Input.GetAxis("Vertical") >= -0.5f)
-				{
-					for (int i = 0; i < effectedPlatforms.childCount; i++)
-					{
-						if (effectedPlatforms.GetChild(i).gameObject.layer == 12)
-						{
-							effectedPlatforms.GetChild(i).GetComponent<PlatformEffector2D>().rotationalOffset = 0f;
-						}
-					}
-				}
-
-				if (falling && Mathf.Abs(rb.linearVelocity.y) < 0.05f)
-				{
-					TakeHit(1000);
-				}
-
-				UpdatePlayerSeenStatus();
-			}
-			else
-			{
-				if (Time.time >= timeOfDeath + 2f && !deathScreenLoaded)
+				if (Time.time >= _timeOfDeath + 2f && !_deathScreenLoaded)
 				{
 					if (Input.GetJoystickNames().Length == 0)
 					{
@@ -230,175 +103,321 @@ namespace Player
 						Cursor.visible = true;
 					}
 
-					GameObject.FindGameObjectWithTag("GameController").GetComponent<MenuSwitcher>().LoadMenu(3);
-					missionFailedMenu.GetComponent<MissionFailedManagement>().SetCause(0);
-					deathScreenLoaded = true;
+					MenuSwitcher.Instance.LoadMenu(3);
+					MissionFailedManagement.Instance.SetCause(0);
+					_deathScreenLoaded = true;
+				}
+
+				return;
+			}
+			
+			LightTotals = 0f;
+			for (int i = 0; i < Lights.Count; i++)
+			{
+				float radius = Lights[i].Collider2D.radius;
+				float distance = Vector2.Distance(transform.position, Lights[i].transform.position);
+				LightTotals += radius * (radius - distance) / 50;
+			}
+
+			RawVisibilityFactor = BaseVisibilityFactor + LightTotals;
+
+			if (!Spellcaster.Hidden)
+			{
+				VisibilityFactor = RawVisibilityFactor;
+			}
+			else
+			{
+				VisibilityFactor = 0f;
+			}
+			
+			if (Health < StartingHealth && _healthRegenBegin <= Time.time)
+			{
+				Heal(HealthRegenPerTick);
+				HealthBar.fillAmount = Health / StartingHealth;
+				_healthRegenBegin = Time.time + HealthRegenTick;
+			}
+
+			if (Items.Count > 0)
+			{
+				if (!_canUse)
+				{
+					InGameManagement.Instance.LoadUseIcon(true);
+					_canUse = true;
+				}
+
+				Item currentItem = Items[0];
+
+				if (Input.GetButtonDown("Use") && !DisguisedAsGuard)
+				{
+					Animator.SetTrigger("Use");
+				}
+
+				if (Input.GetButtonDown("Use"))
+				{
+					switch (currentItem.Type)
+					{
+						case Item.ItemType.MissionItem:
+						{
+							PlaySound("Swipe");
+							Inventory.Add(currentItem.ItemName);
+							currentItem.gameObject.SetActive(false);
+							if (currentItem.ItemName.Equals("Ledger"))
+							{
+								ObjectiveSystem.Instance.SetObjectiveStatus(101, Objective.Status.Completed);
+								InGameManagement.Instance.LoadMissionText("Make your way to the Exit");
+							}
+							if (currentItem.ItemName.Equals("Chalice"))
+							{
+								ObjectiveSystem.Instance.SetObjectiveStatus(201, Objective.Status.Completed);
+								InGameManagement.Instance.LoadMissionText("Make your way to the Exit");
+							}
+
+							Items.Remove(currentItem);
+							break;
+						}
+						case Item.ItemType.Button:
+						{
+							PlaySound("Use Button");
+							(currentItem as ButtonItem)?.UseButton();
+							break;
+						}
+						case Item.ItemType.Door:
+						{
+							PlaySound("Door");
+							(currentItem as Door)?.UseDoor(Inventory);
+							break;
+						}
+						case Item.ItemType.HidingPlace:
+						{
+							if (DisguisedAsGuard)
+							{
+								break;
+							}
+							
+							(currentItem as HidingPlace)?.Hide();
+							break;
+						}
+					}
 				}
 			}
+			else if (_canUse)
+			{
+				InGameManagement.Instance.LoadUseIcon(false);
+				_canUse = false;
+			}
+
+			if (Input.GetAxis("Vertical") < -0.5f)
+			{
+				for (int i = 0; i < AffectedPlatforms.Length; i++)
+				{
+					if (AffectedPlatforms[i].gameObject.layer == 12)
+					{
+						AffectedPlatforms[i].rotationalOffset = 180f;
+					}
+				}
+			}
+
+			if (Input.GetAxis("Vertical") >= -0.5f)
+			{
+				for (int i = 0; i < AffectedPlatforms.Length; i++)
+				{
+					if (AffectedPlatforms[i].gameObject.layer == 12)
+					{
+						AffectedPlatforms[i].rotationalOffset = 0f;
+					}
+				}
+			}
+
+			if (_falling && Mathf.Abs(Rigidbody.linearVelocity.y) < 0.05f)
+			{
+				TakeHit(1000);
+			}
+
+			UpdatePlayerSeenStatus();
 		}
 
 		public void PlaySound(string _name)
 		{
-			audioManager.PlaySound(_name);
+			AudioManager.Instance.PlaySound(_name);
 		}
 
 		public void Flip()
 		{
-			platformerCharacter.Flip();
+			PlatformerCharacter.Flip();
 		}
 
 		public void Attack(int typeOfAttack)
 		{
 			//0 = attack, 1 = knockout
-			spellcaster.EndSpell(spellcaster.currentSpell); //WITH MIMIC THIS GOES FROM THE SPELLCASTER TO THE MIMIC PREFAB BACK TO THE PLAYER (IN-DISGUISE FUNCTION) THEN TO THE PLAYER CONTROLLER
-			anim.SetTrigger("Attacking");
-			anim.SetInteger("Attack Type", typeOfAttack);
+			Spellcaster.EndSpell(Spellcaster.CurrentSpell); //WITH MIMIC THIS GOES FROM THE SPELLCASTER TO THE MIMIC PREFAB BACK TO THE PLAYER (IN-DISGUISE FUNCTION) THEN TO THE PLAYER CONTROLLER
+			Animator.SetTrigger("Attacking");
+			Animator.SetInteger("Attack Type", typeOfAttack);
 		}
 
-		public void InShadowSink(bool _inShadowSink)
+		public void ShadowSink(bool inShadowSink)
 		{
-			inShadowSink = _inShadowSink;
-			Physics2D.SetLayerCollisionMask(8, hidingPlaceLayerMasks[inShadowSink ? 1 : 0]);
-			GetComponent<SpriteRenderer>().sortingOrder = inShadowSink ? 0 : 2;
+			InShadowSink = inShadowSink;
+			Physics2D.SetLayerCollisionMask(8, HidingPlaceLayerMasks[InShadowSink ? 1 : 0]);
+			PlayerSprite.sortingOrder = InShadowSink ? 0 : 2;
 		}
 
 		public void InHidingPlace(bool isHiding)
 		{
-			Physics2D.SetLayerCollisionMask(8, hidingPlaceLayerMasks[isHiding ? 1 : 0]);
-			GetComponent<SpriteRenderer>().sortingOrder = isHiding ? -7 : 2;
-			anim.SetBool("Under Table", isHiding);
+			Physics2D.SetLayerCollisionMask(8, HidingPlaceLayerMasks[isHiding ? 1 : 0]);
+			PlayerSprite.sortingOrder = isHiding ? -7 : 2;
+			Animator.SetBool("Under Table", isHiding);
 			Freeze(isHiding);
 		}
 
 		public void Freeze(bool freezing)
 		{
-			canAttack = !freezing;
-			spellcaster.SetCanSpellcast(!freezing);
-			platformerCharacter.frozen = freezing;
+			CanAttack = !freezing;
+			Spellcaster.SetCanSpellcast(!freezing);
+			PlatformerCharacter.frozen = freezing;
 		}
 
 		public void InDisguise(bool isDisguised)
 		{
-			disguisedAsGuard = isDisguised;
-			platformerCharacter.disguisedAsGuard = disguisedAsGuard;
-			anim.SetBool("Disguised", isDisguised);
-			anim.SetTrigger("Mimic Used");
+			DisguisedAsGuard = isDisguised;
+			PlatformerCharacter.disguisedAsGuard = DisguisedAsGuard;
+			Animator.SetBool("Disguised", isDisguised);
+			Animator.SetTrigger("Mimic Used");
 		}
 
 		public void IsFalling(bool isFalling)
 		{
-			falling = isFalling;
+			_falling = isFalling;
 		}
 
 		public void LoadAttackIcons(bool load)
 		{
-			inGameHUD.GetComponent<InGameManagement>().LoadAttackIcons(load);
+			InGameManagement.Instance.LoadAttackIcons(load);
 		}
 
-		void UpdatePlayerSeenStatus()
+		private void UpdatePlayerSeenStatus()
 		{
-			isSeen = false;
-			if (!isSeen)
+			IsSeen = false;
+			if (!IsSeen)
 			{
-				for (int i = 0; i < guards.Length && !isSeen; i++)
+				for (int i = 0; i < _guards.Length && !IsSeen; i++)
 				{
-					if (!isSeen)
+					if (!IsSeen)
 					{
-						isSeen = guards[i].suspicionPercentage == 1f;
+						IsSeen = _guards[i].SuspicionPercentage == 1f;
 					}
 				}
 			}
 
-			if (!isSeen)
+			if (!IsSeen)
 			{
-				for (int i = 0; i < sentries.Length; i++)
+				for (int i = 0; i < _sentries.Length; i++)
 				{
-					if (!isSeen)
+					if (!IsSeen)
 					{
-						isSeen = sentries[i].suspicionPercentage == 1f;
+						IsSeen = _sentries[i].SuspicionPercentage == 1f;
 					}
 				}
 			}
 
-			if (isSeen)
-				spellcaster.EndSpell(SpellCasting.SpellNames.mimic);
+			if (IsSeen)
+			{
+				Spellcaster.EndSpell(SpellCasting.SpellNames.Mimic);
+			}
 		}
 
-		void OnPlayerHit(float timeHit, float startingHealth, float health)
+		private void OnPlayerHit(float timeHit, float startingHealth, float health)
 		{
-			audioManager.PlaySound("Player Hurt");
-			healthBar.fillAmount = health / startingHealth;
-			healthRegenBegin = timeHit + healthRegenTime;
+			AudioManager.Instance.PlaySound("Player Hurt");
+			HealthBar.fillAmount = health / startingHealth;
+			_healthRegenBegin = timeHit + HealthRegenTime;
 		}
 
-		void OnPlayerDeath()
+		public override void TakeHit(float damage)
 		{
-			audioManager.PlaySound("Player Death");
-			dead = true;
-			healthBar.fillAmount = 0f;
-			anim.SetTrigger("Dies");
-			anim.SetBool("Dead", true);
+			base.TakeHit(damage);
+		}
+
+		public override void Heal(float heals)
+		{
+			base.Heal(heals);
+		}
+
+		protected override void Die()
+		{
+			base.Die();
+			
+			AudioManager.Instance.PlaySound("Player Death");
+			Dead = true;
+			HealthBar.fillAmount = 0f;
+			Animator.SetTrigger("Dies");
+			Animator.SetBool("Dead", true);
 			Freeze(true);
-			canUse = false;
-			canAttack = false;
-			timeOfDeath = Time.time;
+			_canUse = false;
+			CanAttack = false;
+			_timeOfDeath = Time.time;
 		}
 
-		void OnTriggerEnter2D(Collider2D collider)
+		private void OnTriggerEnter2D(Collider2D otherCollider)
 		{
-			if (collider.tag.Equals("Light") && !lights.Contains(collider.gameObject))
+			LightArea lightArea = otherCollider.GetComponent<LightArea>();
+			Item item = otherCollider.GetComponent<Item>();
+			
+			if (lightArea != null && !Lights.Contains(lightArea))
 			{
-				lights.Add(collider.gameObject);
+				Lights.Add(lightArea);
 			}
 
-			if (collider.tag.Equals("Item") && !items.Contains(collider.gameObject))
+			if (item != null && !Items.Contains(item))
 			{
-				items.Add(collider.gameObject);
+				Items.Add(item);
 			}
 		}
 
-		void OnTriggerExit2D(Collider2D collider)
+		private void OnTriggerExit2D(Collider2D otherCollider)
 		{
-			if (collider.tag.Equals("Light") && lights.Contains(collider.gameObject))
+			LightArea lightArea = otherCollider.GetComponent<LightArea>();
+			Item item = otherCollider.GetComponent<Item>();
+			
+			if (lightArea != null && Lights.Contains(lightArea))
 			{
-				lights.Remove(collider.gameObject);
+				Lights.Remove(lightArea);
 			}
 
-			if (collider.tag.Equals("Item") && !collider.IsTouching(transform.GetComponent<BoxCollider2D>()))
+			if (item != null && Items.Contains(item))
 			{
-				items.Remove(collider.gameObject);
+				Items.Remove(item);
 			}
 		}
 
 		public void QuickSave()
 		{
-			playerQuickSave.position = transform.position;
-			playerQuickSave.direction = transform.localScale.x;
-			playerQuickSave.health = health;
-			playerQuickSave.mana = spellcaster.currentMana;
-			playerQuickSave.frozen = platformerCharacter.frozen;
-			playerQuickSave.spell = spellcaster.currentSpell;
-			playerQuickSave.inventory.Clear();
-			playerQuickSave.inventory.AddRange(inventory);
+			_playerQuickSave.Position = transform.position;
+			_playerQuickSave.Direction = transform.localScale.x;
+			_playerQuickSave.Health = Health;
+			_playerQuickSave.Mana = Spellcaster.CurrentMana;
+			_playerQuickSave.Frozen = PlatformerCharacter.frozen;
+			_playerQuickSave.Spell = Spellcaster.CurrentSpell;
+			_playerQuickSave.Inventory.Clear();
+			_playerQuickSave.Inventory.AddRange(Inventory);
 		}
 
 		public void QuickLoad()
 		{
-			transform.position = playerQuickSave.position;
-			if (transform.localScale != new Vector3(playerQuickSave.direction, transform.localScale.y, transform.localScale.z))
+			transform.position = _playerQuickSave.Position;
+			if (transform.localScale != new Vector3(_playerQuickSave.Direction, transform.localScale.y, transform.localScale.z))
 			{
 				Flip();
 			}
-			health = playerQuickSave.health;
-			dead = false;
-			anim.SetBool("Dead", false);
-			deathScreenLoaded = false;
-			healthBar.fillAmount = health;
-			spellcaster.currentMana = playerQuickSave.mana;
+			Health = _playerQuickSave.Health;
+			Dead = false;
+			Animator.SetBool("Dead", false);
+			_deathScreenLoaded = false;
+			HealthBar.fillAmount = Health;
+			Spellcaster.CurrentMana = _playerQuickSave.Mana;
 			Freeze(false);
-			spellcaster.currentSpell = playerQuickSave.spell;
-			inventory.Clear();
-			inventory.AddRange(playerQuickSave.inventory);
+			Spellcaster.CurrentSpell = _playerQuickSave.Spell;
+			Inventory.Clear();
+			Inventory.AddRange(_playerQuickSave.Inventory);
 		}
 	}
 }
