@@ -1,0 +1,188 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &4823667689124729976
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6905709755221959196}
+  - component: {fileID: 8912281348697128819}
+  m_Layer: 5
+  m_Name: Audio Manager
+  m_TagString: GameController
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &6905709755221959196
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4823667689124729976}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 354, y: 74}
+  m_SizeDelta: {x: 100, y: 100}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &8912281348697128819
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4823667689124729976}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3dca88cdc8de3d947aaa69c214095e93, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  SfxMixerGroup: {fileID: 243269708013697962, guid: 9acfcb9d4e72c9e42b65bd5440607716,
+    type: 2}
+  SfxClips:
+  - ClipName: Alarm
+    Clip: {fileID: 8300000, guid: 9173ae5f51f1e4bb8b9356dd0b4196fc, type: 3}
+    Volume: 1
+    Pitch: 1
+    Loop: 1
+    PlayOnAwake: 0
+  - ClipName: Door
+    Clip: {fileID: 8300000, guid: 947e0f748d3ec47b79c3d26cc4a8a8b8, type: 3}
+    Volume: 1
+    Pitch: 1
+    Loop: 0
+    PlayOnAwake: 0
+  - ClipName: Use Button
+    Clip: {fileID: 8300000, guid: 1b6650593eab8be438bcd01915fc3f68, type: 3}
+    Volume: 1
+    Pitch: 1
+    Loop: 0
+    PlayOnAwake: 0
+  - ClipName: Select
+    Clip: {fileID: 8300000, guid: 8d3e3e3652829104cb973557d983cbe2, type: 3}
+    Volume: 1
+    Pitch: 1
+    Loop: 0
+    PlayOnAwake: 0
+  - ClipName: Swipe
+    Clip: {fileID: 8300000, guid: 9cca06694e70343d3a39f395667c9651, type: 3}
+    Volume: 1
+    Pitch: 1
+    Loop: 0
+    PlayOnAwake: 0
+  - ClipName: Swish
+    Clip: {fileID: 8300000, guid: 0d1d467553cf8304ab145e59b670571e, type: 3}
+    Volume: 1
+    Pitch: 1
+    Loop: 0
+    PlayOnAwake: 0
+  - ClipName: Extreme Force
+    Clip: {fileID: 8300000, guid: ae3e70033468a49cca79f5e3a46a4178, type: 3}
+    Volume: 1
+    Pitch: 1
+    Loop: 0
+    PlayOnAwake: 0
+  - ClipName: Hellfire Blast
+    Clip: {fileID: 8300000, guid: 0aaa3a8f375c5c842bf0861f0e2b6262, type: 3}
+    Volume: 1
+    Pitch: 1
+    Loop: 0
+    PlayOnAwake: 0
+  - ClipName: Mimic
+    Clip: {fileID: 8300000, guid: fc26cccf553ab74488ccc3072ea94fc2, type: 3}
+    Volume: 1
+    Pitch: 1
+    Loop: 0
+    PlayOnAwake: 0
+  - ClipName: Shadow Sink
+    Clip: {fileID: 8300000, guid: 7afca98a49d984070864412940747f32, type: 3}
+    Volume: 1
+    Pitch: 1
+    Loop: 0
+    PlayOnAwake: 0
+  - ClipName: Stasis
+    Clip: {fileID: 8300000, guid: 5b5416614038649b38575080e929ffd0, type: 3}
+    Volume: 1
+    Pitch: 1
+    Loop: 0
+    PlayOnAwake: 0
+  - ClipName: Traitor
+    Clip: {fileID: 8300000, guid: 5eeeee6e34ec34fc99180bf51d59a129, type: 3}
+    Volume: 1
+    Pitch: 1
+    Loop: 0
+    PlayOnAwake: 0
+  - ClipName: Translocation
+    Clip: {fileID: 8300000, guid: be685f9a0f6b74057b611a2b24c48d97, type: 3}
+    Volume: 1
+    Pitch: 1
+    Loop: 0
+    PlayOnAwake: 0
+  - ClipName: Corrupted Guard Death
+    Clip: {fileID: 8300000, guid: c67dc85b3a58b8346bdc6520b52b0f7a, type: 3}
+    Volume: 1
+    Pitch: 1
+    Loop: 0
+    PlayOnAwake: 0
+  - ClipName: Guard Hurt
+    Clip: {fileID: 8300000, guid: 8b2affb083c6e5d4382aff9f5dddb4e2, type: 3}
+    Volume: 1
+    Pitch: 1
+    Loop: 0
+    PlayOnAwake: 0
+  - ClipName: Guard Surprise
+    Clip: {fileID: 8300000, guid: 534996f402509974c85492bb55f0da5f, type: 3}
+    Volume: 1
+    Pitch: 1
+    Loop: 0
+    PlayOnAwake: 0
+  - ClipName: Player Hurt
+    Clip: {fileID: 8300000, guid: 9807957b74e6994478b33e19e9a1a832, type: 3}
+    Volume: 1
+    Pitch: 1
+    Loop: 0
+    PlayOnAwake: 0
+  - ClipName: Player Death
+    Clip: {fileID: 8300000, guid: db33d0298db861b4d8f6da4bfc700577, type: 3}
+    Volume: 0.5
+    Pitch: 1
+    Loop: 0
+    PlayOnAwake: 0
+  MusicMixerGroup: {fileID: 243919384435583198, guid: 9acfcb9d4e72c9e42b65bd5440607716,
+    type: 2}
+  MusicClips:
+  - ClipName: Main Menu
+    Clip: {fileID: 8300000, guid: 32ac44c98f0f646348efbb67c9d60ef0, type: 3}
+    Volume: 1
+    Pitch: 1
+    Loop: 1
+    PlayOnAwake: 1
+  - ClipName: Level 1
+    Clip: {fileID: 8300000, guid: 23921df5c34984954a8f1992165602f2, type: 3}
+    Volume: 1
+    Pitch: 1
+    Loop: 0
+    PlayOnAwake: 0
+  - ClipName: Level 2
+    Clip: {fileID: 8300000, guid: 1f9d026877e63fd4bbea648116e7ba68, type: 3}
+    Volume: 0.25
+    Pitch: 1
+    Loop: 0
+    PlayOnAwake: 0
+  - ClipName: Level 3
+    Clip: {fileID: 8300000, guid: 40749ae89f05f456eaa052295aaec083, type: 3}
+    Volume: 1
+    Pitch: 1
+    Loop: 0
+    PlayOnAwake: 0

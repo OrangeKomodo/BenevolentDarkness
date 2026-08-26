@@ -6,63 +6,62 @@ namespace GameManager
     [System.Serializable]
     public class Sound
     {
-        public AudioMixerGroup audioMixerGroup;
-        private AudioSource source;
+        private AudioSource _source;
 
-        public string clipName;
-        public AudioClip clip;
+        public string ClipName;
+        public AudioClip Clip;
 
-        [Range(0f, 1f)] public float volume;
-        [Range(0f, 3f)] public float pitch;
+        [Range(0f, 1f)] public float Volume = 1f;
+        [Range(0f, 3f)] public float Pitch = 1f;
 
-        public bool loop = false;
-        public bool playOnAwake = false;
+        public bool Loop = false;
+        public bool PlayOnAwake = false;
 
-        public void SetSource(AudioSource _source)
+        public void SetSource(AudioMixerGroup group, AudioSource source)
         {
-            source = _source;
-            source.clip = clip;
-            source.pitch = pitch;
-            source.volume = volume;
-            source.loop = loop;
-            source.playOnAwake = playOnAwake;
-            source.outputAudioMixerGroup = audioMixerGroup;
+            _source = source;
+            _source.clip = Clip;
+            _source.pitch = Pitch;
+            _source.volume = Volume;
+            _source.loop = Loop;
+            _source.playOnAwake = PlayOnAwake;
+            _source.outputAudioMixerGroup = group;
         }
 
         public void Play()
         {
-            if (source == null)
+            if (_source == null)
             {
                 return;
             }
             
-            source.Play();
+            _source.Play();
         }
 
         public void Stop()
         {
-            if (source == null)
+            if (_source == null)
             {
                 return;
             }
 
-            source.Stop();
+            _source.Stop();
         }
 
         public void Pause(bool pause)
         {
-            if (source == null)
+            if (_source == null)
             {
                 return;
             }
 
             if (pause)
             {
-                source.Pause();
+                _source.Pause();
             }
             else
             {
-                source.UnPause();
+                _source.UnPause();
             }
         }
     }

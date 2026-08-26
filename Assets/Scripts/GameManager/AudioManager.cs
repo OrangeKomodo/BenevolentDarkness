@@ -1,63 +1,100 @@
 ﻿using UnityEngine;
+using UnityEngine.Audio;
 
 namespace GameManager
 {
 	public class AudioManager : Singleton<AudioManager>
 	{
-		[SerializeField] Sound[] sound;
+		[Header("SFX Assets")]
+		public AudioMixerGroup SfxMixerGroup;
+		[SerializeField] private Sound[] SfxClips;
+		[Header("Music Assets")]
+		public AudioMixerGroup MusicMixerGroup;
+		[SerializeField] private Sound[] MusicClips;
 
 		private void Start()
 		{
-			for (int x = 0; x < sound.Length; x++)
+			// Set up the SFX GameObject and create an AudioSource for each sound
+			// Only these sounds may be played from within the game
+			GameObject sfxGameObject = new GameObject("Audio_SFX_Clips");
+			sfxGameObject.transform.SetParent(this.transform);
+			
+			for (int clipIndex = 0; clipIndex < SfxClips.Length; ++clipIndex)
 			{
-				GameObject audioGameObject = new GameObject("Sound_" + x + "_" + sound[x].clipName);
-				audioGameObject.transform.SetParent(this.transform);
-				sound[x].SetSource(audioGameObject.AddComponent<AudioSource>());
-				if (sound[x].playOnAwake)
-					sound[x].Play();
+				AudioSource audioSource = sfxGameObject.AddComponent<AudioSource>();
+				Sound sfxClip = SfxClips[clipIndex];
+				
+				sfxClip.SetSource(SfxMixerGroup, audioSource);
+				if (sfxClip.PlayOnAwake)
+				{
+					sfxClip.Play();
+				}
+			}
+			
+			// Set up the Music GameObject and create an AudioSource for each sound
+			// These sounds may only be started by setting "PlayOnAwake" to True
+			// TODO: Add this to a DontDestroyOnLoad scene and implement a method that changes the music when the scene changes
+			GameObject musicGameObject = new GameObject("Audio_Music_Clips");
+			musicGameObject.transform.SetParent(this.transform);
+			
+			for (int clipIndex = 0; clipIndex < MusicClips.Length; ++clipIndex)
+			{
+				AudioSource audioSource = musicGameObject.AddComponent<AudioSource>();
+				Sound musicClip = MusicClips[clipIndex];
+				
+				musicClip.SetSource(MusicMixerGroup, audioSource);
+				if (musicClip.PlayOnAwake)
+				{
+					musicClip.Play();
+				}
 			}
 		}
 
 		public void PlaySound(string clipName)
 		{
-			for (int x = 0; x < sound.Length; x++)
+			Sound sfxSound = GetSfxSound(clipName);
+			if (sfxSound == null)
 			{
-				if (sound[x].clipName == clipName)
-				{
-					sound[x].Play();
-					return;
-				}
+				return;
 			}
-
-			//Debug.LogError("There is no sound called: " + _name);
+			
+			sfxSound.Play();
 		}
 
 		public void StopSound(string clipName)
 		{
-			for (int x = 0; x < sound.Length; x++)
+			Sound sfxSound = GetSfxSound(clipName);
+			if (sfxSound == null)
 			{
-				if (sound[x].clipName == clipName)
-				{
-					sound[x].Stop();
-					return;
-				}
+				return;
 			}
-
-			//Debug.LogError("There is no sound called: " + _name);
+			
+			sfxSound.Stop();
 		}
 
 		public void PauseSound(string clipName, bool pause)
 		{
-			for (int x = 0; x < sound.Length; x++)
+			Sound sfxSound = GetSfxSound(clipName);
+			if (sfxSound == null)
 			{
-				if (sound[x].clipName == clipName)
+				return;
+			}
+			
+			sfxSound.Pause(pause);
+		}
+
+		private Sound GetSfxSound(string clipName)
+		{
+			for (int clipIndex = 0; clipIndex < SfxClips.Length; ++clipIndex)
+			{
+				if (SfxClips[clipIndex].ClipName == clipName)
 				{
-					sound[x].Pause(pause);
-					return;
+					return SfxClips[clipIndex];
 				}
 			}
 
-			//Debug.LogError("There is no sound called: " + _name);
+			Debug.LogError("There is no SFX sound called: " + clipName);
+			return null;
 		}
 	}
 }

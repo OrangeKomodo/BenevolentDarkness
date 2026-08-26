@@ -327,7 +327,7 @@ namespace Player
 
 		private void OnPlayerHit(float timeHit, float startingHealth, float health)
 		{
-			AudioManager.Instance.PlaySound("Player Hurt");
+			PlaySound("Player Hurt");
 			HealthBar.fillAmount = health / startingHealth;
 			_healthRegenBegin = timeHit + HealthRegenTime;
 		}
@@ -346,7 +346,7 @@ namespace Player
 		{
 			base.Die();
 			
-			AudioManager.Instance.PlaySound("Player Death");
+			PlaySound("Player Death");
 			Dead = true;
 			HealthBar.fillAmount = 0f;
 			Animator.SetTrigger("Dies");
