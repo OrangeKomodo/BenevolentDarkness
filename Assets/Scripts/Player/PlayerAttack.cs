@@ -6,106 +6,166 @@ namespace Player
 {
 	public class PlayerAttack : MonoBehaviour
 	{
-		public int damage;
+		public int Damage;
 
-		public Transform attackPos;
-		public float attackRange;
+		public Transform AttackPos;
+		public float AttackRange;
 
-		public float startTimeBetweenAttacks;
-		public LayerMask whatAreEnemies;
+		public float AttackCooldown;
+		public LayerMask WhatAreEnemies;
 
-		PlayerController playerController;
+		private PlayerController _playerController;
 
-		float timeBetweenAttacks;
-		bool seesBackside = false;
+		private float _currentAttackCooldown;
+		private bool _seesBackside = false;
 
-		bool triggerReleased = true;
+		private bool _attackButtonReleasedSinceLastAttack = true;
 
 		private void Start()
 		{
-			playerController = GetComponent<PlayerController>();
+			_playerController = GetComponent<PlayerController>();
 		}
 
-		private void FixedUpdate()
+		private void Update()
 		{
-			if (playerController.CanAttack)
-			{
-				RaycastHit2D playerRayHit;
-				Debug.DrawRay(transform.position, transform.right * (transform.localScale.x / Mathf.Abs(transform.localScale.x)), Color.magenta);
-				playerRayHit = Physics2D.Raycast(transform.position, transform.right * (transform.localScale.x / Mathf.Abs(transform.localScale.x)), 1f, whatAreEnemies);
+			HandleAttackCooldown();
+
+			HandleAttackButtonReleased();
 			
-				if (playerRayHit.collider != null && playerRayHit.collider.name.Equals("Backside"))
-				{
-					if (!seesBackside && !playerController.DisguisedAsGuard)
-					{
-						transform.GetComponent<PlayerController>().LoadAttackIcons(true);
-						seesBackside = true;
-					}
-
-					if (Input.GetAxis("Attack") == 1f)
-					{
-						playerController.PlaySound("Swipe");
-						playerRayHit.collider.GetComponentInParent<LivingEntity>().TakeHit(1000);
-						playerController.Attack(0);
-					}
-					else if (Input.GetButtonDown("Subdue"))
-					{
-						playerController.PlaySound("Swipe");
-						playerRayHit.collider.GetComponentInParent<Guard>().OnGuardUnconscious();
-						playerController.Attack(1);
-					}
-				}
-				else
-				{
-					if (seesBackside)
-					{
-						transform.GetComponent<PlayerController>().LoadAttackIcons(false);
-						seesBackside = false;
-					}
-
-					if (timeBetweenAttacks <= 0)
-					{
-						if (Input.GetAxis("Attack") == 1f && triggerReleased)
-						{
-							playerController.PlaySound("Swipe");
-							Collider2D[] enemiesToDamage = Physics2D.OverlapCircleAll(attackPos.position, attackRange, whatAreEnemies);
-						
-							for (int i = 0; i < enemiesToDamage.Length; i++)
-							{
-								if (!enemiesToDamage[i].name.Equals("Backside") &&
-								    !enemiesToDamage[i].name.Equals("Player"))
-								{
-									enemiesToDamage[i].GetComponent<LivingEntity>().TakeHit(damage);
-								}
-							}
-						
-							timeBetweenAttacks = startTimeBetweenAttacks;
-							playerController.Attack(0);
-							triggerReleased = false;
-						}
-					}
-					else
-					{
-						timeBetweenAttacks -= Time.deltaTime;
-					}
-				}
-			}
-
-			if (Input.GetAxis("Attack") == 1 && triggerReleased)
+			if (!_playerController.CanAttack)
 			{
-				triggerReleased = false;
+				return;
 			}
 
-			if (Input.GetAxis("Attack") == 0 && !triggerReleased)
-			{
-				triggerReleased = true;
-			}
+			CheckForBackside();
+
+			PerformAttack();
 		}
 
-		private void OnDrawGizmosSelected()
+		private void CheckForBackside()
 		{
-			Gizmos.color = Color.red;
-			Gizmos.DrawWireSphere(attackPos.position, attackRange);
+			// Calculate the raycast to check for a Backside
+			Vector2 playerPosition = transform.position;
+			Vector2 attackDirection = transform.right * (transform.localScale.x / Mathf.Abs(transform.localScale.x));
+
+			//Draw and perform the raycast
+			Debug.DrawRay(playerPosition, attackDirection * AttackRange, Color.magenta);
+			RaycastHit2D playerRayHit =
+				Physics2D.Raycast(transform.position, attackDirection, AttackRange, WhatAreEnemies);
+
+			// Negative check for the Backside
+			if (playerRayHit.collider == null || !playerRayHit.collider.name.Equals("Backside"))
+			{
+				// If the Backside isn't seen when it previously was, unload the Attack Icons
+				if (_seesBackside)
+				{
+					_playerController.LoadAttackIcons(false);
+					_seesBackside = false;
+				}
+
+				return;
+			}
+
+			// If the Backside is seen when it previously wasn't, load the Attack Icons
+			if (!_seesBackside)
+			{
+				_playerController.LoadAttackIcons(true);
+				_seesBackside = true;
+			}
+
+			// Handle player subduing the enemy
+			if (Input.GetButtonDown("Subdue"))
+			{
+				_playerController.PlaySound("Swipe");
+				playerRayHit.collider.GetComponentInParent<Guard>().OnGuardUnconscious();
+				_playerController.Attack(1);
+
+				return;
+			}
+
+			// Handle player attacking the enemy
+			// NOTE: It's purposeful that this attack ignores the cooldown. If the player has the enemy's backside, it should be a free kill.
+			if (Input.GetAxis("Attack") >= 1f)
+			{
+				_playerController.PlaySound("Swipe");
+				playerRayHit.collider.GetComponentInParent<LivingEntity>().TakeHit(1000);
+				_playerController.Attack(0);
+				_attackButtonReleasedSinceLastAttack = false;
+				_currentAttackCooldown = AttackCooldown;
+			}
 		}
+
+		private void HandleAttackCooldown()
+		{
+			// Handle ticking down the attack cooldown
+			if (_currentAttackCooldown <= 0f)
+			{
+				return;
+			}
+			
+			_currentAttackCooldown -= Time.deltaTime;
+		}
+
+		private void HandleAttackButtonReleased()
+		{
+			// Handle marking if the attack button is at less than 80% so the attack doesn't cycle if the player holds the button down
+			if (Input.GetAxis("Attack") >= 0.8f)
+			{
+				return;
+			}
+			
+			_attackButtonReleasedSinceLastAttack = true;
+		}
+
+		private void PerformAttack()
+		{
+			// Check if the attack button is active
+			if (Input.GetAxis("Attack") < 1f)
+			{
+				return;
+			}
+
+			// Check if the cooldown has expired
+			if (_currentAttackCooldown > 0f)
+			{
+				return;
+			}
+			
+			// Check if the button was released since last attack was consummated
+			if (!_attackButtonReleasedSinceLastAttack)
+			{
+				return;
+			}
+			
+			// Find enemy colliders in attack area
+			Collider2D[] enemiesToDamage = Physics2D.OverlapCircleAll(AttackPos.position, AttackRange, WhatAreEnemies);
+			
+			// Iterate through the colliders and apply damage
+			for (int enemyColliderIndex = 0; enemyColliderIndex < enemiesToDamage.Length; enemyColliderIndex++)
+			{
+				// Ignore the Backside and Player colliders that might be found in the list
+				if (enemiesToDamage[enemyColliderIndex].name.Equals("Backside") || enemiesToDamage[enemyColliderIndex].name.Equals("Player"))
+				{
+					continue;
+				}
+					
+				enemiesToDamage[enemyColliderIndex].GetComponent<LivingEntity>().TakeHit(Damage);
+			}
+			
+			// Perform attack audio and animations
+			_playerController.PlaySound("Swipe");
+			_playerController.Attack(0);
+			
+			// Set attack limiters
+			_currentAttackCooldown = AttackCooldown;
+			_attackButtonReleasedSinceLastAttack = false;
+		}
+
+		/*private void OnDrawGizmosSelected()
+		{
+			// Optional function to draw the Attack Sphere for debugging
+			Gizmos.color = Color.red;
+			Gizmos.DrawWireSphere(AttackPos.position, AttackRange);
+		}*/
 	}
 }

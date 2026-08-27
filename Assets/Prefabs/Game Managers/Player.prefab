@@ -483,10 +483,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bb5e6adf4f0c603418c577ab5654ac83, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  damage: 40
-  attackPos: {fileID: 4077740902953578}
-  attackRange: 0.75
-  startTimeBetweenAttacks: 0.5
-  whatAreEnemies:
+  Damage: 40
+  AttackPos: {fileID: 4077740902953578}
+  AttackRange: 0.75
+  AttackCooldown: 0.75
+  WhatAreEnemies:
     serializedVersion: 2
     m_Bits: 512
