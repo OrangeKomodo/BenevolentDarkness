@@ -15,70 +15,31 @@ namespace Items
 
 		public PlaceType Place;
 		public Transform Center;
-		public Transform Floor;
 		public bool IsHiding;
 
-		PlayerController player;
+		private PlayerController _player;
 
 		private void Start()
 		{
-			player = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerController>();
-			Center = transform.GetChild(0);
+			_player = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerController>();
 		}
 
 		public void Hide()
 		{
 			if (IsHiding)
 			{
-				Switch(false);
+				SetPlayerIsHiding(false);
 				return;
 			}
 			
-			bool isBeingChased = false;
-			int v = 0;
-			while (!isBeingChased && v < Floor.childCount)
-			{
-				Transform floorChild = Floor.GetChild(v);
-					
-				Guard potentialGuard = floorChild.GetChild(0).GetComponent<Guard>();
-				Sentry potentialSentry = floorChild.GetChild(0).GetComponent<Sentry>();
-					
-				if (potentialGuard?.SuspicionPercentage >= 1f || potentialSentry?.SuspicionPercentage >= 1f)
-				{
-					isBeingChased = true;
-				}
-					
-				if (!isBeingChased)
-				{
-					v++;
-				}
-			}
-
-			if (!isBeingChased)
-			{
-				player.transform.position = Center.position;
-				//player.GetComponent<Rigidbody2D>().linearVelocity = Vector2.zero;
-				Switch(true);
-			}
+			_player.transform.position = Center.position;
+			SetPlayerIsHiding(true);
 		}
 
-		private void Switch(bool newState)
+		private void SetPlayerIsHiding(bool newState)
 		{
 			IsHiding = newState;
-			player.InHidingPlace(IsHiding);
-
-			for (int i = 0; i < Floor.childCount; i++)
-			{
-				Transform floorChild = Floor.GetChild(i);
-				if (floorChild.name.Contains("Guard"))
-				{
-					floorChild.GetChild(0).GetComponent<Guard>().PlayerHiding(IsHiding);
-				}
-				else if (floorChild.name.Contains("Sentry"))
-				{
-					floorChild.GetChild(0).GetComponent<Sentry>().PlayerHiding(IsHiding);
-				}
-			}
+			_player.IsInHidingPlace(IsHiding);
 		}
 	}
 }

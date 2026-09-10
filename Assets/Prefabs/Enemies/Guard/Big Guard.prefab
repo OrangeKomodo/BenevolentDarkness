@@ -629,6 +629,7 @@ MonoBehaviour:
   SeesPlayer: 0
   CanMimic: 1
   Damage: 45
+  GuardVisionCircle: {fileID: 58830132923067746}
   AttackPos: {fileID: 4786208078686894}
   AttackRange: 1.125
   StartTimeBetweenAttack: 1.5
@@ -641,6 +642,9 @@ MonoBehaviour:
   WhatIsGround:
     serializedVersion: 2
     m_Bits: 6144
+  WhatIsWall:
+    serializedVersion: 2
+    m_Bits: 8192
   SuspicionSpriteMask: {fileID: 4542666647688778}
 --- !u!1 &1692860779696276
 GameObject:

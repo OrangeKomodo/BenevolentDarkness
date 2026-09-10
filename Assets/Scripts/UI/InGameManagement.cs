@@ -43,7 +43,7 @@ namespace UI
 
 		private void Start()
 		{
-			_spellCaster = FindObjectOfType<SpellCasting>();
+			_spellCaster = GameObject.FindGameObjectWithTag("Player").GetComponent<SpellCasting>();
 			_spellCount = new int[] { 3, 5, 7 }[_spellCaster.SpellLevel - 1];
 			_usingController = Input.GetJoystickNames().Length > 0;
 

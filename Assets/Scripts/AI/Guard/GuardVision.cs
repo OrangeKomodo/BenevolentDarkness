@@ -6,14 +6,18 @@ namespace AI.Guard
 {
 	public class GuardVision : MonoBehaviour
 	{
-		private Guard _guard;
-		private GameObject _player;
-		private PlayerController _playerController;
-
 		public bool BoxVisible = false;
 		public bool CircleVisible = false;
 		private bool _inRange = false;
 		private bool _wasInRange = false;
+
+		private Guard _guard;
+		private PolygonCollider2D _visionCollider;
+		private CircleCollider2D _attackCollider;
+		
+		private PlayerController _playerController;
+		private BoxCollider2D _playerBodyCollider;
+		private CircleCollider2D _playerFeetCollider;
 
 		private LayerMask _layerMask;
 
@@ -22,57 +26,95 @@ namespace AI.Guard
 
 		private void Start()
 		{
-			_guard = gameObject.transform.parent.GetComponent<Guard>();
-			_player = GameObject.FindGameObjectWithTag("Player");
-			_playerController = _player.GetComponent<PlayerController>();
+			_guard = GetComponentInParent<Guard>();
+			_visionCollider = GetComponent<PolygonCollider2D>();
+			_attackCollider = GetComponent<CircleCollider2D>();
+			
+			_playerController = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerController>();
+			_playerBodyCollider = _playerController.GetComponent<BoxCollider2D>();
+			_playerFeetCollider = _playerController.GetComponent<CircleCollider2D>();
+			
 			_layerMask = LayerMask.GetMask("Player", "Platforms", "Affected Platforms");
 		}
 
-		private void FixedUpdate()
+		private void Update()
 		{
-			if (!_playerController.DisguisedAsGuard)
+			SearchForPlayer();
+
+			SearchForOtherGuards();
+		}
+
+		private void SearchForPlayer()
+		{
+			if (_playerController.DisguisedAsGuard || _playerController.InShadowSink)
 			{
-				if (BoxVisible || CircleVisible)
-				{
-					Debug.DrawRay(transform.position,
-						(_player.transform.position - transform.position).normalized
-						* Mathf.Clamp(Vector2.Distance(transform.position, _player.transform.position), 0f, 15f),
-						Color.yellow);
-					RaycastHit2D playerRayHit = Physics2D.Raycast(transform.position,
-						_player.transform.position - transform.position,
-						Mathf.Clamp(Vector2.Distance(transform.position, _player.transform.position), 0f, 15f), _layerMask);
-
-					if (playerRayHit.collider != null && playerRayHit.collider.tag.Equals("Player"))
-					{
-						_guard.CheckSeesPlayer(_player.GetComponent<PlayerController>().VisibilityFactor);
-					}
-				}
-
-				if (!BoxVisible && !CircleVisible && _guard.SeesPlayer)
-				{
-					_guard.LostPlayer();
-				}
-
-				if (!_playerController.InShadowSink && (!_wasInRange && _inRange || _wasInRange && !_inRange))
-				{
-					_guard.PlayerInMeleeRange(_inRange);
-					_wasInRange = !_wasInRange;
-				}
+				return;
 			}
 
-			if (_visibleGuards.Count > 0)
+			if (!BoxVisible && !CircleVisible)
 			{
-				for (int i = 0; i < _visibleGuards.Count; i++)
+				_guard.LostPlayer();
+				return;
+			}
+
+			if (_inRange && !_wasInRange)
+			{
+				_guard.SetPlayerInMeleeRange();
+				_wasInRange = true;
+			}
+
+			if (!_inRange && _wasInRange)
+			{
+				_guard.SetPlayerOutOfMeleeRange();
+				_wasInRange = false;
+			}
+
+			if (!BoxVisible && !CircleVisible)
+			{
+				return;
+			}
+			
+			Vector2 visionPosition = transform.position;
+			Vector2 playerDirection = _playerController.transform.position - transform.position;
+			float clampedDistance = Mathf.Clamp(Vector2.Distance(transform.position, _playerController.transform.position), 0f, 15f);
+				
+			Debug.DrawRay(visionPosition, playerDirection.normalized * clampedDistance, Color.yellow);
+			RaycastHit2D playerRayHit = Physics2D.Raycast(visionPosition, playerDirection, clampedDistance, _layerMask);
+
+			if (playerRayHit.collider != null && playerRayHit.collider.tag.Equals("Player"))
+			{
+				_guard.CheckSeesPlayer(_playerController.VisibilityFactor);
+			}
+		}
+
+		private void SearchForOtherGuards()
+		{
+			if (_visibleGuards.Count == 0)
+			{
+				return;
+			}
+			
+			for (int fellowGuardIndex = 0; fellowGuardIndex < _visibleGuards.Count; fellowGuardIndex++)
+			{
+				Guard fellowGuard = _visibleGuards[fellowGuardIndex];
+				
+				if (fellowGuard.State != Guard.GuardState.Dead && fellowGuard.State != Guard.GuardState.Unconscious)
 				{
-					Guard fellowGuard = _visibleGuards[i];
-					if ((fellowGuard.State == Guard.GuardState.Dead || fellowGuard.State == Guard.GuardState.Unconscious)
-					    && !_incapacitatedGuards.Contains(fellowGuard)
-					    && fellowGuard.transform.parent.parent == transform.parent.parent.parent)
-					{
-						_incapacitatedGuards.Add(fellowGuard);
-						_guard.FoundGuard(fellowGuard);
-					}
+					continue;
 				}
+
+				if (fellowGuard.transform.parent.parent != transform.parent.parent.parent)
+				{
+					continue;
+				}
+				
+				if (_incapacitatedGuards.Contains(fellowGuard))
+				{
+					continue;
+				}
+				
+				_incapacitatedGuards.Add(fellowGuard);
+				_guard.FoundGuard(fellowGuard);
 			}
 		}
 
@@ -80,17 +122,16 @@ namespace AI.Guard
 		{
 			if (otherCollider.tag.Equals("Player"))
 			{
-				if (otherCollider.Equals(_player.GetComponent<BoxCollider2D>()))
+				if (otherCollider.Equals(_playerBodyCollider))
 				{
 					BoxVisible = true;
 				}
-				else if (otherCollider.Equals(_player.GetComponent<CircleCollider2D>()))
+				else if (otherCollider.Equals(_playerFeetCollider))
 				{
 					CircleVisible = true;
 				}
 				
-				_inRange = GetComponent<CircleCollider2D>().IsTouching(_player.GetComponent<BoxCollider2D>())
-				          || GetComponent<CircleCollider2D>().IsTouching(_player.GetComponent<CircleCollider2D>());
+				_inRange = _attackCollider.IsTouching(_playerBodyCollider) || _attackCollider.IsTouching(_playerFeetCollider);
 			}
 
 			if (otherCollider.name.Equals("Guard Actual") && !_visibleGuards.Contains(otherCollider.GetComponent<Guard>()))
@@ -103,18 +144,16 @@ namespace AI.Guard
 		{
 			if (otherCollider.tag.Equals("Player"))
 			{
-				if (otherCollider.Equals(_player.GetComponent<BoxCollider2D>()) && !GetComponent<PolygonCollider2D>()
-					    .IsTouching(_player.GetComponent<BoxCollider2D>()))
+				if (otherCollider.Equals(_playerBodyCollider) && !_visionCollider.IsTouching(_playerBodyCollider))
 				{
 					BoxVisible = false;
 				}
-				else if (otherCollider.Equals(_player.GetComponent<CircleCollider2D>()))
+				else if (otherCollider.Equals(_playerFeetCollider))
 				{
 					CircleVisible = false;
 				}
 
-				_inRange = GetComponent<CircleCollider2D>().IsTouching(_player.GetComponent<BoxCollider2D>())
-				           || GetComponent<CircleCollider2D>().IsTouching(_player.GetComponent<CircleCollider2D>());
+				_inRange = _attackCollider.IsTouching(_playerBodyCollider) || _attackCollider.IsTouching(_playerFeetCollider);
 			}
 
 			if (otherCollider.name.Equals("Guard Actual") && _visibleGuards.Contains(otherCollider.GetComponent<Guard>()))

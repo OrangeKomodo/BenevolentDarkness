@@ -19,14 +19,12 @@ namespace GameManager
 
 		private bool _started = false;
 
-		void Start()
+		private void Start()
 		{
 			_playerController = Player.GetComponent<PlayerController>();
 			_guards = EnemiesHolder.GetComponentsInChildren<Guard>();
 			_sentries = EnemiesHolder.GetComponentsInChildren<Sentry>();
 			_itemManager = ItemsHolder.GetComponent<ItemManager>();
-
-			//QuickSaveAll ();
 		}
 
 		private void Update()

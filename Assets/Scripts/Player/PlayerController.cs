@@ -48,9 +48,10 @@ namespace Player
 		public Transform EnemiesHolder;
 		public Transform Canvas;
 
-		public List<string> Inventory = new List<string>();
-		public List<LightArea> Lights = new List<LightArea>();
-		public List<Item> Items = new List<Item>();
+		[HideInInspector] public List<string> Inventory = new List<string>();
+		
+		private List<LightArea> _lights = new List<LightArea>();
+		private List<Item> _items = new List<Item>();
 
 		public LayerMask[] HidingPlaceLayerMasks;
 		
@@ -74,8 +75,10 @@ namespace Player
 		{
 			base.Start();
 
-			_playerQuickSave = new PlayerQuickSave();
-			_playerQuickSave.Inventory = new List<string>();
+			_playerQuickSave = new PlayerQuickSave
+			{
+				Inventory = new List<string>()
+			};
 
 			_guards = EnemiesHolder.GetComponentsInChildren<Guard>();
 			_sentries = EnemiesHolder.GetComponentsInChildren<Sentry>();
@@ -112,23 +115,16 @@ namespace Player
 			}
 			
 			LightTotals = 0f;
-			for (int i = 0; i < Lights.Count; i++)
+			for (int i = 0; i < _lights.Count; i++)
 			{
-				float radius = Lights[i].Collider2D.radius;
-				float distance = Vector2.Distance(transform.position, Lights[i].transform.position);
-				LightTotals += radius * (radius - distance) / 50;
+				float radius = _lights[i].Collider2D.radius;
+				float distance = Vector2.Distance(transform.position, _lights[i].transform.position);
+				LightTotals += radius * (radius - distance) / 50f;
 			}
 
 			RawVisibilityFactor = BaseVisibilityFactor + LightTotals;
 
-			if (!Spellcaster.Hidden)
-			{
-				VisibilityFactor = RawVisibilityFactor;
-			}
-			else
-			{
-				VisibilityFactor = 0f;
-			}
+			VisibilityFactor = Spellcaster.Hidden ? 0f : RawVisibilityFactor;
 			
 			if (Health < StartingHealth && _healthRegenBegin <= Time.time)
 			{
@@ -137,7 +133,7 @@ namespace Player
 				_healthRegenBegin = Time.time + HealthRegenTick;
 			}
 
-			if (Items.Count > 0)
+			if (_items.Count > 0)
 			{
 				if (!_canUse)
 				{
@@ -145,7 +141,7 @@ namespace Player
 					_canUse = true;
 				}
 
-				Item currentItem = Items[0];
+				Item currentItem = _items[0];
 
 				if (Input.GetButtonDown("Use") && !DisguisedAsGuard)
 				{
@@ -172,7 +168,7 @@ namespace Player
 								InGameManagement.Instance.LoadMissionText("Make your way to the Exit");
 							}
 
-							Items.Remove(currentItem);
+							_items.Remove(currentItem);
 							break;
 						}
 						case Item.ItemType.Button:
@@ -236,9 +232,9 @@ namespace Player
 			UpdatePlayerSeenStatus();
 		}
 
-		public void PlaySound(string _name)
+		public void PlaySound(string clipName)
 		{
-			AudioManager.Instance.PlaySound(_name);
+			AudioManager.Instance.PlaySound(clipName);
 		}
 
 		public void Flip()
@@ -261,19 +257,24 @@ namespace Player
 			PlayerSprite.sortingOrder = InShadowSink ? 0 : 2;
 		}
 
-		public void InHidingPlace(bool isHiding)
+		public void IsInHidingPlace(bool isHiding)
 		{
 			Physics2D.SetLayerCollisionMask(8, HidingPlaceLayerMasks[isHiding ? 1 : 0]);
 			PlayerSprite.sortingOrder = isHiding ? -7 : 2;
-			Animator.SetBool("Under Table", isHiding);
+			Animator.SetBool("Under Table", true);
 			Freeze(isHiding);
 		}
 
-		public void Freeze(bool freezing)
+		public void Freeze(bool freeze)
 		{
-			CanAttack = !freezing;
-			Spellcaster.SetCanSpellcast(!freezing);
-			PlatformerCharacter.frozen = freezing;
+			CanAttack = !freeze;
+			Spellcaster.SetCanSpellcast(!freeze);
+			PlatformerCharacter.frozen = freeze;
+
+			if (freeze)
+			{
+				Rigidbody.linearVelocity = Vector2.zero;
+			}
 		}
 
 		public void InDisguise(bool isDisguised)
@@ -362,14 +363,14 @@ namespace Player
 			LightArea lightArea = otherCollider.GetComponent<LightArea>();
 			Item item = otherCollider.GetComponent<Item>();
 			
-			if (lightArea != null && !Lights.Contains(lightArea))
+			if (lightArea != null && !_lights.Contains(lightArea))
 			{
-				Lights.Add(lightArea);
+				_lights.Add(lightArea);
 			}
 
-			if (item != null && !Items.Contains(item))
+			if (item != null && !_items.Contains(item))
 			{
-				Items.Add(item);
+				_items.Add(item);
 			}
 		}
 
@@ -378,14 +379,14 @@ namespace Player
 			LightArea lightArea = otherCollider.GetComponent<LightArea>();
 			Item item = otherCollider.GetComponent<Item>();
 			
-			if (lightArea != null && Lights.Contains(lightArea))
+			if (lightArea != null && _lights.Contains(lightArea))
 			{
-				Lights.Remove(lightArea);
+				_lights.Remove(lightArea);
 			}
 
-			if (item != null && Items.Contains(item))
+			if (item != null && _items.Contains(item))
 			{
-				Items.Remove(item);
+				_items.Remove(item);
 			}
 		}
 
@@ -414,7 +415,7 @@ namespace Player
 			_deathScreenLoaded = false;
 			HealthBar.fillAmount = Health;
 			Spellcaster.CurrentMana = _playerQuickSave.Mana;
-			Freeze(false);
+			Freeze(_playerQuickSave.Frozen);
 			Spellcaster.CurrentSpell = _playerQuickSave.Spell;
 			Inventory.Clear();
 			Inventory.AddRange(_playerQuickSave.Inventory);
