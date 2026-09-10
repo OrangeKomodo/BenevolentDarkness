@@ -427,8 +427,6 @@ MonoBehaviour:
   EnemiesHolder: {fileID: 0}
   Canvas: {fileID: 0}
   Inventory: []
-  Lights: []
-  Items: []
   HidingPlaceLayerMasks:
   - serializedVersion: 2
     m_Bits: 4294967295
@@ -468,9 +466,9 @@ MonoBehaviour:
   Hidden: 0
   ManaCap: 150
   CurrentMana: 150
-  ManaRestoreTick: 0.5
+  ManaRestoreTick: 0.1
   ManaRestoreAmount: 1
-  ManaRestoreBegin: 0
+  ManaRestoreBegin: 2
 --- !u!114 &114352418811882260
 MonoBehaviour:
   m_ObjectHideFlags: 0
