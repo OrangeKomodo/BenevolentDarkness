@@ -19,7 +19,7 @@ namespace Player
 		private float _currentAttackCooldown;
 		private bool _seesBackside = false;
 
-		private bool _attackButtonReleasedSinceLastAttack = true;
+		private bool _attackButtonPressed = true;
 
 		private void Start()
 		{
@@ -28,10 +28,15 @@ namespace Player
 
 		private void Update()
 		{
+			HandleAttack();
+			
 			HandleAttackCooldown();
 
 			HandleAttackButtonReleased();
-			
+		}
+
+		private void HandleAttack()
+		{
 			if (!_playerController.CanAttack)
 			{
 				return;
@@ -90,7 +95,7 @@ namespace Player
 				_playerController.PlaySound("Swipe");
 				playerRayHit.collider.GetComponentInParent<LivingEntity>().TakeHit(1000);
 				_playerController.Attack(0);
-				_attackButtonReleasedSinceLastAttack = false;
+				_attackButtonPressed = false;
 				_currentAttackCooldown = AttackCooldown;
 			}
 		}
@@ -108,13 +113,19 @@ namespace Player
 
 		private void HandleAttackButtonReleased()
 		{
-			// Handle marking if the attack button is at less than 80% so the attack doesn't cycle if the player holds the button down
-			if (Input.GetAxis("Attack") >= 0.8f)
+			// If the Attack button is fully pressed, record it
+			if (Input.GetAxis("Attack") >= 1f)
 			{
+				_attackButtonPressed = true;
 				return;
 			}
 			
-			_attackButtonReleasedSinceLastAttack = true;
+			// If the Attack button is a good deal un-pressed, reset the variable
+			if (Input.GetAxis("Attack") <= 0.8f)
+			{
+				_attackButtonPressed = false;
+				return;
+			}
 		}
 
 		private void PerformAttack()
@@ -132,7 +143,7 @@ namespace Player
 			}
 			
 			// Check if the button was released since last attack was consummated
-			if (!_attackButtonReleasedSinceLastAttack)
+			if (_attackButtonPressed)
 			{
 				return;
 			}
@@ -158,7 +169,7 @@ namespace Player
 			
 			// Set attack limiters
 			_currentAttackCooldown = AttackCooldown;
-			_attackButtonReleasedSinceLastAttack = false;
+			_attackButtonPressed = true;
 		}
 
 		/*private void OnDrawGizmosSelected()
