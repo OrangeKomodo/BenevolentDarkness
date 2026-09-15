@@ -1,5 +1,4 @@
-﻿using AI.Guard;
-using AI.Sentry;
+﻿
 using Player;
 using UnityEngine;
 
@@ -17,14 +16,14 @@ namespace Items
 		public Transform Center;
 		public bool IsHiding;
 
-		private PlayerController _player;
+		private PlayerController _playerController;
 
 		private void Start()
 		{
-			_player = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerController>();
+			_playerController = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerController>();
 		}
 
-		public void Hide()
+		public override void Interact()
 		{
 			if (IsHiding)
 			{
@@ -32,14 +31,14 @@ namespace Items
 				return;
 			}
 			
-			_player.transform.position = Center.position;
+			_playerController.transform.position = Center.position;
 			SetPlayerIsHiding(true);
 		}
 
 		private void SetPlayerIsHiding(bool newState)
 		{
 			IsHiding = newState;
-			_player.IsInHidingPlace(IsHiding);
+			_playerController.IsInHidingPlace(IsHiding);
 		}
 	}
 }

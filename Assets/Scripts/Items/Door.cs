@@ -1,43 +1,47 @@
-﻿using System.Collections.Generic;
+﻿using Player;
 using UnityEngine;
 
 namespace Items
 {
 	public class Door : Item
 	{
+		public string AudioCueName = "Door";
+
 		public Door AdjoiningDoor;
 		public Transform Center;
 		public bool Locked;
 		public string KeyName;
 
-		private GameObject _player;
+		private PlayerController _playerController;
 
 		private void Start()
 		{
-			_player = GameObject.FindGameObjectWithTag("Player");
+			_playerController = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerController>();
 		}
 
-		public void UseDoor(List<string> inventory)
+		public override void Interact()
 		{
 			if (AdjoiningDoor == null)
 			{
-				//Debug.LogError ("There is no other door");
+				//Debug.LogError("There is no other door");
 				return;
 			}
 
-			if (Locked && inventory.Contains(KeyName))
+			if (Locked && !_playerController.Inventory.Contains(KeyName))
 			{
-				Locked = false;
-				AdjoiningDoor.Locked = false;
-				Vector3 offset = new Vector3(_player.transform.position.x - Center.position.x,
-					_player.transform.position.y - Center.position.y, 0f);
-				_player.transform.position = AdjoiningDoor.Center.position + offset;
+				//TODO: Add an audio cue for a locked door
+				return;
 			}
-			else if (!Locked)
-			{
-				Vector3 offset = new Vector3(_player.transform.position.x - Center.position.x, _player.transform.position.y - Center.position.y, 0f);
-				_player.transform.position = AdjoiningDoor.Center.position + offset;
-			}
+			
+			_playerController.PlaySound(AudioCueName);
+
+			Locked = false;
+			AdjoiningDoor.Locked = false;
+
+			Vector3 playerPosition = _playerController.transform.position;
+			Vector3 offset = new Vector3(playerPosition.x - Center.position.x, playerPosition.y - Center.position.y);
+			
+			_playerController.transform.position = AdjoiningDoor.Center.position + offset;
 		}
 	}
 }

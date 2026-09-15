@@ -8,6 +8,12 @@ namespace GameManager
 		public void SetObjectiveStatus(int objectiveNumber, Objective.Status newStatus)
 		{
 			int objectiveIndex = FindObjectiveIndex(objectiveNumber);
+
+			if (objectiveIndex == -1)
+			{
+				return;
+			}
+			
 			Objectives[objectiveIndex].SetStatus(newStatus);
 
 			if (newStatus == Objective.Status.Completed)
@@ -21,7 +27,7 @@ namespace GameManager
 			}
 		}
 
-		int FindObjectiveIndex(int objectiveNumber)
+		private int FindObjectiveIndex(int objectiveNumber)
 		{
 			for (int objectiveIndex = 0; objectiveIndex < Objectives.Length; ++objectiveIndex)
 			{

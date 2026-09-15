@@ -85,6 +85,11 @@ namespace GameManager
 
 		private Sound GetSfxSound(string clipName)
 		{
+			if (string.IsNullOrWhiteSpace(clipName))
+			{
+				return null;
+			}
+			
 			for (int clipIndex = 0; clipIndex < SfxClips.Length; ++clipIndex)
 			{
 				if (SfxClips[clipIndex].ClipName == clipName)

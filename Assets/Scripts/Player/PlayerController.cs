@@ -150,49 +150,22 @@ namespace Player
 
 				if (Input.GetButtonDown("Use"))
 				{
-					switch (currentItem.Type)
+					if (currentItem is MissionItem missionItem)
 					{
-						case Item.ItemType.MissionItem:
+						missionItem.Interact();
+						Inventory.Add(missionItem.ItemName);
+						missionItem.gameObject.SetActive(false);
+					}
+					else if (currentItem is HidingPlace hidingPlace)
+					{
+						if (!DisguisedAsGuard)
 						{
-							PlaySound("Swipe");
-							Inventory.Add(currentItem.ItemName);
-							currentItem.gameObject.SetActive(false);
-							if (currentItem.ItemName.Equals("Ledger"))
-							{
-								ObjectiveSystem.Instance.SetObjectiveStatus(101, Objective.Status.Completed);
-								InGameManagement.Instance.LoadMissionText("Make your way to the Exit");
-							}
-							if (currentItem.ItemName.Equals("Chalice"))
-							{
-								ObjectiveSystem.Instance.SetObjectiveStatus(201, Objective.Status.Completed);
-								InGameManagement.Instance.LoadMissionText("Make your way to the Exit");
-							}
-
-							_items.Remove(currentItem);
-							break;
+							hidingPlace.Interact();
 						}
-						case Item.ItemType.Button:
-						{
-							PlaySound("Use Button");
-							(currentItem as ButtonItem)?.UseButton();
-							break;
-						}
-						case Item.ItemType.Door:
-						{
-							PlaySound("Door");
-							(currentItem as Door)?.UseDoor(Inventory);
-							break;
-						}
-						case Item.ItemType.HidingPlace:
-						{
-							if (DisguisedAsGuard)
-							{
-								break;
-							}
-							
-							(currentItem as HidingPlace)?.Hide();
-							break;
-						}
+					}
+					else
+					{
+						currentItem.Interact();
 					}
 				}
 			}
@@ -261,7 +234,7 @@ namespace Player
 		{
 			Physics2D.SetLayerCollisionMask(8, HidingPlaceLayerMasks[isHiding ? 1 : 0]);
 			PlayerSprite.sortingOrder = isHiding ? -7 : 2;
-			Animator.SetBool("Under Table", true);
+			Animator.SetBool("Under Table", isHiding);
 			Freeze(isHiding);
 		}
 

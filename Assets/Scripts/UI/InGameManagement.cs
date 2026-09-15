@@ -138,9 +138,14 @@ namespace UI
 			}
 		}
 
-		public void LoadMissionText(string newMission)
+		public void LoadMissionText(string newMissionText)
 		{
-			MissionText.text = newMission;
+			if (string.IsNullOrWhiteSpace(newMissionText))
+			{
+				return;
+			}
+			
+			MissionText.text = newMissionText;
 			StartCoroutine(AbilitiesAnimation(1, 3f));
 		}
 
