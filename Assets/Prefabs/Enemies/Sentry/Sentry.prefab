@@ -92,9 +92,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 829858acd28e11549ba62750187bc80f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  sentry: {fileID: 114306782141493584}
-  idleTime: 0
-  nextStop: {fileID: 4684249321804084}
+  Sentry: {fileID: 114306782141493584}
+  IdleTime: 0
+  NextStop: {fileID: 4684249321804084}
 --- !u!114 &114711073004088202
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -108,8 +108,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   RightConstraint: 0
-  Sentries:
-  - {fileID: 1361971254939598}
 --- !u!1 &1107840597630568
 GameObject:
   m_ObjectHideFlags: 0
@@ -331,9 +329,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 829858acd28e11549ba62750187bc80f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  sentry: {fileID: 114306782141493584}
-  idleTime: 0
-  nextStop: {fileID: 4191360915605066}
+  Sentry: {fileID: 114306782141493584}
+  IdleTime: 0
+  NextStop: {fileID: 4191360915605066}
 --- !u!114 &114296988208174234
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -347,8 +345,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   RightConstraint: 1
-  Sentries:
-  - {fileID: 1361971254939598}
 --- !u!1 &1277131069011272
 GameObject:
   m_ObjectHideFlags: 0
@@ -562,7 +558,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: cab44603eb23f7e4faf94074ae6b2fd0, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier: Assembly-CSharp::AI.Sentry.Sentry
   StartingHealth: 1
   Health: 1
   Dead: 0
@@ -570,6 +566,7 @@ MonoBehaviour:
   SentryStopsHolder: {fileID: 1107840597630568}
   NextStop: {fileID: 4684249321804084}
   FlySpeed: 3
+  ChaseSpeed: 30
   SuspicionPercentage: 0
   SeesPlayer: 0
   WhatAreEnemies:
@@ -578,6 +575,9 @@ MonoBehaviour:
   WhatIsGround:
     serializedVersion: 2
     m_Bits: 6144
+  WhatIsWall:
+    serializedVersion: 2
+    m_Bits: 8192
   SuspicionSpriteMask: {fileID: 4164853151514134}
   UnawareSprite: {fileID: 21300000, guid: e9bc923d169fa5f4084b4e02f8546e10, type: 3}
   ChasingSprite: {fileID: 21300000, guid: c236923240bf874488a1987d48f92743, type: 3}

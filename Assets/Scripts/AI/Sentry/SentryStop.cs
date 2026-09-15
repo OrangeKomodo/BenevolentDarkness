@@ -1,25 +1,24 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using AI.Sentry;
-using UnityEngine;
+﻿using UnityEngine;
 
-public class SentryStop : MonoBehaviour
+namespace AI.Sentry
 {
-
-	public Sentry sentry;
-	public float idleTime = 0f;
-	public Transform nextStop;
-
-	private void OnTriggerEnter2D(Collider2D collider)
+	public class SentryStop : MonoBehaviour
 	{
-		if (collider.gameObject.Equals(sentry.gameObject) && sentry.NextStop == transform)
+		public Sentry Sentry;
+		public float IdleTime = 0f;
+		public Transform NextStop;
+
+		private void OnTriggerEnter2D(Collider2D otherCollider)
 		{
-			ForceUpdate();
+			if (otherCollider.gameObject.Equals(Sentry.gameObject) && Sentry.NextStop == transform)
+			{
+				ForceUpdate();
+			}
 		}
-	}
 
-	public void ForceUpdate()
-	{
-		sentry.StopReached(idleTime, nextStop);
+		public void ForceUpdate()
+		{
+			Sentry.StopReached(IdleTime, NextStop);
+		}
 	}
 }

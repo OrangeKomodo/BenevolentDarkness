@@ -69,7 +69,7 @@ namespace AI.Guard
 		private bool _playerDead;
 		private bool _inStasis = false;
 		private bool _inForceField = false;
-		private bool _takedownManaged = false;
+		private bool _incapacitationManaged = false;
 		private bool _groundReached = false;
 
 		private float _idleTime;
@@ -86,7 +86,7 @@ namespace AI.Guard
 		private float _lastSeenTime;
 		private bool _canSpot = true;
 
-		private float _playerAwarnessUpdateTime = 0.02f;
+		private float _playerAwarenessUpdateTime = 0.02f;
 		private float _nextPlayerAwarenessUpdate;
 		private float _alertedTime = 7f;
 		private float _alertedEndTime;
@@ -136,7 +136,7 @@ namespace AI.Guard
 
 		private void Update()
 		{
-			// If Player's dead, nothing matters.
+			// If the Player's dead, nothing matters.
 			if (_playerDead)
 			{
 				return;
@@ -145,7 +145,7 @@ namespace AI.Guard
 			// If Guard is incapacitated, have them fall down and animate. THEN, nothing matters.
 			if (State == GuardState.Dead || State == GuardState.Unconscious)
 			{
-				HandleIncapacitatedGuard();
+				HandleIncapacitation();
 				HandleFallToGround();
 				return;
 			}
@@ -178,7 +178,7 @@ namespace AI.Guard
 			
 			if (State == GuardState.Unaware)
 			{
-				HandleGuardPatrol();
+				HandleEnemyPatrol();
 			}
 
 			if (State == GuardState.Chasing)
@@ -195,9 +195,9 @@ namespace AI.Guard
 		}
 
 		// Run code once to functionally kill the guard.
-		private void HandleIncapacitatedGuard()
+		private void HandleIncapacitation()
 		{
-			if (_takedownManaged)
+			if (_incapacitationManaged)
 			{
 				return;
 			}
@@ -210,7 +210,7 @@ namespace AI.Guard
 			}
 			GuardStopsHolder.SetActive(false);
 
-			_takedownManaged = true;
+			_incapacitationManaged = true;
 		}
 
 		// Let the guard fall until a downward facing raycast hits the ground. Then stop movement.
@@ -256,7 +256,7 @@ namespace AI.Guard
 		}
 
 		// Handle Guard Patrol
-		private void HandleGuardPatrol()
+		private void HandleEnemyPatrol()
 		{
 			if (!_idling)
 			{
@@ -278,7 +278,7 @@ namespace AI.Guard
 		//Takes information from the Guard Stop once one has been reached to determine the Guard's behavior.
 		public void StopReached(float idleTime, Vector2 idleDirection, Transform nextStop)
 		{
-			if (Dead || _inStasis || State == GuardState.Corrupted)
+			if (Dead || _inStasis || _inForceField || State == GuardState.Corrupted)
 			{
 				return;
 			}
@@ -301,12 +301,22 @@ namespace AI.Guard
 			Idle();
 		}
 
+		// Holds the Guard forcibly when it's reached its boundary
+		public void ConstrainEnemy(Vector3 constraintPosition)
+		{
+			if (_inForceField)
+			{
+				return;
+			}
+
+			transform.position = constraintPosition;
+		}
+
 		// Stop the Guard in place for a set amount of time while patrolling.
 		private void Idle()
 		{
 			_idleFinishTime = Time.time + _idleTime;
 			ChangeDirection(_idleDirection);
-			//anim.SetInteger ("Walk State", 0);
 			_idling = true;
 		}
 		
@@ -329,11 +339,6 @@ namespace AI.Guard
 		// Called by the Guard Vision when the Guard no longer sees the player.
 		public void LostPlayer()
 		{
-			if (!SeesPlayer)
-			{
-				return;
-			}
-			
 			SeesPlayer = false;
 		}
 
@@ -351,7 +356,7 @@ namespace AI.Guard
 				return;
 			}
 			
-			_nextPlayerAwarenessUpdate = Time.time + _playerAwarnessUpdateTime;
+			_nextPlayerAwarenessUpdate = Time.time + _playerAwarenessUpdateTime;
 			
 			// Update Suspicion Percentage based on the Player's visibility and reflect it visually.
 			UpdateSuspicionPercentage();
@@ -914,7 +919,7 @@ namespace AI.Guard
 				_rigidbody.constraints = RigidbodyConstraints2D.None | RigidbodyConstraints2D.FreezeRotation;
 				
 				Dead = false;
-				_takedownManaged = false;
+				_incapacitationManaged = false;
 				_groundReached = false;
 			}
 		}

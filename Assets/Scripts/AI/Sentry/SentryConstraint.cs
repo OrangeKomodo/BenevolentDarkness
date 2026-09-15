@@ -6,47 +6,51 @@ namespace AI.Sentry
 	public class SentryConstraint : MonoBehaviour
 	{
 		public bool RightConstraint;
-		public List<GameObject> Sentries = new List<GameObject>();
+		
+		private List<Sentry> _constrainedSentries = new List<Sentry>();
 
-		private void FixedUpdate()
+		private void Update()
 		{
-			if (Sentries.Count > 0)
+			if (_constrainedSentries.Count == 0)
 			{
-				for (int i = 0; i < Sentries.Count; i++)
+				return;
+			}
+			
+			for (int sentryIndex = 0; sentryIndex < _constrainedSentries.Count; ++sentryIndex)
+			{
+				Sentry constrainedSentry = _constrainedSentries[sentryIndex];
+				Transform sentryTransform = constrainedSentry.transform;
+				
+				if (RightConstraint)
 				{
-					if (RightConstraint)
+					if (sentryTransform.position.x > transform.position.x)
 					{
-						if (Sentries[i].transform.position.x > transform.position.x)
-						{
-							Sentries[i].transform.position =
-								new Vector2(transform.position.x, Sentries[i].transform.position.y);
-						}
+						constrainedSentry.ConstrainEnemy(new Vector2(transform.position.x, sentryTransform.position.y));
 					}
-					else
-					{
-						if (Sentries[i].transform.position.x < transform.position.x)
-						{
-							Sentries[i].transform.position =
-								new Vector2(transform.position.x, Sentries[i].transform.position.y);
-						}
-					}
+
+					continue;
+				}
+				
+				if (sentryTransform.position.x < transform.position.x)
+				{
+					constrainedSentry.ConstrainEnemy(new Vector2(transform.position.x, sentryTransform.position.y));
 				}
 			}
 		}
 
-		private void OnTriggerEnter2D(Collider2D collider)
+		private void OnTriggerEnter2D(Collider2D otherCollider)
 		{
-			if (collider.name.Equals("Sentry Actual") && !Sentries.Contains(collider.gameObject))
+			if (otherCollider.name.Equals("Sentry Actual") && !_constrainedSentries.Contains(otherCollider.GetComponent<Sentry>()))
 			{
-				Sentries.Add(collider.gameObject);
+				_constrainedSentries.Add(otherCollider.GetComponent<Sentry>());
 			}
 		}
 
-		void OnTriggerExit2D(Collider2D collider)
+		void OnTriggerExit2D(Collider2D otherCollider)
 		{
-			if (collider.name.Equals("Sentry Actual") && Sentries.Contains(collider.gameObject))
+			if (otherCollider.name.Equals("Sentry Actual") && _constrainedSentries.Contains(otherCollider.GetComponent<Sentry>()))
 			{
-				Sentries.Remove(collider.gameObject);
+				_constrainedSentries.Remove(otherCollider.GetComponent<Sentry>());
 			}
 		}
 	}

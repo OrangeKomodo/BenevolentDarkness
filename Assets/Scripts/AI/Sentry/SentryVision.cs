@@ -5,76 +5,82 @@ namespace AI.Sentry
 {
 	public class SentryVision : MonoBehaviour
 	{
-		Sentry sentry;
-		GameObject player;
-		PlayerController playerController;
+		private Sentry _sentry;
+		private PolygonCollider2D _visionCollider;
+		
+		private PlayerController _playerController;
+		private BoxCollider2D _playerBodyCollider;
+		private CircleCollider2D _playerFeetCollider;
 
-		bool boxVisible = false;
-		bool circleVisible = false;
+		private bool _boxVisible = false;
+		private bool _circleVisible = false;
 
-		LayerMask layerMask;
+		private LayerMask _layerMask;
 
 		private void Start()
 		{
-			sentry = gameObject.transform.parent.GetComponent<Sentry>();
-			player = GameObject.FindGameObjectWithTag("Player");
-			playerController = player.GetComponent<PlayerController>();
-			layerMask = LayerMask.GetMask("Player", "Platforms", "Affected Platforms");
+			_sentry = GetComponentInParent<Sentry>();
+			_visionCollider = GetComponentInParent<PolygonCollider2D>();
+			
+			_playerController = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerController>();
+			_playerBodyCollider = _playerController.GetComponent<BoxCollider2D>();
+			_playerFeetCollider = _playerController.GetComponent<CircleCollider2D>();
+			
+			_layerMask = LayerMask.GetMask("Player", "Platforms", "Affected Platforms");
 		}
 
 		private void Update()
 		{
-			if (!playerController.DisguisedAsGuard)
+			if (_playerController.DisguisedAsGuard)
 			{
-				if (boxVisible || circleVisible)
-				{
-					Debug.DrawRay(transform.position,
-						(player.transform.position - transform.position).normalized
-						* Mathf.Clamp(Vector2.Distance(transform.position, player.transform.position), 0f, 15f),
-						Color.yellow);
-					RaycastHit2D playerRayHit = Physics2D.Raycast(transform.position,
-						player.transform.position - transform.position,
-						Mathf.Clamp(Vector2.Distance(transform.position, player.transform.position), 0f, 15f), layerMask);
+				return;
+			}
 
-					if (playerRayHit.collider != null && playerRayHit.collider.tag.Equals("Player"))
-					{
-						sentry.CheckSeesPlayer(player.GetComponent<PlayerController>().VisibilityFactor);
-					}
+			if (!_boxVisible && !_circleVisible)
+			{
+				_sentry.LostPlayer();
+				return;
+			}
+			
+			Vector2 visionPosition = transform.position;
+			Vector2 playerDirection = _playerController.transform.position - transform.position;
+			float clampedDistance = Mathf.Clamp(Vector2.Distance(transform.position, _playerController.transform.position), 0f, 15f);
+
+			Debug.DrawRay(visionPosition, playerDirection.normalized * clampedDistance, Color.yellow);
+			RaycastHit2D playerRayHit = Physics2D.Raycast(visionPosition, playerDirection, clampedDistance, _layerMask);
+
+			if (playerRayHit.collider != null && playerRayHit.collider.tag.Equals("Player"))
+			{
+				_sentry.CheckSeesPlayer(_playerController.VisibilityFactor);
+			}
+		}
+
+		private void OnTriggerEnter2D(Collider2D otherCollider)
+		{
+			if (otherCollider.tag.Equals("Player"))
+			{
+				if (otherCollider.Equals(_playerBodyCollider))
+				{
+					_boxVisible = true;
 				}
-
-				if (!boxVisible && !circleVisible)
+				else if (otherCollider.Equals(_playerFeetCollider))
 				{
-					sentry.LostPlayer();
+					_circleVisible = true;
 				}
 			}
 		}
 
-		private void OnTriggerEnter2D(Collider2D collider)
+		void OnTriggerExit2D(Collider2D otherCollider)
 		{
-			if (collider.tag.Equals("Player"))
+			if (otherCollider.tag.Equals("Player"))
 			{
-				if (collider.Equals(player.GetComponent<BoxCollider2D>()))
+				if (otherCollider.Equals(_playerBodyCollider))
 				{
-					boxVisible = true;
+					_boxVisible = false;
 				}
-				else if (collider.Equals(player.GetComponent<CircleCollider2D>()))
+				else if (otherCollider.Equals(_playerFeetCollider))
 				{
-					circleVisible = true;
-				}
-			}
-		}
-
-		void OnTriggerExit2D(Collider2D collider)
-		{
-			if (collider.tag.Equals("Player"))
-			{
-				if (collider.Equals(player.GetComponent<BoxCollider2D>()))
-				{
-					boxVisible = false;
-				}
-				else if (collider.Equals(player.GetComponent<CircleCollider2D>()))
-				{
-					circleVisible = false;
+					_circleVisible = false;
 				}
 			}
 		}

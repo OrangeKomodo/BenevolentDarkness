@@ -7,24 +7,25 @@ namespace AI.Guard
 	{
 		public bool RightConstraint;
 		
-		private readonly List<GameObject> _constrainedGuards = new List<GameObject>();
+		private List<Guard> _constrainedGuards = new List<Guard>();
 
-		private void FixedUpdate()
+		private void Update()
 		{
 			if (_constrainedGuards.Count == 0)
 			{
 				return;
 			}
 				
-			for (int i = 0; i < _constrainedGuards.Count; i++)
+			for (int guardIndex = 0; guardIndex < _constrainedGuards.Count; ++guardIndex)
 			{
-				Transform guardTransform = _constrainedGuards[i].transform;
+				Guard constrainedGuard = _constrainedGuards[guardIndex];
+				Transform guardTransform = constrainedGuard.transform;
 				
 				if (RightConstraint)
 				{
 					if (guardTransform.position.x > transform.position.x)
 					{
-						guardTransform.position = new Vector2(transform.position.x, guardTransform.position.y);
+						constrainedGuard.ConstrainEnemy(new Vector2(transform.position.x, guardTransform.position.y));
 					}
 					
 					continue;
@@ -32,24 +33,24 @@ namespace AI.Guard
 				
 				if (guardTransform.position.x < transform.position.x)
 				{
-					guardTransform.position = new Vector2(transform.position.x, guardTransform.position.y);
+					constrainedGuard.ConstrainEnemy(new Vector2(transform.position.x, guardTransform.position.y));
 				}
 			}
 		}
 
 		private void OnTriggerEnter2D(Collider2D otherCollider)
 		{
-			if (otherCollider.name.Equals("Guard Actual") && !_constrainedGuards.Contains(otherCollider.gameObject))
+			if (otherCollider.name.Equals("Guard Actual") && !_constrainedGuards.Contains(otherCollider.GetComponent<Guard>()))
 			{
-				_constrainedGuards.Add(otherCollider.gameObject);
+				_constrainedGuards.Add(otherCollider.GetComponent<Guard>());
 			}
 		}
 
 		private void OnTriggerExit2D(Collider2D otherCollider)
 		{
-			if (otherCollider.name.Equals("Guard Actual") && _constrainedGuards.Contains(otherCollider.gameObject))
+			if (otherCollider.name.Equals("Guard Actual") && _constrainedGuards.Contains(otherCollider.GetComponent<Guard>()))
 			{
-				_constrainedGuards.Remove(otherCollider.gameObject);
+				_constrainedGuards.Remove(otherCollider.GetComponent<Guard>());
 			}
 		}
 	}

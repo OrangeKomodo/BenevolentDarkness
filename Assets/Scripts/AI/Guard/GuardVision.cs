@@ -6,8 +6,8 @@ namespace AI.Guard
 {
 	public class GuardVision : MonoBehaviour
 	{
-		public bool BoxVisible = false;
-		public bool CircleVisible = false;
+		private bool _boxVisible = false;
+		private bool _circleVisible = false;
 		private bool _inRange = false;
 		private bool _wasInRange = false;
 
@@ -51,7 +51,7 @@ namespace AI.Guard
 				return;
 			}
 
-			if (!BoxVisible && !CircleVisible)
+			if (!_boxVisible && !_circleVisible)
 			{
 				_guard.LostPlayer();
 				return;
@@ -67,11 +67,6 @@ namespace AI.Guard
 			{
 				_guard.SetPlayerOutOfMeleeRange();
 				_wasInRange = false;
-			}
-
-			if (!BoxVisible && !CircleVisible)
-			{
-				return;
 			}
 			
 			Vector2 visionPosition = transform.position;
@@ -124,11 +119,11 @@ namespace AI.Guard
 			{
 				if (otherCollider.Equals(_playerBodyCollider))
 				{
-					BoxVisible = true;
+					_boxVisible = true;
 				}
 				else if (otherCollider.Equals(_playerFeetCollider))
 				{
-					CircleVisible = true;
+					_circleVisible = true;
 				}
 				
 				_inRange = _attackCollider.IsTouching(_playerBodyCollider) || _attackCollider.IsTouching(_playerFeetCollider);
@@ -146,11 +141,11 @@ namespace AI.Guard
 			{
 				if (otherCollider.Equals(_playerBodyCollider) && !_visionCollider.IsTouching(_playerBodyCollider))
 				{
-					BoxVisible = false;
+					_boxVisible = false;
 				}
 				else if (otherCollider.Equals(_playerFeetCollider))
 				{
-					CircleVisible = false;
+					_circleVisible = false;
 				}
 
 				_inRange = _attackCollider.IsTouching(_playerBodyCollider) || _attackCollider.IsTouching(_playerFeetCollider);

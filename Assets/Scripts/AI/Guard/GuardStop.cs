@@ -4,7 +4,6 @@ namespace AI.Guard
 {
 	public class GuardStop : MonoBehaviour
 	{
-
 		public Guard Guard;
 		public bool Stationary;
 		public float IdleTime = 0f;
@@ -24,11 +23,10 @@ namespace AI.Guard
 			if (Stationary)
 			{
 				Guard.StopReached(Mathf.Infinity, IdleDirection, transform);
+				return;
 			}
-			else
-			{
-				Guard.StopReached(IdleTime, IdleDirection, NextStop);
-			}
+			
+			Guard.StopReached(IdleTime, IdleDirection, NextStop);
 		}
 	}
 }
