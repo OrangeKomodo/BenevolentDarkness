@@ -6,9 +6,12 @@ namespace UI
 {
 	public class CreditsManagement : MonoBehaviour
 	{
+		private bool _usingController;
+
 		private void Start()
 		{
-			if (Input.GetJoystickNames().Length > 0)
+			_usingController = Input.GetJoystickNames().Length > 0;
+			if (_usingController)
 			{
 				transform.Find("Back Text").GetComponent<Text>().text = "[B] Back";
 			}

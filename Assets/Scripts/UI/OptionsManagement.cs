@@ -23,8 +23,7 @@ namespace UI
 			VolumeSliders[2].value = PlayerPrefs.GetFloat("SFXVolume", 1);
 			UpdateVolumes();
 		}
-
-
+		
 		void Update()
 		{
 			if (Input.GetKeyDown(KeyCode.Escape))

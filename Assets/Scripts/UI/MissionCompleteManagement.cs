@@ -22,23 +22,37 @@ namespace UI
 
 		private void Start()
 		{
+			if (Input.GetJoystickNames().Length > 0)
+			{
+				RetryText.text = "[A] Retry";
+				MainMenuText.text = "[START] Main Menu";
+			}
+
+			EnemiesKilledText.text = "";
+			TimesSpottedText.text = "";
+			PacifistToggle.isOn = false;
+			ShadowToggle.isOn = false;
+			WantedLevelText.text = "";
+		}
+
+		private void OnEnable()
+		{
+			if (MoralitySystem.Instance == null)
+			{
+				return;
+			}
+			
 			Cursor.lockState = CursorLockMode.Locked;
 			Cursor.visible = false;
 
 			_enemiesKilled = MoralitySystem.Instance.EnemiesKilled;
 			_timesSpotted = MoralitySystem.Instance.TimesSpotted;
 
-			EnemiesKilledText.text += _enemiesKilled;
-			TimesSpottedText.text += _timesSpotted;
+			EnemiesKilledText.text = _enemiesKilled.ToString();
+			TimesSpottedText.text = _timesSpotted.ToString();
 			PacifistToggle.isOn = _enemiesKilled == 0;
 			ShadowToggle.isOn = _timesSpotted == 0;
-			WantedLevelText.text += _enemiesKilled > NumberOfGuards / 2 ? "High" : "Low";
-
-			if (Input.GetJoystickNames().Length > 0)
-			{
-				RetryText.text = "[A] Retry";
-				MainMenuText.text = "[START] Main Menu";
-			}
+			WantedLevelText.text = _enemiesKilled > NumberOfGuards / 2 ? "High" : "Low";
 		}
 
 		private void Update()
