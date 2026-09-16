@@ -411,11 +411,6 @@ namespace Spells
 		{
 			if (spell == SpellNames.Translocation && _currentTranslocationObject != null)
 			{
-				if (_currentTranslocationObject.TranslocationOccured)
-				{
-					DeductMana(_currentTranslocationObject.ManaCost);
-				}
-
 				Destroy(_currentTranslocationObject.gameObject);
 			}
 
@@ -449,7 +444,12 @@ namespace Spells
 				EndSpell(CurrentSpell);
 			}
 
-			this._canSpellCast = _canSpellcast;
+			_canSpellCast = _canSpellcast;
+		}
+
+		public void TranslocationOccured()
+		{
+			DeductMana(_currentTranslocationObject.ManaCost);
 		}
 
 		public void Disguised()

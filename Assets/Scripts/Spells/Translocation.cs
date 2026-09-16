@@ -1,18 +1,31 @@
-﻿using Player;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace Spells
 {
 	public class Translocation : Spell
 	{
 		public SpriteRenderer TranslocationMarker;
+		public Transform HighPoint;
+		public Transform LowPoint;
 		
+		[Range(0, 100)]
+		public float Sensitivity;
 		public float MaxDistance;
-		public bool TranslocationOccured;
+		public float MarkerSpinSpeed;
 		public Color CanTranslocate = Color.white;
 		public Color CanNotTranslocate = Color.gray;
+		
+		private Camera _camera;
+		
+		private Transform _playerTransform;
+		private Transform _markerTransform;
+		
+		private float _sensitivity => Sensitivity / 50f;
+		
+		private float _markerUpdateTime = 0.02f;
+		private float _nextMarkerUpdate;
 
-		private bool _positionValid;
+		private bool _positionValid; // <- This has been made a bit useless since the spell was redesigned to snap to its distance boundary
 		private bool _hittingPlatform;
 		private Vector2 _normal;
 
@@ -21,8 +34,15 @@ namespace Spells
 		private void Start()
 		{
 			MaxDistance = SpellCaster.SpellLevel * 5f + 5f;
-			_usingController = Input.GetJoystickNames().Length > 0;
+			
+			TranslocationMarker.gameObject.SetActive(true);
+			
+			_camera = Camera.main;
 
+			_playerTransform = PlayerController.transform;
+			_markerTransform = TranslocationMarker.transform;
+			
+			_usingController = Input.GetJoystickNames().Length > 0;
 			if (!_usingController)
 			{
 				Cursor.lockState = CursorLockMode.None;
@@ -32,87 +52,145 @@ namespace Spells
 
 		private void Update()
 		{
-			if (Input.GetAxis("Use Item") == 1f)
-			{
-				TranslocationMarker.gameObject.SetActive(true);
-
-				Vector2 mouseRay;
-				if (_usingController)
-				{
-					transform.Translate(new Vector3(Input.GetAxis("Mouse X") * transform.parent.localScale.x,
-						Input.GetAxis("Mouse Y"), 0f));
-					mouseRay = transform.position;
-				}
-				else
-				{
-					mouseRay = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-				}
-
-				RaycastHit2D mouseRayHit = Physics2D.Raycast(mouseRay, Vector2.zero, 100f);
-				RaycastHit2D playerRayHit;
-				LayerMask layerMask = LayerMask.GetMask("Platforms", "Walls");
-
-				if (mouseRayHit)
-				{
-					Vector3 targetPosition = mouseRayHit.point;
-					Vector3 playerPosition = PlayerController.transform.position;
-
-					Debug.DrawRay(playerPosition,
-						(targetPosition - playerPosition).normalized
-						* Mathf.Clamp(Vector2.Distance(playerPosition, targetPosition), 0f, MaxDistance), Color.red);
-					playerRayHit = Physics2D.Raycast(playerPosition, targetPosition - playerPosition,
-						Mathf.Clamp(Vector2.Distance(playerPosition, targetPosition), 0f, MaxDistance), layerMask);
-
-					if (playerRayHit.collider == null)
-					{
-						transform.position = mouseRayHit.point;
-						_positionValid = Vector2.Distance(playerPosition, targetPosition) <= MaxDistance;
-					}
-					else if (playerRayHit.collider.gameObject.layer == 11 || playerRayHit.collider.gameObject.layer == 13)
-					{
-						transform.position = playerRayHit.point;
-						_normal = playerRayHit.normal;
-						_positionValid = true;
-						_hittingPlatform = true;
-					}
-				}
-
-				TranslocationMarker.color = _positionValid ? CanTranslocate : CanNotTranslocate;
-				TranslocationMarker.transform.Rotate(Vector3.forward);
-			}
-
-			if (Input.GetAxis("Use Item") == 0f)
-			{
-				if (_positionValid)
-				{
-					PlayerController.PlaySound("Translocation");
-
-					TranslocationOccured = true;
-
-					if ((TranslocationMarker.transform.position.x - PlayerController.transform.position.x) * PlayerController.transform.localScale.x < 0)
-					{
-						PlayerController.Flip();
-					}
-
-					if (_hittingPlatform && _normal.x == 0)
-					{
-						PlayerController.transform.position = transform.GetChild(_normal.y == 1 ? 1 : 2).position;
-					}
-					else
-					{
-						PlayerController.transform.position = TranslocationMarker.transform.position;
-					}
-				}
-
-				EndTranslocation();
-			}
-
+			// If the Translocation was aborted, end the spell
 			if (Input.GetKeyDown(KeyCode.F) || Input.GetButtonDown("Exit"))
 			{
 				EndTranslocation();
+				return;
 			}
+
+			// If the player uses the Translocation, attempt to perform it and end the spell
+			if (Input.GetAxis("Use Item") < 0.95f)
+			{
+				TryPerformTranslocation();
+				EndTranslocation();
+				return;
+			}
+
+			// Ensure the Marker updates only so often, no matter the framerate.
+			if (Time.time < _nextMarkerUpdate)
+			{
+				return;
+			}
+			
+			_nextMarkerUpdate = Time.time + _markerUpdateTime;
+			
+			// Perform Marker updates
+			UpdateMarkerPosition();
+			UpdateMarkerSprite();
 		}
 
+		// Move the Marker according to the Player's input
+		private void UpdateMarkerPosition()
+		{
+			// Get cursor position for the mouse or the controller
+			Vector2 cursorPosition = GetUpdatedCursorPosition();
+
+			RaycastHit2D cursorRayHit = Physics2D.Raycast(cursorPosition, Vector2.zero, 100f);
+
+			// If the cursor is not in a valid location, abort
+			if (!cursorRayHit)
+			{
+				return;
+			}
+			
+			// Shoot a raycast from the Player to the cursor to place the marker at the farthest valid position in that direction
+			int layerMask = LayerMask.GetMask("Platforms", "Walls");
+				
+			Vector2 targetPosition = cursorRayHit.point;
+			Vector2 playerPosition = _playerTransform.position;
+			Vector2 targetDirection = targetPosition - playerPosition;
+			Vector2 normalizedTargetDirection = targetDirection.normalized;
+			float targetDistance = Vector2.Distance(playerPosition, targetPosition);
+			float clampedDistance = Mathf.Clamp(targetDistance, 0f, MaxDistance);
+
+			Debug.DrawRay(playerPosition, normalizedTargetDirection * clampedDistance, Color.red);
+			RaycastHit2D playerRayHit = Physics2D.Raycast(playerPosition, targetDirection, clampedDistance, layerMask);
+
+			// If the raycast hit something (like a wall or the ceiling) record data to be used later
+			if (playerRayHit.collider != null)
+			{
+				transform.position = playerRayHit.point;
+				_positionValid = true;
+				
+				_normal = playerRayHit.normal;
+				_hittingPlatform = true;
+				
+				return;
+			}
+			
+			// Set the Marker's position to the cursor position or the farthest it can go in that direction
+			transform.position = playerPosition + normalizedTargetDirection * clampedDistance;
+			_positionValid = true;
+			//transform.position = cursorRayHit.point;
+			//_positionValid = targetDistance <= MaxDistance;
+		}
+
+		// Perform the Translocation if the position is valid
+		private void TryPerformTranslocation()
+		{
+			if (!_positionValid)
+			{
+				return;
+			}
+			
+			PlayerController.PlaySound("Translocation");
+
+			SpellCaster.TranslocationOccured();
+			
+			Vector2 finalTranslocationPoint = GetFinalTranslocationPoint();
+
+			// If the Translocation Marker is behind the Player, flip them
+			if ((_markerTransform.position.x - _playerTransform.position.x) * _playerTransform.localScale.x < 0)
+			{
+				PlayerController.Flip();
+			}
+
+			_playerTransform.position = finalTranslocationPoint;
+		}
+
+		// Get the cursor position depending on whether we're using a mouse or a controller
+		private Vector3 GetUpdatedCursorPosition()
+		{
+			if (_usingController)
+			{
+				float xPositionDelta = Input.GetAxis("Mouse X") * _sensitivity;
+				float yPositionDelta = Input.GetAxis("Mouse Y") * _sensitivity;
+				Vector3 cursorPositionDelta = new Vector3(xPositionDelta, yPositionDelta, 0f);
+				
+				return transform.position + cursorPositionDelta;
+			}
+			
+			return _camera.ScreenToWorldPoint(Input.mousePosition);
+		}
+
+		// Get Final Translocation Point
+		private Vector2 GetFinalTranslocationPoint()
+		{
+			// If Ray isn't hitting a horizontal platform, return normal marker location
+			if (!_hittingPlatform || _normal.x != 0)
+			{
+				return _markerTransform.position;
+			}
+			
+			// If ray is hitting the floor, return the higher transform location
+			if (_normal.y >= 1)
+			{
+				return HighPoint.position;
+			}
+			
+			// If ray is hitting the ceiling, return the lower transform location
+			return LowPoint.position;
+		}
+
+		// Update the Marker's color and rotation
+		private void UpdateMarkerSprite()
+		{
+			TranslocationMarker.color = _positionValid ? CanTranslocate : CanNotTranslocate;
+			TranslocationMarker.transform.Rotate(Vector3.forward * MarkerSpinSpeed);
+		}
+
+		// End Translocation
 		private void EndTranslocation()
 		{
 			Cursor.lockState = CursorLockMode.Locked;
@@ -121,55 +199,3 @@ namespace Spells
 		}
 	}
 }
-
-/*
- * 		if (Input.GetMouseButton (1)) {
-			translocationMarker.SetActive (true);
-
-			Vector2 mouseRay = Camera.main.ScreenToWorldPoint (Input.mousePosition);
-			RaycastHit2D mouseRayHit = Physics2D.Raycast (mouseRay, Vector2.zero, 100f);
-			RaycastHit2D playerRayHit;
-			LayerMask layerMask = LayerMask.GetMask ("Platforms", "Walls");
-
-			if (mouseRayHit) {
-				Vector3 targetPosition = mouseRayHit.point;
-				Vector3 playerPosition = player.transform.position;
-
-				Debug.DrawRay (playerPosition, (targetPosition - playerPosition).normalized * Mathf.Clamp (Vector2.Distance (playerPosition, targetPosition), 0f, maxDistance), Color.red);
-				playerRayHit = Physics2D.Raycast (playerPosition, targetPosition - playerPosition, Mathf.Clamp (Vector2.Distance (playerPosition, targetPosition), 0f, maxDistance), layerMask);
-
-				if (playerRayHit.collider == null) {
-					translocationMarker.transform.position = mouseRayHit.point;
-					positionValid = Vector2.Distance (playerPosition, targetPosition) <= maxDistance;
-				} else if (playerRayHit.collider.gameObject.layer == 11) {
-					translocationMarker.transform.position = playerRayHit.point;
-					normal = playerRayHit.normal;
-					positionValid = true;
-					hittingPlatform = true;
-				}
-				//Debug.Log (playerRayHit.distance);
-			}
-			spriteRenderer.color = positionValid ? canTranslocate : canNotTranslocate;
-			translocationMarker.transform.Rotate (Vector3.forward);
-		}
-
-		if (Input.GetMouseButtonUp (1)) {
-			if (positionValid) {
-				translocationOccured = true;
-
-				if ((translocationMarker.transform.position.x - player.transform.position.x) * player.transform.localScale.x < 0)
-					player.GetComponent<PlayerInfo> ().Flip ();
-
-				if (hittingPlatform && normal.x == 0)
-					player.transform.position = translocationMarker.transform.GetChild (normal.y == 1 ? 0 : 1).position;
-				else
-					player.transform.position = translocationMarker.transform.position;
-			}
-
-			EndTranslocation ();
-		}
-
-		if (Input.GetKeyDown (KeyCode.F)) {
-			EndTranslocation ();
-		}
-		*/

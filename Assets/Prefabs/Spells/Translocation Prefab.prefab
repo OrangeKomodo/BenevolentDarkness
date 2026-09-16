@@ -49,8 +49,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ManaCost: 10
   TranslocationMarker: {fileID: 212942200773380570}
+  HighPoint: {fileID: 4951364587892626}
+  LowPoint: {fileID: 4751843318310558}
+  Sensitivity: 75
   MaxDistance: 10
-  TranslocationOccured: 0
+  MarkerSpinSpeed: 12.5
   CanTranslocate: {r: 1, g: 1, b: 1, a: 1}
   CanNotTranslocate: {r: 0.5, g: 0.5, b: 0.5, a: 1}
 --- !u!1 &1110804845314312
