@@ -28,6 +28,7 @@ namespace Spells
 		public float ManaRestoreTick;
 		public int ManaRestoreAmount;
 		public float ManaRestoreBegin;
+		public Vector3 HellfireBlastOffset;
 		private float _nextManaRestoreTime;
 
 		private PlayerController _playerController;
@@ -335,7 +336,7 @@ namespace Spells
 				}
 				else if (CurrentSpell == SpellNames.HellfireBlast && CheckMana(HellfireBlastPrefab.ManaCost))
 				{
-					HellfireBlast hellfireBlastObject = Instantiate(HellfireBlastPrefab, FirePoint.position,
+					HellfireBlast hellfireBlastObject = Instantiate(HellfireBlastPrefab, FirePoint.position + HellfireBlastOffset,
 						Quaternion.LookRotation(Vector3.forward * (transform.localScale.x / Mathf.Abs(transform.localScale.x))));
 					hellfireBlastObject.Init(_playerController, this);
 					Destroy(hellfireBlastObject.gameObject, 10f);

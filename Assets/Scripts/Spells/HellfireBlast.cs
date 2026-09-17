@@ -30,12 +30,29 @@ namespace Spells
 		{
 			if (otherCollider.tag.Equals("Enemy"))
 			{
-				otherCollider.GetComponent<Guard>().TakeHit(DamageDone);
+				Guard guard = otherCollider.GetComponent<Guard>();
+
+				if (guard == null)
+				{
+					return;
+				}
+
+				if (guard.State == Guard.GuardState.Dead)
+				{
+					return;
+				}
+				
+				guard.TakeHit(DamageDone);
 				Destroy(gameObject);
+
+				return;
 			}
-			else if (otherCollider.tag.Equals("Wall") || otherCollider.tag.Equals("Platform"))
+			
+			if (otherCollider.tag.Equals("Wall") || otherCollider.tag.Equals("Platform"))
 			{
 				Destroy(gameObject);
+
+				return;
 			}
 		}
 	}

@@ -6,11 +6,13 @@ namespace Spells
 	public class ShadowSink : Spell
 	{
 		public int ManaTickCost;
-		public float ManaDeductTick;
 
 		public float TransitionTime = 0.5f;
 		public Color VisibleColor;
 		public Color HiddenColor;
+		
+		private float  _manaDeductTick;
+		public float ManaDeductTick => _manaDeductTick;
 
 		private SpriteRenderer _playerSpriteRenderer;
 
@@ -19,7 +21,7 @@ namespace Spells
 
 		private void Start()
 		{
-			ManaDeductTick = SpellCaster.SpellLevel * 0.5f;
+			_manaDeductTick = SpellCaster.SpellLevel * 0.5f;
 
 			_playerSpriteRenderer = PlayerController.PlayerSprite;
 			_playerHidePosition = PlayerController.transform.position;
@@ -30,8 +32,15 @@ namespace Spells
 
 		private void Update()
 		{
-			if ((Input.GetAxis("Use Item") == 1f && _hidden)
-			    || _playerHidePosition != PlayerController.transform.position || Input.GetButtonDown("Exit"))
+			// If we're not hidden, we don't care
+			if (!_hidden)
+			{
+				return;
+			}
+			
+			if (Input.GetAxis("Use Item") == 1f
+			    || Input.GetButtonDown("Exit")
+			    || _playerHidePosition != PlayerController.transform.position)
 			{
 				SpellCaster.EndSpell(SpellCasting.SpellNames.ShadowSink);
 			}
@@ -57,7 +66,7 @@ namespace Spells
 
 				_playerSpriteRenderer.color = Color.Lerp(start, end, percent);
 
-				PlayerController.VisibilityFactor = hiding ? rawVisibility * (1f - percent) : rawVisibility * percent;
+				PlayerController.VisibilityFactor = rawVisibility * (hiding ? 1f - percent : percent);
 
 				yield return null;
 			}

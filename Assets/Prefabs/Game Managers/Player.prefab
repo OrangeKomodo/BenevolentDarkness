@@ -469,6 +469,7 @@ MonoBehaviour:
   ManaRestoreTick: 0.1
   ManaRestoreAmount: 1
   ManaRestoreBegin: 2
+  HellfireBlastOffset: {x: 0, y: 0.32, z: 0}
 --- !u!114 &114352418811882260
 MonoBehaviour:
   m_ObjectHideFlags: 0
