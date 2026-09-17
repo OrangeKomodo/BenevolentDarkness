@@ -55,8 +55,7 @@ namespace Player
 
 			//Draw and perform the raycast
 			Debug.DrawRay(playerPosition, attackDirection * AttackRange, Color.magenta);
-			RaycastHit2D playerRayHit =
-				Physics2D.Raycast(transform.position, attackDirection, AttackRange, WhatAreEnemies);
+			RaycastHit2D playerRayHit = Physics2D.Raycast(playerPosition, attackDirection, AttackRange, WhatAreEnemies);
 
 			// Negative check for the Backside
 			if (playerRayHit.collider == null || !playerRayHit.collider.name.Equals("Backside"))

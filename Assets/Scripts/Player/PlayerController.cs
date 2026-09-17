@@ -242,7 +242,7 @@ namespace Player
 		{
 			CanAttack = !freeze;
 			Spellcaster.SetCanSpellcast(!freeze);
-			PlatformerCharacter.frozen = freeze;
+			PlatformerCharacter.Frozen = freeze;
 
 			if (freeze)
 			{
@@ -253,7 +253,7 @@ namespace Player
 		public void InDisguise(bool isDisguised)
 		{
 			DisguisedAsGuard = isDisguised;
-			PlatformerCharacter.disguisedAsGuard = DisguisedAsGuard;
+			PlatformerCharacter.DisguisedAsGuard = DisguisedAsGuard;
 			Animator.SetBool("Disguised", isDisguised);
 			Animator.SetTrigger("Mimic Used");
 		}
@@ -369,7 +369,7 @@ namespace Player
 			_playerQuickSave.Direction = transform.localScale.x;
 			_playerQuickSave.Health = Health;
 			_playerQuickSave.Mana = Spellcaster.CurrentMana;
-			_playerQuickSave.Frozen = PlatformerCharacter.frozen;
+			_playerQuickSave.Frozen = PlatformerCharacter.Frozen;
 			_playerQuickSave.Spell = Spellcaster.CurrentSpell;
 			_playerQuickSave.Inventory.Clear();
 			_playerQuickSave.Inventory.AddRange(Inventory);

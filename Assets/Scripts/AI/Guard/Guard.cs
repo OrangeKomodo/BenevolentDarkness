@@ -47,6 +47,7 @@ namespace AI.Guard
 		public LayerMask WhatIsGround;
 		public LayerMask WhatIsWall;
 		public Transform SuspicionSpriteMask;
+		public Transform Head;
 
 		private Guard[] _fellowGuards;
 		private Guard _closestGuard;
@@ -209,6 +210,8 @@ namespace AI.Guard
 				transform.GetChild(childObjectIndex).gameObject.SetActive(false);
 			}
 			GuardStopsHolder.SetActive(false);
+
+			Head.localPosition = new Vector3(0f, 0.27f, 0f);
 
 			_incapacitationManaged = true;
 		}

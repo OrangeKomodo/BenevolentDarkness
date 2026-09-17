@@ -526,8 +526,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 057cb400c9775754ea14e2a6295b3f30, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  BoxVisible: 0
-  CircleVisible: 0
 --- !u!1 &1838242462202098
 GameObject:
   m_ObjectHideFlags: 0
@@ -764,6 +762,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 8192
   SuspicionSpriteMask: {fileID: 4898099083117962}
+  Head: {fileID: 4111491963230182}
 --- !u!1 &1920364065075228
 GameObject:
   m_ObjectHideFlags: 0

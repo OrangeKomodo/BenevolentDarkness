@@ -46,10 +46,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ManaCost: 30
+  MimicMarker: {fileID: 212140692985898108}
   ManaTickCost: 2
   ManaDeductTick: 0.5
+  Sensitivity: 75
   MaxTransferDistance: 10
-  TransferTime: 3
+  TransferTime: 1.5
   Disguised: 0
   CanMimic: {r: 1, g: 1, b: 1, a: 1}
   CanNotMimic: {r: 0.62352943, g: 0.62352943, b: 0.62352943, a: 1}
@@ -63,14 +65,13 @@ GameObject:
   m_Component:
   - component: {fileID: 4433652563748928}
   - component: {fileID: 212140692985898108}
-  - component: {fileID: 58786735600656478}
   m_Layer: 11
   m_Name: Mimic Marker
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &4433652563748928
 Transform:
   m_ObjectHideFlags: 0
@@ -145,39 +146,3 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
---- !u!58 &58786735600656478
-CircleCollider2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1623173397179982}
-  m_Enabled: 0
-  serializedVersion: 3
-  m_Density: 1
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_ForceSendLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ForceReceiveLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ContactCaptureLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_CallbackLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_IsTrigger: 1
-  m_UsedByEffector: 0
-  m_CompositeOperation: 0
-  m_CompositeOrder: 0
-  m_Offset: {x: -0.0031717117, y: -0.028545372}
-  m_Radius: 0.1

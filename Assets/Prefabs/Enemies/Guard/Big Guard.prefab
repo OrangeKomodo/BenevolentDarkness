@@ -646,6 +646,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 8192
   SuspicionSpriteMask: {fileID: 4542666647688778}
+  Head: {fileID: 4397270780561918}
 --- !u!1 &1692860779696276
 GameObject:
   m_ObjectHideFlags: 0
@@ -779,8 +780,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 057cb400c9775754ea14e2a6295b3f30, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  BoxVisible: 0
-  CircleVisible: 0
 --- !u!1 &1906504711224922
 GameObject:
   m_ObjectHideFlags: 0
