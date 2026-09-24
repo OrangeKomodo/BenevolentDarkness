@@ -16,6 +16,9 @@ namespace Spells
 		public Color CanTranslocate = Color.white;
 		public Color CanNotTranslocate = Color.gray;
 		
+		public LayerMask WhatIsGround;
+		public LayerMask WhatIsWall;
+		
 		private Camera _camera;
 		
 		private Transform _playerTransform;
@@ -93,7 +96,7 @@ namespace Spells
 			}
 			
 			// Shoot a raycast from the Player to the cursor to place the marker at the farthest valid position in that direction
-			int layerMask = LayerMask.GetMask("Platforms", "Walls");
+			LayerMask layerMask = WhatIsGround | WhatIsWall;
 				
 			Vector2 targetPosition = cursorRayHit.point;
 			Vector2 playerPosition = _playerTransform.position;
@@ -105,7 +108,7 @@ namespace Spells
 			Debug.DrawRay(playerPosition, normalizedTargetDirection * clampedDistance, Color.red);
 			RaycastHit2D playerRayHit = Physics2D.Raycast(playerPosition, targetDirection, clampedDistance, layerMask);
 
-			// If the raycast hit something (like a wall or the ceiling) record data to be used later
+			// If the raycast hit something (like a wall or the ceiling), record data to be used later
 			if (playerRayHit.collider != null)
 			{
 				transform.position = playerRayHit.point;

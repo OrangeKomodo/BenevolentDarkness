@@ -56,6 +56,12 @@ MonoBehaviour:
   MarkerSpinSpeed: 12.5
   CanTranslocate: {r: 1, g: 1, b: 1, a: 1}
   CanNotTranslocate: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+  WhatIsGround:
+    serializedVersion: 2
+    m_Bits: 2048
+  WhatIsWall:
+    serializedVersion: 2
+    m_Bits: 8192
 --- !u!1 &1110804845314312
 GameObject:
   m_ObjectHideFlags: 0

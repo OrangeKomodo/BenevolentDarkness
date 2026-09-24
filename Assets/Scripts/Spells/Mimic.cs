@@ -19,9 +19,11 @@ namespace Spells
 		public Color CanMimic = Color.white;
 		public Color CanNotMimic = Color.gray;
 		
+		public LayerMask WhatAreEnemies;
+		public LayerMask WhatIsGround;
+		public LayerMask WhatIsWall;
+		
 		private Camera _camera;
-
-		private SpriteRenderer _spriteRenderer;
 		
 		private float _sensitivity => Sensitivity / 50f;
 		
@@ -39,14 +41,14 @@ namespace Spells
 		private void Start()
 		{
 			ManaDeductTick = (SpellCaster.SpellLevel - 1f) * 0.5f;
-			
-			_spriteRenderer = MimicMarker.GetComponent<SpriteRenderer>();
 
+			// Show the Marker and prevent the Player from attacking while aiming the Mimic
 			MimicMarker.gameObject.SetActive(true);
 			PlayerController.CanAttack = false;
 			
 			_camera = Camera.main;
 
+			// If not using a Gamepad, unlock and show the cursor so the Player can aim with the mouse
 			if (!InputManager.UsingGamepad)
 			{
 				Cursor.lockState = CursorLockMode.None;
@@ -56,17 +58,20 @@ namespace Spells
 
 		private void Update()
 		{
+			// If Disguised, we don't care
 			if (Disguised)
 			{
 				return;
 			}
 
+			// If the Mimic was aborted, end the spell
 			if (Input.GetKeyDown(KeyCode.F) || Input.GetButtonDown("Exit"))
 			{
 				SpellCaster.EndSpell(SpellCasting.SpellNames.Mimic);
 				return;
 			}
 
+			// If the Player releases the spell input before the Mimic completes, end the spell
 			if (Input.GetAxis("Use Item") < 0.95f)
 			{
 				SpellCaster.EndSpell(SpellCasting.SpellNames.Mimic);
@@ -81,15 +86,18 @@ namespace Spells
 			
 			_nextMarkerUpdate = Time.time + _markerUpdateTime;
 			
+			// Perform Marker position and sprite updates
 			UpdateMarkerPosition();
+			UpdateMarkerSprite();
 
-			_percentTransferred = Mathf.Clamp(_percentTransferred, 0, 1);
-
+			// Check if Transfer is completed
+			_percentTransferred = Mathf.Clamp(_percentTransferred, 0f, 1f);
 			if (_percentTransferred < 1f)
 			{
 				return;
 			}
 			
+			// Perform Mimic
 			PerformMimic();
 		}
 
@@ -104,11 +112,12 @@ namespace Spells
 			// If the cursor is not in a valid location, abort
 			if (!cursorRayHit)
 			{
+				ResetTransfer();
 				return;
 			}
 
-			RaycastHit2D playerRayHit;
-			LayerMask layerMask = LayerMask.GetMask("Enemies", "Platforms", "Walls");
+			// Shoot a raycast from the Player to the cursor to place the marker at the farthest valid position in that direction
+			LayerMask layerMask = WhatIsGround | WhatIsWall | WhatAreEnemies;
 				
 			Vector2 targetPosition = cursorRayHit.point;
 			Vector2 playerPosition = PlayerController.transform.position;
@@ -118,18 +127,33 @@ namespace Spells
 			float clampedDistance = Mathf.Clamp(targetDistance, 0f, MaxTransferDistance);
 
 			Debug.DrawRay(playerPosition, normalizedTargetDirection * clampedDistance, Color.blue);
-			playerRayHit = Physics2D.Raycast(playerPosition, targetDirection, clampedDistance, layerMask);
+			RaycastHit2D playerRayHit = Physics2D.Raycast(playerPosition, targetDirection, clampedDistance, layerMask);
 
-			if (playerRayHit.collider?.gameObject.layer == 9 && cursorRayHit.collider?.gameObject.layer == 9)
+			// If the raycast hit a Guard, target them and return
+			if (IsRaycastHittingMask(playerRayHit, WhatAreEnemies))
 			{
 				Guard guard = playerRayHit.collider.GetComponentInParent<Guard>();
-				TargetGuard(guard);
+				if (guard != null)
+				{
+					TargetGuard(guard);
+				
+					return;
+				}
+			}
+
+			// If no Guard, reset Transfer
+			ResetTransfer();
+
+			// If the raycast hit a wall or ceiling, record data to be used later
+			if (IsRaycastHittingMask(playerRayHit, WhatIsGround | WhatIsWall))
+			{
+				transform.position = playerRayHit.point;
 				
 				return;
 			}
-
-			ResetTransfer();
-			MimicMarker.transform.position = playerPosition + normalizedTargetDirection * clampedDistance;
+			
+			// Claude: Otherwise, set the Marker's position to the cursor position or the farthest it can go in that direction
+			transform.position = playerPosition + normalizedTargetDirection * clampedDistance;
 		}
 
 		// Get the cursor position depending on whether we're using a mouse or a controller
@@ -147,43 +171,38 @@ namespace Spells
 			return _camera.ScreenToWorldPoint(Input.mousePosition);
 		}
 
+		// Clear any transfer progress and reset the Marker color
 		private void ResetTransfer()
 		{
-			if (_canTransfer)
-			{
-				_spriteRenderer.color = CanNotMimic;
-				_canTransfer = false;
-			}
-
-			if (_isTransferring)
-			{
-				_isTransferring = false;
-			}
-
-			if (_percentTransferred > 0)
-			{
-				_percentTransferred = 0;
-			}
+			MimicMarker.color = CanNotMimic;
+			_canTransfer = false;
+			_isTransferring = false;
+			_percentTransferred = 0;
 		}
 
+		// Snap the Marker to the given Guard and maintain the connection while Attack is held
 		private void TargetGuard(Guard guard)
 		{
-			MimicMarker.transform.position = guard.Head.position;
+			transform.position = guard.Head.position;
 
+			// If the Guard can't be Mimicked, reset the transfer and abort
 			if (!guard.CanMimic)
 			{
-				_spriteRenderer.color = CanNotMimic;
+				ResetTransfer();
 				return;
 			}
 
+			// Enable the Transfer if not already
 			if (!_canTransfer)
 			{
-				_spriteRenderer.color = CanMimic;
+				MimicMarker.color = CanMimic;
 				_canTransfer = true;
 			}
 
+			// While Attack is held, update its progress
 			if (Input.GetAxis("Attack") >= 0.95f)
 			{
+				// Mark Transfer started if not already
 				if (!_isTransferring)
 				{
 					_transferStartTime = Time.time;
@@ -191,28 +210,40 @@ namespace Spells
 				}
 
 				_percentTransferred = (Time.time - _transferStartTime) / TransferTime;
-				UpdateMarkerPercentage();
 
 				return;
 			}
 			
+			// If Attack is released mid-transfer, reset the Transfer
 			if (Input.GetAxis("Attack") < 0.95f && _isTransferring)
 			{
-				_transferStartTime = 0f;
-				_isTransferring = false;
-
-				_percentTransferred = 0;
-				UpdateMarkerPercentage();
+				ResetTransfer();
 			}
 		}
 
-		private void UpdateMarkerPercentage()
+		// Check whether the raycast hit a collider on one of the layers in the given mask
+		private bool IsRaycastHittingMask(RaycastHit2D raycastHit, LayerMask mask)
+		{
+			if (raycastHit.collider == null)
+			{
+				return false;
+			}
+			
+			int layer = raycastHit.collider.gameObject.layer;
+			int layerValue = 1 << layer; // this converts the layer index to a bit so we can compare it against the mask
+			int maskAndLayerValue = mask & layerValue;
+			return maskAndLayerValue != 0;
+		}
+
+		// Update the Marker's scale as the transfer progresses
+		private void UpdateMarkerSprite()
 		{
 			float markerSizeRange = _markerSizeMax - _markerSizeMin;
 			float markerScale = markerSizeRange * _percentTransferred + _markerSizeMin;
 			MimicMarker.transform.localScale = Vector2.one * markerScale;
 		}
 
+		// Complete the Mimic, disguise the Player, and start the mana drain
 		private void PerformMimic()
 		{
 			//Debug.Log ("Transfer Complete");
@@ -221,11 +252,12 @@ namespace Spells
 			SpellCaster.Disguised();
 			PlayerController.gameObject.layer = 9;
 
-			//DISGUISE HERE
+			// DISGUISE HERE
 			PlayerController.PlaySound("Mimic");
 			PlayerController.InDisguise(true);
 			PlayerController.CanAttack = true;
 
+			// Lock and hide the cursor again now that aiming is done
 			if (!InputManager.UsingGamepad)
 			{
 				Cursor.lockState = CursorLockMode.Locked;
@@ -233,9 +265,10 @@ namespace Spells
 			}
 		}
 
+		// End the spell, removing the disguise if it was active, and destroy the Mimic object
 		public void EndMimic()
 		{
-			//UNDISGUISE
+			// UNDISGUISE
 			if (Disguised)
 			{
 				PlayerController.gameObject.layer = 8;
@@ -243,6 +276,7 @@ namespace Spells
 				PlayerController.InDisguise(false);
 			}
 
+			// Let the Player attack again and lock the cursor
 			PlayerController.CanAttack = true;
 			if (!InputManager.UsingGamepad)
 			{

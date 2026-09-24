@@ -26,7 +26,7 @@ Transform:
   m_GameObject: {fileID: 1242948843854658}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1.2716144, y: -0.9308837, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -50,11 +50,20 @@ MonoBehaviour:
   ManaTickCost: 2
   ManaDeductTick: 0.5
   Sensitivity: 75
-  MaxTransferDistance: 10
+  MaxTransferDistance: 5
   TransferTime: 1.5
   Disguised: 0
   CanMimic: {r: 1, g: 1, b: 1, a: 1}
   CanNotMimic: {r: 0.62352943, g: 0.62352943, b: 0.62352943, a: 1}
+  WhatAreEnemies:
+    serializedVersion: 2
+    m_Bits: 512
+  WhatIsGround:
+    serializedVersion: 2
+    m_Bits: 2048
+  WhatIsWall:
+    serializedVersion: 2
+    m_Bits: 8192
 --- !u!1 &1623173397179982
 GameObject:
   m_ObjectHideFlags: 0
@@ -81,8 +90,8 @@ Transform:
   m_GameObject: {fileID: 1623173397179982}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.03138554, y: 0.31388372, z: 0}
-  m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 0.5, y: 0.5, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 4270306756799522}
