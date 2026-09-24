@@ -3,20 +3,13 @@ using UnityEngine;
 
 namespace UI
 {
-	public class TitleCardManagement : MonoBehaviour
+	public class TitleCardManagement : UserInterfaceInputWrapper
 	{
-		private void Start()
+		// Using Update to check for any button press
+		protected override void Update()
 		{
-			bool usingController = Input.GetJoystickNames().Length > 0;
-			if (usingController)
-			{
-				Cursor.lockState = CursorLockMode.Locked;
-				Cursor.visible = false;
-			}
-		}
-
-		private void Update()
-		{
+			base.Update();
+			
 			if (Input.anyKeyDown)
 			{
 				MenuSwitcher.Instance.LoadMenu(1);

@@ -322,8 +322,11 @@ MonoBehaviour:
   - {fileID: 3752680492981302577}
   - {fileID: 8181785292556646033}
   - {fileID: 4277749311349458893}
+  SpecialButtonIndexes: 
   Selected: {r: 0.5568628, g: 0.5568628, b: 0.5568628, a: 1}
   NotSelected: {r: 0.28627452, g: 0.28627452, b: 0.28627452, a: 1}
+  SpecialSelected: {r: 1, g: 1, b: 1, a: 1}
+  SpecialNotSelected: {r: 0.5, g: 0.5, b: 0.5, a: 1}
 --- !u!1 &552261172881836807
 GameObject:
   m_ObjectHideFlags: 0
@@ -1948,6 +1951,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bf838342f0e91df4f9d8eaf302aaff55, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Buttons: []
+  SpecialButtonIndexes: 
+  Selected: {r: 0.5568628, g: 0.5568628, b: 0.5568628, a: 1}
+  NotSelected: {r: 0.28627452, g: 0.28627452, b: 0.28627452, a: 1}
+  SpecialSelected: {r: 1, g: 1, b: 1, a: 1}
+  SpecialNotSelected: {r: 0.5, g: 0.5, b: 0.5, a: 1}
 --- !u!1 &5102099004465468453
 GameObject:
   m_ObjectHideFlags: 0
@@ -2006,8 +2015,11 @@ MonoBehaviour:
   - {fileID: 2585375463620423832}
   - {fileID: 7793231280762060105}
   - {fileID: 2869909114520572976}
-  Selected: {r: 1, g: 1, b: 1, a: 1}
-  NotSelected: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+  SpecialButtonIndexes: 000000000100000002000000
+  Selected: {r: 0.5568628, g: 0.5568628, b: 0.5568628, a: 1}
+  NotSelected: {r: 0.28627452, g: 0.28627452, b: 0.28627452, a: 1}
+  SpecialSelected: {r: 1, g: 1, b: 1, a: 1}
+  SpecialNotSelected: {r: 0.5, g: 0.5, b: 0.5, a: 1}
 --- !u!1 &5646055185266398037
 GameObject:
   m_ObjectHideFlags: 0
@@ -2375,6 +2387,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ad376e5b9f65124187370030ec30882, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Buttons: []
+  SpecialButtonIndexes: 
+  Selected: {r: 0.5568628, g: 0.5568628, b: 0.5568628, a: 1}
+  NotSelected: {r: 0.28627452, g: 0.28627452, b: 0.28627452, a: 1}
+  SpecialSelected: {r: 1, g: 1, b: 1, a: 1}
+  SpecialNotSelected: {r: 0.5, g: 0.5, b: 0.5, a: 1}
 --- !u!1 &8923375350933272181
 GameObject:
   m_ObjectHideFlags: 0

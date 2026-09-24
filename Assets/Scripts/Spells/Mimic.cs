@@ -1,4 +1,5 @@
 ﻿using AI.Guard;
+using GameManager;
 using UnityEngine;
 
 namespace Spells
@@ -35,21 +36,18 @@ namespace Spells
 		private readonly float _markerSizeMin = 0.5f;
 		private readonly float _markerSizeMax = 1.0f;
 
-		private bool _usingController;
-
 		private void Start()
 		{
 			ManaDeductTick = (SpellCaster.SpellLevel - 1f) * 0.5f;
 			
 			_spriteRenderer = MimicMarker.GetComponent<SpriteRenderer>();
-			_usingController = Input.GetJoystickNames().Length > 0;
 
 			MimicMarker.gameObject.SetActive(true);
 			PlayerController.CanAttack = false;
 			
 			_camera = Camera.main;
 
-			if (!_usingController)
+			if (!InputManager.UsingGamepad)
 			{
 				Cursor.lockState = CursorLockMode.None;
 				Cursor.visible = true;
@@ -137,7 +135,7 @@ namespace Spells
 		// Get the cursor position depending on whether we're using a mouse or a controller
 		private Vector3 GetUpdatedCursorPosition()
 		{
-			if (_usingController)
+			if (InputManager.UsingGamepad)
 			{
 				float xPositionDelta = Input.GetAxis("Mouse X") * _sensitivity;
 				float yPositionDelta = Input.GetAxis("Mouse Y") * _sensitivity;
@@ -228,7 +226,7 @@ namespace Spells
 			PlayerController.InDisguise(true);
 			PlayerController.CanAttack = true;
 
-			if (!_usingController)
+			if (!InputManager.UsingGamepad)
 			{
 				Cursor.lockState = CursorLockMode.Locked;
 				Cursor.visible = false;
@@ -246,7 +244,7 @@ namespace Spells
 			}
 
 			PlayerController.CanAttack = true;
-			if (!_usingController)
+			if (!InputManager.UsingGamepad)
 			{
 				Cursor.lockState = CursorLockMode.Locked;
 				Cursor.visible = false;

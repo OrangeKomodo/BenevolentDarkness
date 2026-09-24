@@ -1,29 +1,23 @@
 ﻿using GameManager;
-using UnityEngine;
-using UnityEngine.UI;
 
 namespace UI
 {
-	public class CreditsManagement : MonoBehaviour
+	public class CreditsManagement : UserInterfaceInputWrapper
 	{
-		private bool _usingController;
-
-		private void Start()
+		// Go back to Main Menu
+		protected override void Cancel()
 		{
-			_usingController = Input.GetJoystickNames().Length > 0;
-			if (_usingController)
-			{
-				transform.Find("Back Text").GetComponent<Text>().text = "[B] Back";
-			}
+			base.Cancel();
+			
+			MenuSwitcher.Instance.LoadMenu(1);
 		}
 
-		private void Update()
+		// Go back to Main Menu
+		protected override void Exit()
 		{
-			if (Input.GetButtonDown("Exit") || Input.GetKeyDown(KeyCode.Escape))
-			{
-				AudioManager.Instance.PlaySound("Select");
-				MenuSwitcher.Instance.LoadMenu(1);
-			}
+			base.Exit();
+			
+			MenuSwitcher.Instance.LoadMenu(1);
 		}
 	}
 }

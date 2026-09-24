@@ -1055,6 +1055,7 @@ GameObject:
   - component: {fileID: 224556623346930260}
   - component: {fileID: 222623225563619652}
   - component: {fileID: 114775595918401350}
+  - component: {fileID: 3465125897492467698}
   m_Layer: 5
   m_Name: Main Menu Text
   m_TagString: Untagged
@@ -1122,7 +1123,21 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: '[Escape] Main Menu'
+  m_Text: '[ESC] Main Menu'
+--- !u!114 &3465125897492467698
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1225257846103834}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 655fab522888abe4881226cf7997461a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UI.TooltipStringUpdater
+  KeyboardTooltip: '[ESC] Main Menu'
+  ControllerTooltip: '[START] Main Menu'
 --- !u!1 &1245280452262460
 GameObject:
   m_ObjectHideFlags: 0
@@ -1585,8 +1600,11 @@ MonoBehaviour:
   - {fileID: 114484131742519634}
   - {fileID: 114634287627280750}
   - {fileID: 114536323270813130}
+  SpecialButtonIndexes: 
   Selected: {r: 0.5568628, g: 0.5568628, b: 0.5568628, a: 1}
   NotSelected: {r: 0.28627452, g: 0.28627452, b: 0.28627452, a: 1}
+  SpecialSelected: {r: 1, g: 1, b: 1, a: 1}
+  SpecialNotSelected: {r: 0.5, g: 0.5, b: 0.5, a: 1}
 --- !u!1 &1347115788494598
 GameObject:
   m_ObjectHideFlags: 0
@@ -2105,13 +2123,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 75f4d0d0c0dd00647b1ff869b4607f54, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Buttons: []
+  SpecialButtonIndexes: 
+  Selected: {r: 0.5568628, g: 0.5568628, b: 0.5568628, a: 1}
+  NotSelected: {r: 0.28627452, g: 0.28627452, b: 0.28627452, a: 1}
+  SpecialSelected: {r: 1, g: 1, b: 1, a: 1}
+  SpecialNotSelected: {r: 0.5, g: 0.5, b: 0.5, a: 1}
   EnemiesKilledText: {fileID: 9178962212396102120}
   TimesSpottedText: {fileID: 1467897445658451777}
   PacifistToggle: {fileID: 114244805278217930}
   ShadowToggle: {fileID: 114734332967717064}
   WantedLevelText: {fileID: 6134266276249926555}
-  RetryText: {fileID: 114451330594449392}
-  MainMenuText: {fileID: 114775595918401350}
   NumberOfGuards: 0
 --- !u!1 &1443257484223148
 GameObject:
@@ -2310,8 +2332,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 114967276625688304}
-        m_TargetAssemblyTypeName: 
-        m_MethodName: Restart
+        m_TargetAssemblyTypeName: UI.PauseManagement, Assembly-CSharp
+        m_MethodName: RestartLevel
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -2408,6 +2430,7 @@ GameObject:
   - component: {fileID: 224729320666259498}
   - component: {fileID: 222899654074139028}
   - component: {fileID: 114451330594449392}
+  - component: {fileID: 983147263444214295}
   m_Layer: 5
   m_Name: Retry Text
   m_TagString: Untagged
@@ -2475,7 +2498,21 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: '[Space] Retry'
+  m_Text: '[SPACE] Retry'
+--- !u!114 &983147263444214295
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1476058984313352}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 655fab522888abe4881226cf7997461a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UI.TooltipStringUpdater
+  KeyboardTooltip: '[SPACE] Retry'
+  ControllerTooltip: '[A] Retry'
 --- !u!1 &1477180374756966
 GameObject:
   m_ObjectHideFlags: 0
@@ -3088,6 +3125,7 @@ GameObject:
   - component: {fileID: 224199377647860246}
   - component: {fileID: 222867741098588102}
   - component: {fileID: 114875254372863616}
+  - component: {fileID: 8562451941708854611}
   m_Layer: 5
   m_Name: Club Icon Text
   m_TagString: Untagged
@@ -3156,6 +3194,20 @@ MonoBehaviour:
     m_VerticalOverflow: 0
     m_LineSpacing: 1
   m_Text: CTRL
+--- !u!114 &8562451941708854611
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1615581987911062}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 655fab522888abe4881226cf7997461a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UI.TooltipStringUpdater
+  KeyboardTooltip: CTRL
+  ControllerTooltip: RB
 --- !u!1 &1648194878707092
 GameObject:
   m_ObjectHideFlags: 0
@@ -3598,13 +3650,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 22145d4c659844248aac5cc616ce3bff, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  CauseText: {fileID: 114706467594336020}
   Buttons:
   - {fileID: 114292090545529270}
   - {fileID: 114080522745273162}
   - {fileID: 114438538149690606}
+  SpecialButtonIndexes: 
   Selected: {r: 0.5568628, g: 0.5568628, b: 0.5568628, a: 1}
   NotSelected: {r: 0.28627452, g: 0.28627452, b: 0.28627452, a: 1}
+  SpecialSelected: {r: 1, g: 1, b: 1, a: 1}
+  SpecialNotSelected: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+  CauseText: {fileID: 114706467594336020}
 --- !u!1 &1716586211793618
 GameObject:
   m_ObjectHideFlags: 0
@@ -3616,6 +3671,7 @@ GameObject:
   - component: {fileID: 224419554275411832}
   - component: {fileID: 222526070064787296}
   - component: {fileID: 114507027820674190}
+  - component: {fileID: 6331409374094159320}
   m_Layer: 5
   m_Name: Use Icon Text
   m_TagString: Untagged
@@ -3684,6 +3740,20 @@ MonoBehaviour:
     m_VerticalOverflow: 0
     m_LineSpacing: 1
   m_Text: E
+--- !u!114 &6331409374094159320
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1716586211793618}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 655fab522888abe4881226cf7997461a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UI.TooltipStringUpdater
+  KeyboardTooltip: E
+  ControllerTooltip: X
 --- !u!1 &1736170038634360
 GameObject:
   m_ObjectHideFlags: 0
@@ -4336,6 +4406,7 @@ GameObject:
   - component: {fileID: 224649981016160954}
   - component: {fileID: 222940684002074670}
   - component: {fileID: 114004076115857832}
+  - component: {fileID: 1281823339855960595}
   m_Layer: 5
   m_Name: Kill Icon Text
   m_TagString: Untagged
@@ -4404,6 +4475,20 @@ MonoBehaviour:
     m_VerticalOverflow: 0
     m_LineSpacing: 1
   m_Text: RMB
+--- !u!114 &1281823339855960595
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1839170955351810}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 655fab522888abe4881226cf7997461a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UI.TooltipStringUpdater
+  KeyboardTooltip: RMB
+  ControllerTooltip: RT
 --- !u!1 &1899976377959632
 GameObject:
   m_ObjectHideFlags: 0
@@ -5200,8 +5285,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 114967276625688304}
-        m_TargetAssemblyTypeName: 
-        m_MethodName: ToMainMenu
+        m_TargetAssemblyTypeName: UI.PauseManagement, Assembly-CSharp
+        m_MethodName: MainMenu
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

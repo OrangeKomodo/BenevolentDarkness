@@ -1,56 +1,47 @@
 ﻿using GameManager;
 using UnityEngine;
-using UnityEngine.SceneManagement;
-using UnityEngine.UI;
 
 namespace UI
 {
-	public class PauseManagement : MonoBehaviour
+	public class PauseManagement : UserInterfaceInputWrapper
 	{
-		public Button[] Buttons;
-		
-		public Color Selected = Color.white;
-		public Color NotSelected = Color.gray;
-
-		private bool _usingController;
-
-		private int _buttonIndex = 0;
-		private float _nextChangeTime;
-
-		private void Start()
+		// Select Pause Menu Buttons
+		protected override void SelectButton(int button)
 		{
-			_usingController = Input.GetJoystickNames().Length > 0;
-			if (_usingController)
+			base.SelectButton(button);
+			
+			switch (button)
 			{
-				ChangeButton(_buttonIndex);
+				case 0:
+					Resume();
+					return;
+				case 1:
+					RestartLevel();
+					return;
+				case 2:
+					ToLevelSelect();
+					return;
+				case 3:
+					MainMenu();
+					return;
 			}
 		}
 
-		private void Update()
+		// Use Cancel function to Resume
+		protected override void Cancel()
 		{
-			if (_usingController)
-			{
-				float controllerY = -Input.GetAxis("Vertical");
-				if (_nextChangeTime <= Time.realtimeSinceStartup && Mathf.Abs(controllerY) > 0.19f)
-				{
-					AudioManager.Instance.PlaySound("Swish");
-					_buttonIndex = (4 + _buttonIndex + (int)(controllerY / Mathf.Abs(controllerY))) % 4;
-					ChangeButton(_buttonIndex);
-					_nextChangeTime = Time.realtimeSinceStartup + 0.2f;
-				}
-			}
-
-			if (Input.GetButtonDown("Jump"))
-			{
-				SelectButton(_buttonIndex);
-			}
-
-			if (Input.GetButtonDown("Cancel"))
-			{
-				Resume();
-			}
+			// Don't call base version for the sake of the Select Sound in this case
+			Resume();
 		}
 
+		// Use Exit function to Resume
+		protected override void Exit()
+		{
+			// Don't call base version for the sake of the Select Sound in this case
+			Resume();
+		}
+
+		// Unpause the game
 		public void Resume()
 		{
 			AudioManager.Instance.PlaySound("Select");
@@ -59,57 +50,6 @@ namespace UI
 			Cursor.visible = false;
 			Time.timeScale = 1;
 			MenuSwitcher.Instance.LoadMenu(0);
-		}
-
-		public void Restart()
-		{
-			AudioManager.Instance.PlaySound("Select");
-			Cursor.lockState = CursorLockMode.Locked;
-			Cursor.visible = false;
-			Time.timeScale = 1;
-			SceneManager.LoadScene(SceneManager.GetActiveScene().name);
-		}
-
-		public void ToMainMenu()
-		{
-			AudioManager.Instance.PlaySound("Select");
-			PlayerPrefs.SetInt("MainMenuSetting", 1);
-			SceneManager.LoadScene("Main Menu");
-		}
-
-		public void ToLevelSelect()
-		{
-			AudioManager.Instance.PlaySound("Select");
-			PlayerPrefs.SetInt("MainMenuSetting", 2);
-			SceneManager.LoadScene("Main Menu");
-		}
-
-		void ChangeButton(int newButton)
-		{
-			for (int i = 0; i < 4; i++)
-			{
-				Buttons[i].image.color = newButton == i ? Selected : NotSelected;
-			}
-		}
-
-		void SelectButton(int button)
-		{
-			if (button == 0)
-			{
-				Resume();
-			}
-			else if (button == 1)
-			{
-				Restart();
-			}
-			else if (button == 2)
-			{
-				ToLevelSelect();
-			}
-			else if (button == 3)
-			{
-				ToMainMenu();
-			}
 		}
 	}
 }

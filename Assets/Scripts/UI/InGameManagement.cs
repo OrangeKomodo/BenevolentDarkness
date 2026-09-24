@@ -37,7 +37,6 @@ namespace UI
 		private int _spellCount;
 
 		private bool _inCorountine = false;
-		private bool _usingController;
 
 		private float _nextChangeTime;
 
@@ -45,7 +44,6 @@ namespace UI
 		{
 			_spellCaster = GameObject.FindGameObjectWithTag("Player").GetComponent<SpellCasting>();
 			_spellCount = new int[] { 3, 5, 7 }[_spellCaster.SpellLevel - 1];
-			_usingController = Input.GetJoystickNames().Length > 0;
 
 			ApplyAbilitiesColor(Color.clear);
 			ApplyActionsColor(UseAssets, Color.clear);
@@ -53,13 +51,6 @@ namespace UI
 			ApplyActionsColor(KillAssets, Color.clear);
 			
 			LoadMissionText(StartingMissionText);
-
-			if (_usingController)
-			{
-				UseAssets.Text.text = "X";
-				SubdueAssets.Text.text = "RB";
-				KillAssets.Text.text = "RT";
-			}
 		}
 
 		private void Update()
@@ -89,7 +80,7 @@ namespace UI
 			{
 				AudioManager.Instance.PlaySound("Select");
 				AudioManager.Instance.PauseSound("Alarm", true);
-				if (!_usingController)
+				if (!InputManager.UsingGamepad)
 				{
 					Cursor.lockState = CursorLockMode.None;
 					Cursor.visible = true;
@@ -108,7 +99,7 @@ namespace UI
 				AbilitiesAssets[i].Outline.enabled = newSpell == i;
 			}
 
-			if (!_inCorountine && !_usingController)
+			if (!_inCorountine && !InputManager.UsingGamepad)
 			{
 				StartCoroutine(AbilitiesAnimation(0, 1f));
 			}

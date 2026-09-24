@@ -5,29 +5,24 @@ using UnityEngine.UI;
 
 namespace UI
 {
-	public class MissionCompleteManagement : Singleton<MissionCompleteManagement>
+	public class MissionCompleteManagement : UserInterfaceInputWrapper
 	{
 		public Text EnemiesKilledText;
 		public Text TimesSpottedText;
 		public Toggle PacifistToggle;
 		public Toggle ShadowToggle;
 		public Text WantedLevelText;
-		public Text RetryText;
-		public Text MainMenuText;
 		
 		public int NumberOfGuards;
 
 		private int _enemiesKilled;
 		private int _timesSpotted;
 
-		private void Start()
+		// Wipe any text or settings that the game may or may not start with
+		protected override void Awake()
 		{
-			if (Input.GetJoystickNames().Length > 0)
-			{
-				RetryText.text = "[A] Retry";
-				MainMenuText.text = "[START] Main Menu";
-			}
-
+			base.Awake();
+			
 			EnemiesKilledText.text = "";
 			TimesSpottedText.text = "";
 			PacifistToggle.isOn = false;
@@ -35,15 +30,15 @@ namespace UI
 			WantedLevelText.text = "";
 		}
 
-		private void OnEnable()
+		// If this menu is enabled, the game is over - populate the end-game data
+		protected override void OnEnable()
 		{
+			base.OnEnable();
+			
 			if (MoralitySystem.Instance == null)
 			{
 				return;
 			}
-			
-			Cursor.lockState = CursorLockMode.Locked;
-			Cursor.visible = false;
 
 			_enemiesKilled = MoralitySystem.Instance.EnemiesKilled;
 			_timesSpotted = MoralitySystem.Instance.TimesSpotted;
@@ -55,20 +50,37 @@ namespace UI
 			WantedLevelText.text = _enemiesKilled > NumberOfGuards / 2 ? "High" : "Low";
 		}
 
-		private void Update()
+		// Listen for specific inputs to augment this menu's functions
+		protected override void Update()
 		{
-			if (Input.GetKeyDown(KeyCode.LeftControl) || Input.GetKeyDown(KeyCode.RightControl) || Input.GetButtonDown("Jump"))
+			base.Update();
+
+			if (Input.GetKeyDown(KeyCode.LeftControl) || Input.GetKeyDown(KeyCode.RightControl))
 			{
-				AudioManager.Instance.PlaySound("Select");
-				SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+				SelectButton(-1);
 			}
-			else if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter) || Input.GetButtonDown("Cancel"))
+			
+			if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter))
 			{
-				AudioManager.Instance.PlaySound("Select");
-				Cursor.lockState = CursorLockMode.None;
-				Cursor.visible = true;
-				SceneManager.LoadScene("Main Menu");
+				Cancel();
 			}
+		}
+
+		// Reload the level
+		protected override void SelectButton(int button)
+		{
+			base.SelectButton(button);
+			
+			// Ignore the button index in this case - it's not needed
+			SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+		}
+
+		// Go back to Main Menu
+		protected override void Cancel()
+		{
+			base.Cancel();
+			
+			SceneManager.LoadScene("Main Menu");
 		}
 	}
 }

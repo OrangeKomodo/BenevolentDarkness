@@ -9,7 +9,7 @@ namespace GameManager
 		{
 			if (this as T == null)
 			{
-				string className = this.GetType().Name;
+				string className = GetType().Name;
 				throw new InvalidCastException($"Class {className} must inherit from Singleton<{className}>.");
 			}
 		}
@@ -52,10 +52,11 @@ namespace GameManager
 						DestroyImmediate(this);
 						return;
 					case DuplicateActions.DestroyGameObject:
-						DestroyImmediate(this.gameObject);
+						DestroyImmediate(gameObject);
 						return;
+					case DuplicateActions.ThrowException:
 					default:
-						Type type = this.GetType().BaseType;
+						Type type = GetType().BaseType;
 						while (!type.Name.StartsWith("Singleton"))
 						{
 							type = type.BaseType;
@@ -70,12 +71,12 @@ namespace GameManager
 
 			if (Lifespan == SingletonLifespan.Global)
 			{
-				DontDestroyOnLoad(this.gameObject);
+				DontDestroyOnLoad(gameObject);
 			}
 
 			if (ActionOnStart == StartingActions.DisableAfterStart)
 			{
-				this.gameObject.SetActive(false);
+				gameObject.SetActive(false);
 			}
 		}
 

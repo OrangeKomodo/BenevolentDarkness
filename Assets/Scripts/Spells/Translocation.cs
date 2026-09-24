@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using GameManager;
+using UnityEngine;
 
 namespace Spells
 {
@@ -29,8 +30,6 @@ namespace Spells
 		private bool _hittingPlatform;
 		private Vector2 _normal;
 
-		private bool _usingController;
-
 		private void Start()
 		{
 			MaxDistance = SpellCaster.SpellLevel * 5f + 5f;
@@ -42,8 +41,7 @@ namespace Spells
 			_playerTransform = PlayerController.transform;
 			_markerTransform = TranslocationMarker.transform;
 			
-			_usingController = Input.GetJoystickNames().Length > 0;
-			if (!_usingController)
+			if (!InputManager.UsingGamepad)
 			{
 				Cursor.lockState = CursorLockMode.None;
 				Cursor.visible = true;
@@ -152,7 +150,7 @@ namespace Spells
 		// Get the cursor position depending on whether we're using a mouse or a controller
 		private Vector3 GetUpdatedCursorPosition()
 		{
-			if (_usingController)
+			if (InputManager.UsingGamepad)
 			{
 				float xPositionDelta = Input.GetAxis("Mouse X") * _sensitivity;
 				float yPositionDelta = Input.GetAxis("Mouse Y") * _sensitivity;

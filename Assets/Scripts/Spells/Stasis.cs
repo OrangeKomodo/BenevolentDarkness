@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using AI.Guard;
 using AI.Sentry;
+using GameManager;
 using Player;
 using UnityEngine;
 
@@ -21,17 +22,14 @@ namespace Spells
 		private List<Guard> _frozenGuards = new List<Guard>();
 		private List<Sentry> _frozenSentries = new List<Sentry>();
 
-		private bool _usingController;
-
 		private void Start()
 		{
 			Time.timeScale = 0.5f;
 			_cameraController = PlayerController.CameraController;
 			_cameraController.NewTarget(transform, Vector2.zero, 0.5f);
 			_whatAreEnemies = LayerMask.GetMask("Enemies");
-			_usingController = Input.GetJoystickNames().Length > 0;
 
-			if (!_usingController)
+			if (!InputManager.UsingGamepad)
 			{
 				Cursor.lockState = CursorLockMode.None;
 				Cursor.visible = true;
@@ -43,7 +41,7 @@ namespace Spells
 			if (Input.GetAxis("Use Item") == 1f && !StasisOccured)
 			{
 				Vector2 mouseRay;
-				if (_usingController)
+				if (InputManager.UsingGamepad)
 				{
 					transform.Translate(new Vector3(Input.GetAxis("Mouse X"), Input.GetAxis("Mouse Y"), 0f));
 					mouseRay = transform.position;

@@ -100,14 +100,15 @@ namespace Player
 			{
 				if (Time.time >= _timeOfDeath + 2f && !_deathScreenLoaded)
 				{
-					if (Input.GetJoystickNames().Length == 0)
+					if (!InputManager.UsingGamepad)
 					{
 						Cursor.lockState = CursorLockMode.None;
 						Cursor.visible = true;
 					}
 
+					MoralitySystem.Instance.FailureCauseIndex = 0;
+
 					MenuSwitcher.Instance.LoadMenu(3);
-					MissionFailedManagement.Instance.SetCause(0);
 					_deathScreenLoaded = true;
 				}
 

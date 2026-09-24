@@ -1,4 +1,5 @@
 ﻿using AI.Guard;
+using GameManager;
 using UnityEngine;
 
 namespace Spells
@@ -14,15 +15,11 @@ namespace Spells
 		
 		private bool _canTransfer = false;
 		
-		private bool _usingController;
-
 		private void Start()
 		{
-			_usingController = Input.GetJoystickNames().Length > 0;
-
 			PlayerController.CanAttack = false;
 
-			if (!_usingController)
+			if (!InputManager.UsingGamepad)
 			{
 				Cursor.lockState = CursorLockMode.None;
 				Cursor.visible = true;
@@ -34,7 +31,7 @@ namespace Spells
 			TraitorMarker.gameObject.SetActive(true);
 
 			Vector2 mouseRay;
-			if (_usingController)
+			if (InputManager.UsingGamepad)
 			{
 				transform.Translate(new Vector3(Input.GetAxis("Mouse X") * transform.parent.localScale.x, Input.GetAxis("Mouse Y"), 0f));
 				mouseRay = transform.position;
