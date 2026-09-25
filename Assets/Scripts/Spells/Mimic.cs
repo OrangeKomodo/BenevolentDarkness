@@ -152,7 +152,7 @@ namespace Spells
 				return;
 			}
 			
-			// Claude: Otherwise, set the Marker's position to the cursor position or the farthest it can go in that direction
+			// Otherwise, set the Marker's position to the cursor position or the farthest it can go in that direction
 			transform.position = playerPosition + normalizedTargetDirection * clampedDistance;
 		}
 

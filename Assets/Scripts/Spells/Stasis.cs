@@ -9,25 +9,34 @@ namespace Spells
 {
 	public class Stasis : Spell
 	{
-
+		[Range(0, 100)]
+		public float Sensitivity;
 		public float MaxDistance;
 		public float Duration;
 		public bool StasisOccured;
 
 		private float _stasisStartedTime;
 
+		private Camera _camera;
 		private CameraController _cameraController;
-		private LayerMask _whatAreEnemies;
+		
+		public LayerMask WhatAreEnemies;
+		public LayerMask WhatIsGround;
+		public LayerMask WhatIsWall;
 
 		private List<Guard> _frozenGuards = new List<Guard>();
 		private List<Sentry> _frozenSentries = new List<Sentry>();
+		
+		private float _sensitivity => Sensitivity / 50f;
+		
+		private float _markerUpdateTime = 0.02f;
+		private float _nextMarkerUpdate;
 
 		private void Start()
 		{
-			Time.timeScale = 0.5f;
-			_cameraController = PlayerController.CameraController;
-			_cameraController.NewTarget(transform, Vector2.zero, 0.5f);
-			_whatAreEnemies = LayerMask.GetMask("Enemies");
+			_camera = Camera.main;
+			//_cameraController = PlayerController.CameraController;
+			//_cameraController.NewTarget(transform, Vector2.zero, 0.5f);
 
 			if (!InputManager.UsingGamepad)
 			{
@@ -38,98 +47,134 @@ namespace Spells
 
 		private void Update()
 		{
-			if (Input.GetAxis("Use Item") == 1f && !StasisOccured)
+			if (StasisOccured)
 			{
-				Vector2 mouseRay;
-				if (InputManager.UsingGamepad)
+				if (Time.time >= _stasisStartedTime + Duration)
 				{
-					transform.Translate(new Vector3(Input.GetAxis("Mouse X"), Input.GetAxis("Mouse Y"), 0f));
-					mouseRay = transform.position;
+					EndStasis();
 				}
-				else
-				{
-					mouseRay = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-				}
-
-				RaycastHit2D mouseRayHit = Physics2D.Raycast(mouseRay, Vector2.zero, 100f);
-				RaycastHit2D playerRayHit;
-				LayerMask layerMask = LayerMask.GetMask("Platforms", "Walls");
-
-				if (mouseRayHit)
-				{
-					Vector3 targetPosition = mouseRayHit.point;
-					Vector3 playerPosition = PlayerController.transform.position;
-
-					Debug.DrawRay(playerPosition,
-						(targetPosition - playerPosition).normalized
-						* Mathf.Clamp(Vector2.Distance(playerPosition, targetPosition), 0f, MaxDistance), Color.white);
-					playerRayHit = Physics2D.Raycast(playerPosition, targetPosition - playerPosition,
-						Mathf.Clamp(Vector2.Distance(playerPosition, targetPosition), 0f, MaxDistance), layerMask);
-
-					if (playerRayHit.collider == null)
-					{
-						if (Vector2.Distance(targetPosition, playerPosition) <= MaxDistance)
-						{
-							//Debug.Log ("Mouse Point");
-							transform.position = mouseRayHit.point;
-						}
-						else
-						{
-							//Debug.Log ("Boundry Point");
-							transform.position =
-								playerPosition + (targetPosition - playerPosition).normalized * MaxDistance;
-						}
-					}
-					else
-					{
-						//Debug.Log ("Player Point");
-						transform.position = playerRayHit.point;
-					}
-
-					//Debug.Log (playerRayHit.distance);
-				}
-			}
-
-			if (Input.GetAxis("Use Item") == 0f && !StasisOccured)
-			{
-				PlayerController.PlaySound("Stasis");
-				Time.timeScale = 1f;
-				_cameraController.ResetTarget();
-				Collider2D[] enemiesToFreeze =
-					Physics2D.OverlapCircleAll(transform.position, transform.localScale.x, _whatAreEnemies);
-				for (int i = 0; i < enemiesToFreeze.Length; i++)
-				{
-					if (enemiesToFreeze[i].name.Contains("Guard"))
-					{
-						Guard guard = enemiesToFreeze[i].GetComponent<Guard>();
-						guard.InStasis(true);
-						_frozenGuards.Add(guard);
-					}
-					else if (enemiesToFreeze[i].name.Contains("Sentry"))
-					{
-						Sentry sentry = enemiesToFreeze[i].GetComponent<Sentry>();
-						sentry.InStasis(true);
-						_frozenSentries.Add(sentry);
-					}
-				}
-
-				_stasisStartedTime = Time.time;
-				StasisOccured = true;
-				SpellCaster.StasisOccured();
-
-				Cursor.lockState = CursorLockMode.Locked;
-				Cursor.visible = false;
-			}
-
-			if (StasisOccured && Time.time >= _stasisStartedTime + Duration)
-			{
-				EndStasis();
+				
+				return;
 			}
 
 			if (Input.GetKeyDown(KeyCode.F) || Input.GetButtonDown("Exit"))
 			{
 				EndStasis();
+				return;
 			}
+
+			if (Input.GetAxis("Use Item") == 0f)
+			{
+				PerformStasis();
+				return;
+			}
+
+			// Ensure the Marker updates only so often, no matter the framerate.
+			if (Time.time < _nextMarkerUpdate)
+			{
+				return;
+			}
+			
+			_nextMarkerUpdate = Time.time + _markerUpdateTime;
+
+			UpdateMarkerPosition();
+		}
+
+		// Move the Marker according to the Player's input
+		private void UpdateMarkerPosition()
+		{
+			// Get cursor position for the mouse or the controller
+			Vector2 cursorPosition = GetUpdatedCursorPosition();
+
+			RaycastHit2D cursorRayHit = Physics2D.Raycast(cursorPosition, Vector2.zero, 100f);
+
+			// If the cursor is not in a valid location, abort
+			if (!cursorRayHit)
+			{
+				return;
+			}
+
+			// Shoot a raycast from the Player to the cursor to place the marker at the farthest valid position in that direction
+			LayerMask layerMask = WhatIsGround | WhatIsWall;
+				
+			Vector2 targetPosition = cursorRayHit.point;
+			Vector2 playerPosition = PlayerController.transform.position;
+			Vector2 targetDirection = targetPosition - playerPosition;
+			Vector2 normalizedTargetDirection = targetDirection.normalized;
+			float targetDistance = Vector2.Distance(playerPosition, targetPosition);
+			float clampedDistance = Mathf.Clamp(targetDistance, 0f, MaxDistance);
+
+			Debug.DrawRay(playerPosition, normalizedTargetDirection * clampedDistance, Color.orange);
+			RaycastHit2D playerRayHit = Physics2D.Raycast(playerPosition, targetDirection, clampedDistance, layerMask);
+
+			// If the raycast hit a wall or ceiling, record data to be used later
+			if (playerRayHit.collider != null)
+			{
+				transform.position = playerRayHit.point;
+				
+				return;
+			}
+			
+			// Otherwise, set the Marker's position to the cursor position or the farthest it can go in that direction
+			transform.position = playerPosition + normalizedTargetDirection * clampedDistance;
+		}
+
+		private void PerformStasis()
+		{
+			PlayerController.PlaySound("Stasis");
+			//_cameraController.ResetTarget();
+			
+			Collider2D[] enemiesToFreeze = Physics2D.OverlapCircleAll(transform.position, transform.localScale.x, WhatAreEnemies);
+			for (int enemyIndex = 0; enemyIndex < enemiesToFreeze.Length; ++enemyIndex)
+			{
+				if (enemiesToFreeze[enemyIndex].name.Contains("Guard"))
+				{
+					Guard guard = enemiesToFreeze[enemyIndex].GetComponent<Guard>();
+					guard.InStasis(true);
+					_frozenGuards.Add(guard);
+					
+					continue;
+				}
+				
+				if (enemiesToFreeze[enemyIndex].name.Contains("Sentry"))
+				{
+					Sentry sentry = enemiesToFreeze[enemyIndex].GetComponent<Sentry>();
+					sentry.InStasis(true);
+					_frozenSentries.Add(sentry);
+
+					continue;
+				}
+			}
+
+			_stasisStartedTime = Time.time;
+			StasisOccured = true;
+			SpellCaster.StasisOccured();
+
+			Cursor.lockState = CursorLockMode.Locked;
+			Cursor.visible = false;
+		}
+
+		// Get the cursor position depending on whether we're using a mouse or a controller
+		private Vector3 GetUpdatedCursorPosition()
+		{
+			if (InputManager.UsingGamepad)
+			{
+				float xPositionDelta = Input.GetAxis("Mouse X") * _sensitivity;
+				float yPositionDelta = Input.GetAxis("Mouse Y") * _sensitivity;
+				Vector3 cursorPositionDelta = new Vector3(xPositionDelta, yPositionDelta, 0f);
+				
+				return transform.position + cursorPositionDelta;
+			}
+			
+			return _camera.ScreenToWorldPoint(Input.mousePosition);
+		}
+
+		// Check whether the raycast hit a collider on one of the layers in the given mask
+		private bool IsLayerInMask(int layer, LayerMask mask)
+		{
+			int layerValue = 1 << layer; // this converts the layer index to a bit so we can compare it against the mask
+			int maskAndLayerValue = mask & layerValue;
+			return maskAndLayerValue != 0;
 		}
 
 		private void EndStasis()
@@ -137,38 +182,65 @@ namespace Spells
 			if (StasisOccured)
 			{
 				foreach (Guard guard in _frozenGuards)
+				{
 					guard.InStasis(false);
+				}
+
 				foreach (Sentry sentry in _frozenSentries)
+				{
 					sentry.InStasis(false);
-				_cameraController.ResetTarget();
+				}
+			
+				_frozenGuards.Clear();
+				_frozenSentries.Clear();
 			}
-			else
-			{
-				Time.timeScale = 1f;
-				_cameraController.ResetTarget();
-				Cursor.lockState = CursorLockMode.Locked;
-				Cursor.visible = false;
-			}
+			
+			Cursor.lockState = CursorLockMode.Locked;
+			Cursor.visible = false;
+			//_cameraController.ResetTarget();
 
 			Destroy(gameObject);
 		}
 
 		private void OnTriggerEnter2D(Collider2D otherCollider)
 		{
-			if (StasisOccured && otherCollider.gameObject.layer == 9)
+			if (!StasisOccured)
 			{
-				if (otherCollider.name.Contains("Guard"))
+				return;
+			}
+
+			int layer =  otherCollider.gameObject.layer;
+			if (IsLayerInMask(layer, WhatAreEnemies))
+			{
+				return;
+			}
+			
+			if (otherCollider.name.Contains("Guard"))
+			{
+				Guard guard = otherCollider.GetComponent<Guard>();
+				if (guard == null)
 				{
-					Guard guard = otherCollider.GetComponent<Guard>();
-					guard.InStasis(true);
-					_frozenGuards.Add(guard);
+					return;
 				}
-				else if (otherCollider.name.Contains("Sentry"))
+				
+				guard.InStasis(true);
+				_frozenGuards.Add(guard);
+				
+				return;
+			}
+			
+			if (otherCollider.name.Contains("Sentry"))
+			{
+				Sentry sentry = otherCollider.GetComponent<Sentry>();
+				if (sentry == null)
 				{
-					Sentry sentry = otherCollider.GetComponent<Sentry>();
-					sentry.InStasis(true);
-					_frozenSentries.Add(sentry);
+					return;
 				}
+				
+				sentry.InStasis(true);
+				_frozenSentries.Add(sentry);
+				
+				return;
 			}
 		}
 	}

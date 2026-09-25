@@ -47,9 +47,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ManaCost: 80
+  Sensitivity: 75
   MaxDistance: 15
   Duration: 10
   StasisOccured: 0
+  WhatAreEnemies:
+    serializedVersion: 2
+    m_Bits: 512
+  WhatIsGround:
+    serializedVersion: 2
+    m_Bits: 2048
+  WhatIsWall:
+    serializedVersion: 2
+    m_Bits: 8192
 --- !u!58 &58311207225130716
 CircleCollider2D:
   m_ObjectHideFlags: 0
