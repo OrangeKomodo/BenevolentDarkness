@@ -145,6 +145,11 @@ MonoBehaviour:
   ManaCost: 60
   BoxCollider: {fileID: 61515191320994348}
   AreaEffector2D: {fileID: 249630020097182590}
+  MaxDistance: 200
+  GapBeforeWall: 3
+  WhatIsWall:
+    serializedVersion: 2
+    m_Bits: 8192
 --- !u!222 &222187064796301550
 CanvasRenderer:
   m_ObjectHideFlags: 0
