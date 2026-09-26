@@ -220,7 +220,7 @@ namespace Spells
 		}
 
 		// End the spell, and destroy the Traitor object
-		// This spell doesn't end its effects when the spell itself ends
+		// This spell doesn't end its effects when the effects on the Guard ends
 		public void EndTraitor()
 		{
 			Cursor.lockState = CursorLockMode.Locked;
