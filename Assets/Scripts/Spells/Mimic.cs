@@ -129,7 +129,7 @@ namespace Spells
 			Debug.DrawRay(playerPosition, normalizedTargetDirection * clampedDistance, Color.blue);
 			RaycastHit2D playerRayHit = Physics2D.Raycast(playerPosition, targetDirection, clampedDistance, layerMask);
 
-			// If the raycast hit a Guard, target them and return
+			// If the raycast hit a Guard, target them, and return
 			if (IsRaycastHittingMask(playerRayHit, WhatAreEnemies))
 			{
 				Guard guard = playerRayHit.collider.GetComponentInParent<Guard>();
@@ -246,7 +246,6 @@ namespace Spells
 		// Complete the Mimic, disguise the Player, and start the mana drain
 		private void PerformMimic()
 		{
-			//Debug.Log ("Transfer Complete");
 			MimicMarker.gameObject.SetActive(false);
 			Disguised = true;
 			SpellCaster.Disguised();
