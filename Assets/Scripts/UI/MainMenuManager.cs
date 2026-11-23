@@ -2,9 +2,10 @@
 
 namespace UI
 {
+	// AI - Note: This is a small UI class and doesn't require extensive regions.
 	public class MainMenuManager : UserInterfaceInputWrapper
 	{
-		// Select Main Menu Buttons
+		// AI - Select Main Menu Buttons.
 		protected override void SelectButton(int button)
 		{
 			base.SelectButton(button);
@@ -23,11 +24,10 @@ namespace UI
 			}
 		}
 
-		// Go back to Title Screen
+		// AI - Go back to Title Screen.
 		protected override void Exit()
 		{
 			base.Exit();
-			
 			LoadMenu(0);
 		}
 	}

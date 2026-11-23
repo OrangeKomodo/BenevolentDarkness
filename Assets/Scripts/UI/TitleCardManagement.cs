@@ -3,9 +3,10 @@ using UnityEngine;
 
 namespace UI
 {
+	// AI - Note: This is a small UI class and doesn't require regions.
 	public class TitleCardManagement : UserInterfaceInputWrapper
 	{
-		// Using Update to check for any button press
+		// AI - Check for any button press to advance from title screen.
 		protected override void Update()
 		{
 			base.Update();

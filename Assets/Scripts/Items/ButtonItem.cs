@@ -6,6 +6,8 @@ namespace Items
 {
 	public class ButtonItem : Item
 	{
+		#region Fields
+
 		public Sprite ButtonPressed;
 		public string AudioCueName = "Use Button";
 
@@ -19,6 +21,10 @@ namespace Items
 		private SpriteRenderer _spriteRenderer;
 		private BoxCollider2D _boxCollider2D;
 
+		#endregion
+
+		#region Initialization Functions
+
 		private void Start()
 		{
 			_playerController = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerController>();
@@ -27,6 +33,11 @@ namespace Items
 			_boxCollider2D = GetComponent<BoxCollider2D>();
 		}
 
+		#endregion
+
+		#region Interaction Functions
+
+		// AI - Activate the button, changing its sprite, playing audio, disabling sentries, and opening trapdoors.
 		public override void Interact()
 		{
 			if (SingleUse && Used)
@@ -51,5 +62,7 @@ namespace Items
 
 			Used = true;
 		}
+
+		#endregion
 	}
 }

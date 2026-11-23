@@ -5,9 +5,17 @@ namespace AI.Sentry
 {
 	public class SentryConstraint : MonoBehaviour
 	{
+		#region Fields
+
 		public bool RightConstraint;
 		
 		private List<Sentry> _constrainedSentries = new List<Sentry>();
+
+		private const string SENTRY_ACTUAL_NAME = "Sentry Actual";
+
+		#endregion
+
+		#region Update Functions
 
 		private void Update()
 		{
@@ -18,40 +26,69 @@ namespace AI.Sentry
 			
 			for (int sentryIndex = 0; sentryIndex < _constrainedSentries.Count; ++sentryIndex)
 			{
-				Sentry constrainedSentry = _constrainedSentries[sentryIndex];
-				Transform sentryTransform = constrainedSentry.transform;
-				
-				if (RightConstraint)
-				{
-					if (sentryTransform.position.x > transform.position.x)
-					{
-						constrainedSentry.ConstrainEnemy(new Vector2(transform.position.x, sentryTransform.position.y));
-					}
+				ConstrainSentry(_constrainedSentries[sentryIndex]);
+			}
+		}
 
-					continue;
-				}
-				
-				if (sentryTransform.position.x < transform.position.x)
+		// AI - Prevent a sentry from moving beyond this constraint boundary.
+		private void ConstrainSentry(Sentry constrainedSentry)
+		{
+			if (constrainedSentry == null)
+			{
+				return;
+			}
+
+			Transform sentryTransform = constrainedSentry.transform;
+			
+			if (RightConstraint)
+			{
+				if (sentryTransform.position.x > transform.position.x)
 				{
 					constrainedSentry.ConstrainEnemy(new Vector2(transform.position.x, sentryTransform.position.y));
 				}
+				return;
+			}
+			
+			if (sentryTransform.position.x < transform.position.x)
+			{
+				constrainedSentry.ConstrainEnemy(new Vector2(transform.position.x, sentryTransform.position.y));
 			}
 		}
 
+		#endregion
+
+		#region Collision Functions
+
+		// AI - Add a sentry to the constrained list when they enter the trigger.
 		private void OnTriggerEnter2D(Collider2D otherCollider)
 		{
-			if (otherCollider.name.Equals("Sentry Actual") && !_constrainedSentries.Contains(otherCollider.GetComponent<Sentry>()))
+			if (!otherCollider.name.Equals(SENTRY_ACTUAL_NAME))
 			{
-				_constrainedSentries.Add(otherCollider.GetComponent<Sentry>());
+				return;
+			}
+
+			Sentry sentry = otherCollider.GetComponent<Sentry>();
+			if (sentry != null && !_constrainedSentries.Contains(sentry))
+			{
+				_constrainedSentries.Add(sentry);
 			}
 		}
 
-		void OnTriggerExit2D(Collider2D otherCollider)
+		// AI - Remove a sentry from the constrained list when they exit the trigger.
+		private void OnTriggerExit2D(Collider2D otherCollider)
 		{
-			if (otherCollider.name.Equals("Sentry Actual") && _constrainedSentries.Contains(otherCollider.GetComponent<Sentry>()))
+			if (!otherCollider.name.Equals(SENTRY_ACTUAL_NAME))
 			{
-				_constrainedSentries.Remove(otherCollider.GetComponent<Sentry>());
+				return;
+			}
+
+			Sentry sentry = otherCollider.GetComponent<Sentry>();
+			if (sentry != null && _constrainedSentries.Contains(sentry))
+			{
+				_constrainedSentries.Remove(sentry);
 			}
 		}
+
+		#endregion
 	}
 }

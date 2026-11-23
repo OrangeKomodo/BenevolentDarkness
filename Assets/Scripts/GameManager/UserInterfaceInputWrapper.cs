@@ -5,184 +5,213 @@ using UnityEngine.UI;
 
 namespace GameManager
 {
-    public abstract class UserInterfaceInputWrapper : InputModeListener
-    {
-        public Button[] Buttons;
-        public List<int> SpecialButtonIndexes = new List<int>();
+	public abstract class UserInterfaceInputWrapper : InputModeListener
+	{
+		#region Fields
 
-        public Color Selected = Color.white;
-        public Color NotSelected = Color.gray;
-        public Color SpecialSelected = Color.white;
-        public Color SpecialNotSelected = Color.gray;
+		public Button[] Buttons;
+		public List<int> SpecialButtonIndexes = new List<int>();
 
-        private int _buttonCount = 0;
-        private int _activeButtonIndex = 0;
-        private float _nextChangeTime;
+		public Color Selected = Color.white;
+		public Color NotSelected = Color.gray;
+		public Color SpecialSelected = Color.white;
+		public Color SpecialNotSelected = Color.gray;
 
-        protected virtual void Start()
-        {
-            // Save the button length on start
-            _buttonCount = Buttons.Length;
-        }
+		private int _buttonCount = 0;
+		private int _activeButtonIndex = 0;
+		private float _nextChangeTime;
 
-        // Use Update loop to handle common inputs
-        protected virtual void Update()
-        {
-            if (UsingGamepad)
-            {
-                HandleGamepadInput();
-            }
+		private const string MAIN_MENU_SCENE_NAME = "Main Menu";
+		private const string MAIN_MENU_SETTING_KEY = "MainMenuSetting";
 
-            if (Input.GetButtonDown("Jump"))
-            {
-                SelectButton(_activeButtonIndex);
-            }
+		#endregion
 
-            if (Input.GetButtonDown("Cancel"))
-            {
-                Cancel();
-            }
+		#region Initialization Functions
 
-            if (Input.GetButtonDown("Exit"))
-            {
-                Exit();
-            }
-        }
+		protected virtual void Start()
+		{
+			_buttonCount = Buttons.Length;
+		}
 
-        #region Overridable Functions
+		#endregion
 
-        // Called from Update to handle Gamepad input
-        protected virtual void HandleGamepadInput()
-        {
-            // If there are no menu buttons, we don't care
-            if (_buttonCount == 0)
-            {
-                return;
-            }
+		#region Update Functions
 
-            // Cycle through menu buttons and highlight the currently selected one
-            float gamepadYAxis = -Input.GetAxis("Vertical");
-            if (_nextChangeTime <= Time.realtimeSinceStartup && Mathf.Abs(gamepadYAxis) > 0.19f)
-            {
-                PlayChangeSelectionSound();
+		// AI - Use Update loop to handle common inputs.
+		protected virtual void Update()
+		{
+			if (UsingGamepad)
+			{
+				HandleGamepadInput();
+			}
 
-                _activeButtonIndex = (_activeButtonIndex + (int)(gamepadYAxis / Mathf.Abs(gamepadYAxis)) + _buttonCount) % _buttonCount;
-                HighlightButton(_activeButtonIndex);
+			HandleButtonInputs();
+		}
 
-                _nextChangeTime = Time.realtimeSinceStartup + 0.2f;
-            }
-        }
+		// AI - Handle jump, cancel, and exit button inputs.
+		private void HandleButtonInputs()
+		{
+			if (Input.GetButtonDown("Jump"))
+			{
+				SelectButton(_activeButtonIndex);
+			}
 
-        // Select Button overridable function
-        protected virtual void SelectButton(int button)
-        {
-            PlaySelectSound();
-        }
+			if (Input.GetButtonDown("Cancel"))
+			{
+				Cancel();
+			}
 
-        // Cancel overridable function
-        protected virtual void Cancel()
-        {
-            PlaySelectSound();
-        }
+			if (Input.GetButtonDown("Exit"))
+			{
+				Exit();
+			}
+		}
 
-        // Exit overridable function
-        protected virtual void Exit()
-        {
-            PlaySelectSound();
-        }
+		#endregion
 
-        #endregion
-        
-        #region Public Button Functions
+		#region Gamepad Input Functions
 
-        public void LoadMenu(int menuIndex)
-        {
-            PlaySelectSound();
-            MenuSwitcher.Instance.LoadMenu(menuIndex);
-        }
+		// AI - Handle Gamepad input for cycling through menu buttons.
+		protected virtual void HandleGamepadInput()
+		{
+			if (_buttonCount == 0)
+			{
+				return;
+			}
 
-        public void LoadLevel(string levelName)
-        {
-            PlaySelectSound();
-            SceneManager.LoadScene(levelName);
-        }
+			// AI - Cycle through menu buttons and highlight the currently selected one.
+			float gamepadYAxis = -Input.GetAxis("Vertical");
+			if (_nextChangeTime > Time.realtimeSinceStartup || Mathf.Abs(gamepadYAxis) <= 0.19f)
+			{
+				return;
+			}
 
-        public void RestartLevel()
-        {
-            PlaySelectSound();
-            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
-        }
+			PlayChangeSelectionSound();
 
-        public void MainMenu()
-        {
-            PlaySelectSound();
-            PlayerPrefs.SetInt("MainMenuSetting", 1);
-            SceneManager.LoadScene("Main Menu");
-        }
+			int direction = (int)(gamepadYAxis / Mathf.Abs(gamepadYAxis));
+			_activeButtonIndex = (_activeButtonIndex + direction + _buttonCount) % _buttonCount;
+			HighlightButton(_activeButtonIndex);
 
-        public void ToLevelSelect()
-        {
-            PlaySelectSound();
-            PlayerPrefs.SetInt("MainMenuSetting", 2);
-            SceneManager.LoadScene("Main Menu");
-        }
+			_nextChangeTime = Time.realtimeSinceStartup + 0.2f;
+		}
 
-        public void QuitGame()
-        {
-            PlaySelectSound();
-            Application.Quit();
-        }
-        
-        #endregion
+		#endregion
 
-        #region Helper Functions
+		#region Overridable Functions
 
-        // Highlight the given button - use -1 to highlight all of them
-        private void HighlightButton(int newButton)
-        {
-            for (int buttonIndex = 0; buttonIndex < _buttonCount; ++buttonIndex)
-            {
-                bool buttonIsSpecial = SpecialButtonIndexes.Contains(buttonIndex);
-                Color selectedColor = buttonIsSpecial ? SpecialSelected : Selected;
-                Color notSelectedColor = buttonIsSpecial ? SpecialNotSelected : NotSelected;
+		// AI - Select Button overridable function.
+		protected virtual void SelectButton(int button)
+		{
+			PlaySelectSound();
+		}
 
-                bool isButton = newButton == -1 || newButton == buttonIndex;
-                Buttons[buttonIndex].image.color = isButton ? selectedColor : notSelectedColor;
-            }
-        }
+		// AI - Cancel overridable function.
+		protected virtual void Cancel()
+		{
+			PlaySelectSound();
+		}
 
-        private void PlayChangeSelectionSound() => AudioManager.Instance.PlaySound("Swish");
+		// AI - Exit overridable function.
+		protected virtual void Exit()
+		{
+			PlaySelectSound();
+		}
 
-        private void PlaySelectSound() => AudioManager.Instance.PlaySound("Select");
+		#endregion
+		
+		#region Public Button Functions
 
-        #endregion
+		// AI - Switch to a specific menu.
+		public void LoadMenu(int menuIndex)
+		{
+			PlaySelectSound();
+			MenuSwitcher.Instance.LoadMenu(menuIndex);
+		}
 
-        #region InputModeListener Functions
+		// AI - Load a specific level by name.
+		public void LoadLevel(string levelName)
+		{
+			PlaySelectSound();
+			SceneManager.LoadScene(levelName);
+		}
 
-        // Update the Input Mode for the menus
-        protected override void UpdateInputMode(InputManager.InputMode inputMode)
-        {
-            // If using Keyboard and Mouse, unlock the cursor and re-highlight the menu's buttons
-            if (inputMode == InputManager.InputMode.Keyboard)
-            {
-                Cursor.lockState = CursorLockMode.None;
-                Cursor.visible = true;
-                HighlightButton(-1);
+		// AI - Restart the current level.
+		public void RestartLevel()
+		{
+			PlaySelectSound();
+			SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+		}
 
-                return;
-            }
+		// AI - Return to main menu (credits menu variant).
+		public void MainMenu()
+		{
+			PlaySelectSound();
+			PlayerPrefs.SetInt(MAIN_MENU_SETTING_KEY, 1);
+			SceneManager.LoadScene(MAIN_MENU_SCENE_NAME);
+		}
 
-            // If using Gamepad, lock the cursor and only highlight the active button
-            if (inputMode == InputManager.InputMode.Gamepad)
-            {
-                Cursor.lockState = CursorLockMode.Locked;
-                Cursor.visible = false;
-                HighlightButton(_activeButtonIndex);
+		// AI - Return to main menu (level select variant).
+		public void ToLevelSelect()
+		{
+			PlaySelectSound();
+			PlayerPrefs.SetInt(MAIN_MENU_SETTING_KEY, 2);
+			SceneManager.LoadScene(MAIN_MENU_SCENE_NAME);
+		}
 
-                return;
-            }
-        }
+		// AI - Quit the application.
+		public void QuitGame()
+		{
+			PlaySelectSound();
+			Application.Quit();
+		}
+		
+		#endregion
 
-        #endregion
-    }
+		#region Helper Functions
+
+		// AI - Highlight the given button (use -1 to highlight all of them).
+		private void HighlightButton(int newButton)
+		{
+			for (int buttonIndex = 0; buttonIndex < _buttonCount; ++buttonIndex)
+			{
+				bool buttonIsSpecial = SpecialButtonIndexes.Contains(buttonIndex);
+				Color selectedColor = buttonIsSpecial ? SpecialSelected : Selected;
+				Color notSelectedColor = buttonIsSpecial ? SpecialNotSelected : NotSelected;
+
+				bool isActiveButton = newButton == -1 || newButton == buttonIndex;
+				Buttons[buttonIndex].image.color = isActiveButton ? selectedColor : notSelectedColor;
+			}
+		}
+
+		private void PlayChangeSelectionSound() => AudioManager.Instance.PlaySound("Swish");
+
+		private void PlaySelectSound() => AudioManager.Instance.PlaySound("Select");
+
+		#endregion
+
+		#region InputModeListener Functions
+
+		// AI - Update the Input Mode for the menus.
+		protected override void UpdateInputMode(InputManager.InputMode inputMode)
+		{
+			// AI - If using Keyboard and Mouse, unlock the cursor and re-highlight the menu's buttons.
+			if (inputMode == InputManager.InputMode.Keyboard)
+			{
+				Cursor.lockState = CursorLockMode.None;
+				Cursor.visible = true;
+				HighlightButton(-1);
+				return;
+			}
+
+			// AI - If using Gamepad, lock the cursor and only highlight the active button.
+			if (inputMode == InputManager.InputMode.Gamepad)
+			{
+				Cursor.lockState = CursorLockMode.Locked;
+				Cursor.visible = false;
+				HighlightButton(_activeButtonIndex);
+			}
+		}
+
+		#endregion
+	}
 }

@@ -7,6 +7,8 @@ namespace UI
 {
 	public class MissionCompleteManagement : UserInterfaceInputWrapper
 	{
+		#region Fields
+
 		public Text EnemiesKilledText;
 		public Text TimesSpottedText;
 		public Toggle PacifistToggle;
@@ -18,7 +20,11 @@ namespace UI
 		private int _enemiesKilled;
 		private int _timesSpotted;
 
-		// Wipe any text or settings that the game may or may not start with
+		#endregion
+
+		#region Initialization Functions
+
+		// AI - Wipe any text or settings that the game may or may not start with.
 		protected override void Awake()
 		{
 			base.Awake();
@@ -30,7 +36,7 @@ namespace UI
 			WantedLevelText.text = "";
 		}
 
-		// If this menu is enabled, the game is over - populate the end-game data
+		// AI - If this menu is enabled, the game is over - populate the end-game data.
 		protected override void OnEnable()
 		{
 			base.OnEnable();
@@ -43,44 +49,86 @@ namespace UI
 			_enemiesKilled = MoralitySystem.Instance.EnemiesKilled;
 			_timesSpotted = MoralitySystem.Instance.TimesSpotted;
 
-			EnemiesKilledText.text = _enemiesKilled.ToString();
+			UpdateStatistics();
+		}
+
+		#endregion
+
+		#region Statistics Functions
+
+		// AI - Update the displayed statistics for mission completion.
+		private void UpdateStatistics()
+		{
+			EnemiesKilledText.text = _enemiesKilled + " / " + NumberOfGuards;
 			TimesSpottedText.text = _timesSpotted.ToString();
 			PacifistToggle.isOn = _enemiesKilled == 0;
 			ShadowToggle.isOn = _timesSpotted == 0;
-			WantedLevelText.text = _enemiesKilled > NumberOfGuards / 2 ? "High" : "Low";
+			WantedLevelText.text = GetWantedLevel();
 		}
 
-		// Listen for specific inputs to augment this menu's functions
-		protected override void Update()
+		// AI - Calculate wanted level based on player's performance.
+		private string GetWantedLevel()
 		{
-			base.Update();
+			if (_enemiesKilled == 0 && _timesSpotted == 0)
+			{
+				return "None";
+			}
 
-			if (Input.GetKeyDown(KeyCode.LeftControl) || Input.GetKeyDown(KeyCode.RightControl))
+			if (_enemiesKilled == 0 && _timesSpotted < 3)
 			{
-				SelectButton(-1);
+				return "Low";
 			}
-			
-			if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter))
+
+			if (_enemiesKilled < 3 && _timesSpotted < 5)
 			{
-				Cancel();
+				return "Medium";
 			}
+
+			return "High";
 		}
 
-		// Reload the level
+		#endregion
+
+		#region Button Handling Functions
+
+		// AI - Select Mission Complete Buttons.
 		protected override void SelectButton(int button)
 		{
 			base.SelectButton(button);
-			
-			// Ignore the button index in this case - it's not needed
-			SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+
+			switch (button)
+			{
+				case 0:
+					ContinueToNextLevel();
+					return;
+				case 1:
+					RestartLevel();
+					return;
+				case 2:
+					ToLevelSelect();
+					return;
+			}
 		}
 
-		// Go back to Main Menu
-		protected override void Cancel()
+		// AI - Continue to the next level in the sequence.
+		private void ContinueToNextLevel()
 		{
-			base.Cancel();
-			
-			SceneManager.LoadScene("Main Menu");
+			string currentLevel = SceneManager.GetActiveScene().name;
+			string nextLevel = GetNextLevel(currentLevel);
+			LoadLevel(nextLevel);
 		}
+
+		// AI - Determine the next level based on the current level name.
+		private string GetNextLevel(string currentLevel)
+		{
+			return currentLevel switch
+			{
+				"Level 1" => "Level 2",
+				"Level 2" => "Level 3",
+				_ => "Main Menu"
+			};
+		}
+
+		#endregion
 	}
 }

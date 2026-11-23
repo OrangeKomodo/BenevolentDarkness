@@ -7,6 +7,8 @@ namespace AI.Sentry
 {
 	public class Sentry : LivingEntity
 	{
+		#region Enums and Structs
+
 		public enum SentryState
 		{
 			Unaware,
@@ -22,6 +24,10 @@ namespace AI.Sentry
 			public SentryState State;
 			public float SuspicionPercentage;
 		}
+
+		#endregion
+
+		#region Fields
 
 		public SentryState State = SentryState.Unaware;
 		public GameObject SentryStopsHolder;
@@ -70,13 +76,15 @@ namespace AI.Sentry
 		private float CurrentVelocity => Mathf.Abs(_rigidbody.linearVelocity.x);
 		private float _maxRecordedForceFieldVelocity;
 
+		#endregion
+
 		#region Start and Quit Functions
 
 		protected override void Start()
 		{
 			base.Start();
 			
-			_playerController = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerController>();
+			_playerController = GameObject.FindGameObjectWithTag(GameConstants.PLAYER_TAG).GetComponent<PlayerController>();
 			_rigidbody = gameObject.GetComponent<Rigidbody2D>();
 			_collider = gameObject.GetComponent<BoxCollider2D>();
 			_spriteRenderer = GetComponent<SpriteRenderer>();
@@ -86,12 +94,18 @@ namespace AI.Sentry
 
 			_sentryQuickSave = new SentryQuickSave();
 
-			_playerController.GetComponent<PlayerController>().OnDeath += OnPlayerDeath;
+			if (_playerController != null)
+			{
+				_playerController.OnDeath += OnPlayerDeath;
+			}
 		}
 
 		private void OnApplicationQuit()
 		{
-			_playerController.GetComponent<PlayerController>().OnDeath -= OnPlayerDeath;
+			if (_playerController != null)
+			{
+				_playerController.OnDeath -= OnPlayerDeath;
+			}
 		}
 		
 		#endregion
@@ -105,11 +119,10 @@ namespace AI.Sentry
 				return;
 			}
 			
-			// If in a force field, record the fastest speed traveled and stop any other updates.
+			// AI - If in a force field, record the fastest speed traveled and stop any other updates.
 			if (_inForceField)
 			{
 				_maxRecordedForceFieldVelocity = Mathf.Max(CurrentVelocity, _maxRecordedForceFieldVelocity);
-
 				return;
 			}
 			
@@ -122,7 +135,6 @@ namespace AI.Sentry
 			{
 				HandleIncapacitation();
 				HandleFallToGround();
-
 				return;
 			}
 
@@ -140,7 +152,7 @@ namespace AI.Sentry
 			}
 		}
 
-		// Run code once to functionally kill the sentry.
+		// AI - Run code once to functionally disable the sentry.
 		private void HandleIncapacitation()
 		{
 			if (_incapacitationManaged)
@@ -162,7 +174,7 @@ namespace AI.Sentry
 			_incapacitationManaged = true;
 		}
 
-		// Let the guard fall until a downward facing raycast hits the ground. Then stop movement.
+		// AI - Let the sentry fall until hitting the ground, then stop movement.
 		private void HandleFallToGround()
 		{
 			if (_groundReached)
@@ -182,7 +194,7 @@ namespace AI.Sentry
 			}
 		}
 
-		// Handle Sentry Hover
+		// AI - Handle sentry patrol hovering behavior.
 		private void HandleEnemyPatrol()
 		{
 			if (!_idling)
@@ -191,7 +203,6 @@ namespace AI.Sentry
 				float flightDelta = FlySpeed * Time.deltaTime;
 				float newXPosition = Vector2.MoveTowards(transform.position, NextStop.position, flightDelta).x;
 				transform.position = new Vector2(newXPosition, transform.position.y);
-
 				return;
 			}
 				
@@ -205,7 +216,7 @@ namespace AI.Sentry
 
 		#region Idle Functions
 
-		// Take information from the Sentry Stop once one has been reached to determine the Sentry's behavior.
+		// AI - Take information from the Sentry Stop once one has been reached to determine the Sentry's behavior.
 		public void StopReached(float idleTime, Transform nextStop)
 		{
 			if (Dead || _inStasis || _inForceField)
@@ -229,7 +240,7 @@ namespace AI.Sentry
 			Idle();
 		}
 
-		// Holds the Sentry forcibly when it's reached its boundary
+		// AI - Holds the Sentry forcibly when it's reached its boundary.
 		public void ConstrainEnemy(Vector3 constraintPosition)
 		{
 			if (_inForceField)
@@ -240,7 +251,7 @@ namespace AI.Sentry
 			transform.position = constraintPosition;
 		}
 		
-		//Stops the Sentry in place for a set amount of time while patrolling.
+		// AI - Stops the Sentry in place for a set amount of time while patrolling.
 		private void Idle()
 		{
 			_idleFinishTime = Time.time + _idleTime;
@@ -251,7 +262,7 @@ namespace AI.Sentry
 
 		#region Player Perception Functions
 
-		// Called by the Sentry Vision when the Sentry sees the player.
+		// AI - Called by the Sentry Vision when the Sentry sees the player.
 		public void CheckSeesPlayer(float playerVisibilityFactor)
 		{
 			if (_playerIsHiding)
@@ -263,13 +274,13 @@ namespace AI.Sentry
 			SeesPlayer = true;
 		}
 
-		// Called by the Sentry Vision when the Sentry no longer sees the player.
+		// AI - Called by the Sentry Vision when the Sentry no longer sees the player.
 		public void LostPlayer()
 		{
 			SeesPlayer = false;
 		}
 
-		//Takes information from the Sentry Vision and uses it to determine the Sentry's behavior.
+		// AI - Takes information from the Sentry Vision and uses it to determine the Sentry's behavior.
 		private void PlayerAwareness()
 		{
 			if (_playerDead || _inStasis)
@@ -277,7 +288,7 @@ namespace AI.Sentry
 				return;
 			}
 
-			// Ensure the Player Awareness updates only so often, no matter the framerate.
+			// AI - Ensure the Player Awareness updates only so often, no matter the framerate.
 			if (Time.time < _nextPlayerAwarenessUpdate)
 			{
 				return;
@@ -286,17 +297,16 @@ namespace AI.Sentry
 			_nextPlayerAwarenessUpdate = Time.time + _playerAwarenessUpdateTime;
 
 			UpdateSuspicionPercentage();
-
 			SuspicionSpriteMask.localPosition = new Vector3(0f, SuspicionPercentage * 0.625f, 0f);
 
-			if (State == SentryState.Chasing && SuspicionPercentage < 0.5f)
+			if (State == SentryState.Chasing && SuspicionPercentage < GameConstants.HALF_SPOTTED_THRESHOLD)
 			{
 				AudioManager.Instance.StopSound("Alarm");
 				State = SentryState.Unaware;
 				HandlePlayerLost();
 			}
 
-			if (State == SentryState.Unaware && SuspicionPercentage >= 1f)
+			if (State == SentryState.Unaware && SuspicionPercentage >= GameConstants.FULLY_SPOTTED_THRESHOLD)
 			{
 				if (State != SentryState.Chasing)
 				{
@@ -308,17 +318,17 @@ namespace AI.Sentry
 			}
 		}
 
-		// Update Suspicion Percentage based on Player visibility and given sees/loses player rates.
+		// AI - Update Suspicion Percentage based on Player visibility and given sees/loses player rates.
 		private void UpdateSuspicionPercentage()
 		{
-			if (SeesPlayer && SuspicionPercentage < 1)
+			if (SeesPlayer && SuspicionPercentage < GameConstants.FULLY_SPOTTED_THRESHOLD)
 			{
 				SuspicionPercentage += _playerVisibilityFactor * SeesPlayerRate / 100f;
 			}
 
-			if (!SeesPlayer && SuspicionPercentage > 0)
+			if (!SeesPlayer && SuspicionPercentage > GameConstants.NOT_SPOTTED_THRESHOLD)
 			{
-				// Lose Player at a slower rate depending on the current Sentry State.
+				// AI - Lose Player at a slower rate depending on the current Sentry State.
 				float losesPlayerRate = State switch
 				{
 					SentryState.Chasing => 1f,
@@ -331,22 +341,33 @@ namespace AI.Sentry
 			SuspicionPercentage = Mathf.Clamp(SuspicionPercentage, 0, 1);
 		}
 
-		// Handle Player spotted.
+		// AI - Handle Player spotted.
 		private void HandlePlayerSpotted()
 		{
-			// Alert all other Guards on the floor.
+			// AI - Alert all other Guards on the floor.
 			for (int fellowGuardIndex = 0; fellowGuardIndex < _fellowGuards.Length; ++fellowGuardIndex)
 			{
+				if (_fellowGuards[fellowGuardIndex] == null)
+				{
+					continue;
+				}
+
 				_fellowGuards[fellowGuardIndex].PlayerSeenByOther();
 			}
 		}
 
-		// Handle Player Lost.
+		// AI - Handle Player Lost.
 		private void HandlePlayerLost()
 		{
-			if (_collider.IsTouching(NextStop.GetComponent<BoxCollider2D>()))
+			if (NextStop == null)
 			{
-				NextStop.GetComponent<SentryStop>().ForceUpdate();
+				return;
+			}
+
+			BoxCollider2D nextStopCollider = NextStop.GetComponent<BoxCollider2D>();
+			if (nextStopCollider != null && _collider.IsTouching(nextStopCollider))
+			{
+				NextStop.GetComponent<SentryStop>()?.ForceUpdate();
 			}
 		}
 		
@@ -354,9 +375,14 @@ namespace AI.Sentry
 		
 		#region Alerted Functions
 
-		//Chases the player around.
+		// AI - Chases the player around.
 		private void ChasePlayer()
 		{
+			if (_playerController == null)
+			{
+				return;
+			}
+
 			_idling = false;
 			Vector2 playerPosition = _playerController.transform.position;
 			float flightDelta = ChaseSpeed * Time.deltaTime;
@@ -368,14 +394,14 @@ namespace AI.Sentry
 		
 		#region Player Ability Functions
 
-		// Called when the player has entered a natural hiding place to force the Sentry to lose them.
+		// AI - Called when the player has entered a natural hiding place to force the Sentry to lose them.
 		public void PlayerHiding(bool playerIsHiding)
 		{
 			_playerIsHiding = playerIsHiding;
 			LostPlayer();
 		}
 
-		// Called if the Sentry is in a Stasis Bubble.
+		// AI - Called if the Sentry is in a Stasis Bubble.
 		public void InStasis(bool inStasis)
 		{
 			_inStasis = inStasis;
@@ -385,19 +411,19 @@ namespace AI.Sentry
 
 		#region Event Functions
 
-		// Handle unique assets on Sentry Hit.
+		// AI - Handle unique assets on Sentry Hit.
 		public override void TakeHit(float damage)
 		{
 			base.TakeHit(damage);
 		}
 
-		// Handle unique assets on Sentry Healed.
+		// AI - Sentries cannot be healed.
 		public override void Heal(float heals)
 		{
-			// Nothing
+			// AI - Nothing
 		}
 
-		// Handle unique assets on Sentry Death.
+		// AI - Handle unique assets on Sentry Death.
 		protected override void Die()
 		{
 			base.Die();
@@ -405,7 +431,7 @@ namespace AI.Sentry
 			State = SentryState.Disabled;
 		}
 
-		//Calls when the player dies.
+		// AI - Calls when the player dies.
 		private void OnPlayerDeath()
 		{
 			_playerDead = true;
@@ -417,35 +443,32 @@ namespace AI.Sentry
 		
 		#region Collision Functions
 		
-		// Handle the Guard hitting a non-trigger collider.
+		// AI - Handle the Sentry hitting a non-trigger collider.
 		private void OnCollisionEnter2D(Collision2D collision)
 		{
-			// If in Force Field, check to see if what was hit was a Wall or Platform.
-			if (_inForceField)
+			// AI - If in Force Field, check to see if what was hit was a Wall or Platform.
+			if (!_inForceField)
 			{
-				int layerIndex = collision.gameObject.layer;
-				int mask = WhatIsGround | WhatIsWall;
-				
-				// Use bitwise math to see if the collider is assigned to the Ground or Wall layers.
-				if ((mask & (1 << layerIndex)) == 0)
-				{
-					return;
-				}
-				
-				// Disable the sentry if going 10 units per second or faster when a stop is hit.
-				if (_maxRecordedForceFieldVelocity >= 10f)
-				{
-					TakeHit(1000f);
-					return;
-				}
+				return;
+			}
 
+			int layerIndex = collision.gameObject.layer;
+			int mask = WhatIsGround | WhatIsWall;
+			
+			// AI - Use bitwise math to see if the collider is assigned to the Ground or Wall layers.
+			if ((mask & (1 << layerIndex)) == 0)
+			{
 				return;
 			}
 			
-			// Maybe put something here in case something else hits it
+			// AI - Disable the sentry if going fast enough when a stop is hit.
+			if (_maxRecordedForceFieldVelocity >= GameConstants.FORCE_FIELD_KNOCKOUT_VELOCITY)
+			{
+				TakeHit(GameConstants.INSTANT_KILL_DAMAGE);
+			}
 		}
 		
-		// Handle the Guard hitting a trigger collider.
+		// AI - Handle the Sentry hitting a trigger collider.
 		private void OnTriggerEnter2D(Collider2D otherCollider)
 		{
 			if (otherCollider.name.Contains("Extreme Force"))
@@ -475,15 +498,20 @@ namespace AI.Sentry
 			State = _sentryQuickSave.State;
 			_playerDead = false;
 			SuspicionPercentage = _sentryQuickSave.SuspicionPercentage;
-			if (Dead && State != SentryState.Disabled)
+			
+			if (!Dead || State == SentryState.Disabled)
 			{
-				_spriteRenderer.color = Color.white;
-				_collider.isTrigger = false;
-				for (int i = 0; i < transform.childCount; i++)
-					transform.GetChild(i).gameObject.SetActive(true);
-				SentryStopsHolder.SetActive(true);
-				Dead = false;
+				return;
 			}
+
+			_spriteRenderer.color = Color.white;
+			_collider.isTrigger = false;
+			for (int i = 0; i < transform.childCount; i++)
+			{
+				transform.GetChild(i).gameObject.SetActive(true);
+			}
+			SentryStopsHolder.SetActive(true);
+			Dead = false;
 		}
 		
 		#endregion

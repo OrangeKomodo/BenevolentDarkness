@@ -5,6 +5,8 @@ namespace Spells
 {
 	public class Translocation : Spell
 	{
+		#region Fields
+
 		public SpriteRenderer TranslocationMarker;
 		public Transform HighPoint;
 		public Transform LowPoint;
@@ -29,9 +31,13 @@ namespace Spells
 		private float _markerUpdateTime = 0.02f;
 		private float _nextMarkerUpdate;
 
-		private bool _positionValid; // <- This has been made a bit useless since the spell was redesigned to snap to its distance boundary
+		private bool _positionValid;
 		private bool _hittingPlatform;
 		private Vector2 _normal;
+
+		#endregion
+
+		#region Initialization Functions
 
 		private void Start()
 		{
@@ -51,16 +57,20 @@ namespace Spells
 			}
 		}
 
+		#endregion
+
+		#region Update Functions
+
 		private void Update()
 		{
-			// If the Translocation was aborted, end the spell
+			// AI - If the Translocation was aborted, end the spell.
 			if (Input.GetKeyDown(KeyCode.F) || Input.GetButtonDown("Exit"))
 			{
 				EndTranslocation();
 				return;
 			}
 
-			// If the player uses the Translocation, attempt to perform it and end the spell
+			// AI - If the player uses the Translocation, attempt to perform it and end the spell.
 			if (Input.GetAxis("Use Item") < 0.95f)
 			{
 				TryPerformTranslocation();
@@ -68,7 +78,7 @@ namespace Spells
 				return;
 			}
 
-			// Ensure the Marker updates only so often, no matter the framerate.
+			// AI - Ensure the Marker updates only so often, no matter the framerate.
 			if (Time.time < _nextMarkerUpdate)
 			{
 				return;
@@ -76,26 +86,27 @@ namespace Spells
 			
 			_nextMarkerUpdate = Time.time + _markerUpdateTime;
 			
-			// Perform Marker updates
 			UpdateMarkerPosition();
 			UpdateMarkerSprite();
 		}
 
-		// Move the Marker according to the Player's input
+		#endregion
+
+		#region Marker Update Functions
+
+		// AI - Move the Marker according to the Player's input.
 		private void UpdateMarkerPosition()
 		{
-			// Get cursor position for the mouse or the controller
 			Vector2 cursorPosition = GetUpdatedCursorPosition();
-
 			RaycastHit2D cursorRayHit = Physics2D.Raycast(cursorPosition, Vector2.zero, 100f);
 
-			// If the cursor is not in a valid location, abort
+			// AI - If the cursor is not in a valid location, abort.
 			if (!cursorRayHit)
 			{
 				return;
 			}
 			
-			// Shoot a raycast from the Player to the cursor to place the marker at the farthest valid position in that direction
+			// AI - Shoot a raycast from the Player to the cursor to place the marker at the farthest valid position in that direction.
 			LayerMask layerMask = WhatIsGround | WhatIsWall;
 				
 			Vector2 targetPosition = cursorRayHit.point;
@@ -108,7 +119,7 @@ namespace Spells
 			Debug.DrawRay(playerPosition, normalizedTargetDirection * clampedDistance, Color.red);
 			RaycastHit2D playerRayHit = Physics2D.Raycast(playerPosition, targetDirection, clampedDistance, layerMask);
 
-			// If the raycast hit something (like a wall or the ceiling), record data to be used later
+			// AI - If the raycast hit something (like a wall or the ceiling), record data to be used later.
 			if (playerRayHit.collider != null)
 			{
 				transform.position = playerRayHit.point;
@@ -120,14 +131,23 @@ namespace Spells
 				return;
 			}
 			
-			// Set the Marker's position to the cursor position or the farthest it can go in that direction
+			// AI - Set the Marker's position to the cursor position or the farthest it can go in that direction.
 			transform.position = playerPosition + normalizedTargetDirection * clampedDistance;
 			_positionValid = true;
-			//transform.position = cursorRayHit.point;
-			//_positionValid = targetDistance <= MaxDistance;
 		}
 
-		// Perform the Translocation if the position is valid
+		// AI - Update the Marker's color and rotation.
+		private void UpdateMarkerSprite()
+		{
+			TranslocationMarker.color = _positionValid ? CanTranslocate : CanNotTranslocate;
+			TranslocationMarker.transform.Rotate(Vector3.forward * MarkerSpinSpeed);
+		}
+
+		#endregion
+
+		#region Translocation Functions
+
+		// AI - Perform the Translocation if the position is valid.
 		private void TryPerformTranslocation()
 		{
 			if (!_positionValid)
@@ -136,12 +156,11 @@ namespace Spells
 			}
 			
 			PlayerController.PlaySound("Translocation");
-
 			SpellCaster.TranslocationOccured();
 			
 			Vector2 finalTranslocationPoint = GetFinalTranslocationPoint();
 
-			// If the Translocation Marker is behind the Player, flip them
+			// AI - If the Translocation Marker is behind the Player, flip them.
 			if ((_markerTransform.position.x - _playerTransform.position.x) * _playerTransform.localScale.x < 0)
 			{
 				PlayerController.Flip();
@@ -150,7 +169,30 @@ namespace Spells
 			_playerTransform.position = finalTranslocationPoint;
 		}
 
-		// Get the cursor position depending on whether we're using a mouse or a controller
+		// AI - Get Final Translocation Point based on surface normals.
+		private Vector2 GetFinalTranslocationPoint()
+		{
+			// AI - If Ray isn't hitting a horizontal platform, return normal marker location.
+			if (!_hittingPlatform || _normal.x != 0)
+			{
+				return _markerTransform.position;
+			}
+			
+			// AI - If ray is hitting the floor, return the higher transform location.
+			if (_normal.y >= 1)
+			{
+				return HighPoint.position;
+			}
+			
+			// AI - If ray is hitting the ceiling, return the lower transform location.
+			return LowPoint.position;
+		}
+
+		#endregion
+
+		#region Input Functions
+
+		// AI - Get the cursor position depending on whether we're using a mouse or a controller.
 		private Vector3 GetUpdatedCursorPosition()
 		{
 			if (InputManager.UsingGamepad)
@@ -165,38 +207,18 @@ namespace Spells
 			return _camera.ScreenToWorldPoint(Input.mousePosition);
 		}
 
-		// Get Final Translocation Point
-		private Vector2 GetFinalTranslocationPoint()
-		{
-			// If Ray isn't hitting a horizontal platform, return normal marker location
-			if (!_hittingPlatform || _normal.x != 0)
-			{
-				return _markerTransform.position;
-			}
-			
-			// If ray is hitting the floor, return the higher transform location
-			if (_normal.y >= 1)
-			{
-				return HighPoint.position;
-			}
-			
-			// If ray is hitting the ceiling, return the lower transform location
-			return LowPoint.position;
-		}
+		#endregion
 
-		// Update the Marker's color and rotation
-		private void UpdateMarkerSprite()
-		{
-			TranslocationMarker.color = _positionValid ? CanTranslocate : CanNotTranslocate;
-			TranslocationMarker.transform.Rotate(Vector3.forward * MarkerSpinSpeed);
-		}
+		#region Cleanup Functions
 
-		// End Translocation
+		// AI - End Translocation and restore cursor state.
 		private void EndTranslocation()
 		{
 			Cursor.lockState = CursorLockMode.Locked;
 			Cursor.visible = false;
 			SpellCaster.EndSpell(SpellCasting.SpellNames.Translocation);
 		}
+
+		#endregion
 	}
 }

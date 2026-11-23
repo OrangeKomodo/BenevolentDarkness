@@ -6,6 +6,8 @@ namespace Spells
 {
 	public class Traitor : Spell
 	{
+		#region Fields
+
 		public SpriteRenderer TraitorMarker;
 		
 		[Range(0, 100)]
@@ -27,16 +29,19 @@ namespace Spells
 		private float _nextMarkerUpdate;
 		
 		private bool _canTransfer = false;
+
+		#endregion
+
+		#region Initialization Functions
 		
 		private void Start()
 		{
-			// Show the Marker and prevent the Player from attacking while aiming the Mimic
 			TraitorMarker.gameObject.SetActive(true);
 			PlayerController.CanAttack = false;
 
 			_camera = Camera.main;
 
-			// If not using a Gamepad, unlock and show the cursor so the Player can aim with the mouse
+			// AI - If not using a Gamepad, unlock and show the cursor so the Player can aim with the mouse.
 			if (!InputManager.UsingGamepad)
 			{
 				Cursor.lockState = CursorLockMode.None;
@@ -44,48 +49,54 @@ namespace Spells
 			}
 		}
 
+		#endregion
+
+		#region Update Functions
+
 		private void Update()
 		{
-			// If the Traitor was aborted, end the spell
+			// AI - If the Traitor was aborted, end the spell.
 			if (Input.GetKeyDown(KeyCode.F) || Input.GetButtonDown("Exit"))
 			{
 				EndTraitor();
 				return;
 			}
 
-			// If the Player releases the spell input before the Traitor is consummated, end the spell
+			// AI - If the Player releases the spell input before the Traitor is consummated, end the spell.
 			if (Input.GetAxis("Use Item") < 0.95f)
 			{
 				SpellCaster.EndSpell(SpellCasting.SpellNames.Traitor);
 				return;
 			}
 
-			// Ensure the Marker updates only so often, no matter the framerate.
+			// AI - Ensure the Marker updates only so often, no matter the framerate.
 			if (Time.time < _nextMarkerUpdate)
 			{
 				return;
 			}
 			
 			_nextMarkerUpdate = Time.time + _markerUpdateTime;
-
 			UpdateMarkerPosition();
 		}
 
+		#endregion
+
+		#region Marker Update Functions
+
+		// AI - Move the Marker according to the Player's input.
 		private void UpdateMarkerPosition()
 		{
-			// Get cursor position for the mouse or the controller
 			Vector2 cursorPosition = GetUpdatedCursorPosition();
-
 			RaycastHit2D cursorRayHit = Physics2D.Raycast(cursorPosition, Vector2.zero, 100f);
 
-			// If the cursor is not in a valid location, abort
+			// AI - If the cursor is not in a valid location, abort.
 			if (!cursorRayHit)
 			{
 				ResetTransfer();
 				return;
 			}
 
-			// Shoot a raycast from the Player to the cursor to place the marker at the farthest valid position in that direction
+			// AI - Shoot a raycast from the Player to the cursor to place the marker at the farthest valid position.
 			LayerMask layerMask = WhatIsGround | WhatIsWall | WhatAreEnemies;
 				
 			Vector2 targetPosition = cursorRayHit.point;
@@ -98,35 +109,37 @@ namespace Spells
 			Debug.DrawRay(playerPosition, normalizedTargetDirection * clampedDistance, Color.blue);
 			RaycastHit2D playerRayHit = Physics2D.Raycast(playerPosition, targetDirection, clampedDistance, layerMask);
 
-			// If the raycast hit a Guard, validate the target, target them, and return
+			// AI - If the raycast hit a Guard, validate the target.
 			if (IsRaycastHittingMask(playerRayHit, WhatAreEnemies))
 			{
-				Guard guard = playerRayHit.collider.GetComponentInParent<Guard>();
+				Guard guard = playerRayHit.collider?.GetComponentInParent<Guard>();
 				
 				if (IsTargetValid(guard))
 				{
 					TargetGuard(guard);
-				
 					return;
 				}
 			}
 
-			// If no Guard, reset Transfer
+			// AI - If no Guard, reset Transfer.
 			ResetTransfer();
 
-			// If the raycast hit a wall or ceiling, record data to be used later
+			// AI - If the raycast hit a wall or ceiling, snap to that point.
 			if (IsRaycastHittingMask(playerRayHit, WhatIsGround | WhatIsWall))
 			{
 				transform.position = playerRayHit.point;
-				
 				return;
 			}
 			
-			// Otherwise, set the Marker's position to the cursor position or the farthest it can go in that direction
+			// AI - Otherwise, set the Marker's position to the cursor position or the farthest it can go.
 			transform.position = playerPosition + normalizedTargetDirection * clampedDistance;
 		}
 
-		// Get the cursor position depending on whether we're using a mouse or a controller
+		#endregion
+
+		#region Input Functions
+
+		// AI - Get the cursor position depending on whether we're using a mouse or a controller.
 		private Vector3 GetUpdatedCursorPosition()
 		{
 			if (InputManager.UsingGamepad)
@@ -141,59 +154,64 @@ namespace Spells
 			return _camera.ScreenToWorldPoint(Input.mousePosition);
 		}
 
-		// Clear any transfer progress and reset the Marker color
+		#endregion
+
+		#region Transfer Functions
+
+		// AI - Clear any transfer progress and reset the Marker color.
 		private void ResetTransfer()
 		{
 			TraitorMarker.color = CanNotCorrupt;
 			_canTransfer = false;
 		}
 
-		// Check if the Guard is valid target
+		// AI - Check if the Guard is a valid target for corruption.
 		private bool IsTargetValid(Guard guard)
 		{
-			// Check if Guard even exists
 			if (guard == null)
 			{
 				return false;
 			}
 			
-			// Check to see if the Guard is already corrupted
 			if (guard.State == Guard.GuardState.Corrupted)
 			{
 				return false;
 			}
 
-			// Check if Guard is already incapacitated
 			if (guard.State == Guard.GuardState.Dead || guard.State == Guard.GuardState.Unconscious)
 			{
 				return false;
 			}
 
-			// Return true if all checks pass
 			return true;
 		}
 
-		// Snap the Marker to the given Guard and maintain the connection while Attack is held
+		// AI - Snap the Marker to the given Guard and corrupt them when attack is pressed.
 		private void TargetGuard(Guard guard)
 		{
+			if (guard == null || guard.Head == null)
+			{
+				ResetTransfer();
+				return;
+			}
+
 			transform.position = guard.Head.position;
 
-			// Enable the Transfer if not already
+			// AI - Enable the Transfer if not already.
 			if (!_canTransfer)
 			{
 				TraitorMarker.color = CanCorrupt;
 				_canTransfer = true;
 			}
 			
-			// Perform the Corruption
-			// This spell does not have a transfer time, the Corruption occurs right when the attack is consummated
+			// AI - Perform the Corruption (this spell has no transfer time, corruption is instant).
 			if (Input.GetAxis("Attack") == 1f)
 			{
 				PerformTraitor(guard);
 			}
 		}
 
-		// Check whether the raycast hit a collider on one of the layers in the given mask
+		// AI - Check whether the raycast hit a collider on one of the layers in the given mask.
 		private bool IsRaycastHittingMask(RaycastHit2D raycastHit, LayerMask mask)
 		{
 			if (raycastHit.collider == null)
@@ -202,25 +220,27 @@ namespace Spells
 			}
 			
 			int layer = raycastHit.collider.gameObject.layer;
-			int layerValue = 1 << layer; // this converts the layer index to a bit so we can compare it against the mask
+			int layerValue = 1 << layer;
 			int maskAndLayerValue = mask & layerValue;
 			return maskAndLayerValue != 0;
 		}
 
-		// Corrupt the Guard and end the spell
+		#endregion
+
+		#region Corruption Functions
+
+		// AI - Corrupt the Guard and end the spell.
 		private void PerformTraitor(Guard guard)
 		{
 			PlayerController.PlaySound("Traitor");
 
-			//CORRUPT GUARD HERE
 			guard.Corrupt();
 			SpellCaster.Corrupted();
 
 			EndTraitor();
 		}
 
-		// End the spell, and destroy the Traitor object
-		// This spell doesn't end its effects when the effects on the Guard ends
+		// AI - End the spell and destroy the Traitor object.
 		public void EndTraitor()
 		{
 			Cursor.lockState = CursorLockMode.Locked;
@@ -228,5 +248,7 @@ namespace Spells
 			PlayerController.CanAttack = true;
 			Destroy(gameObject);
 		}
+
+		#endregion
 	}
 }

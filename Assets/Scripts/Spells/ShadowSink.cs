@@ -5,19 +5,23 @@ namespace Spells
 {
 	public class ShadowSink : Spell
 	{
-		public int ManaTickCost;
+		#region Fields
 
+		public int ManaTickCost;
 		public float TransitionTime = 0.5f;
 		public Color VisibleColor;
 		public Color HiddenColor;
 		
-		private float  _manaDeductTick;
+		private float _manaDeductTick;
 		public float ManaDeductTick => _manaDeductTick;
 
 		private SpriteRenderer _playerSpriteRenderer;
-
 		private Vector3 _playerHidePosition;
 		private bool _hidden = false;
+
+		#endregion
+
+		#region Initialization Functions
 
 		private void Start()
 		{
@@ -30,14 +34,19 @@ namespace Spells
 			StartCoroutine(Transition(VisibleColor, HiddenColor, true));
 		}
 
+		#endregion
+
+		#region Update Functions
+
 		private void Update()
 		{
-			// If we're not hidden, we don't care
+			// AI - If we're not hidden yet, wait for transition to complete.
 			if (!_hidden)
 			{
 				return;
 			}
 			
+			// AI - End the spell if the player moves, presses exit, or casts again.
 			if (Input.GetAxis("Use Item") == 1f
 			    || Input.GetButtonDown("Exit")
 			    || _playerHidePosition != PlayerController.transform.position)
@@ -46,6 +55,11 @@ namespace Spells
 			}
 		}
 
+		#endregion
+
+		#region Shadow Sink Functions
+
+		// AI - End the shadow sink effect and transition back to visible.
 		public void EndShadowSink()
 		{
 			PlayerController.ShadowSink(false);
@@ -53,6 +67,7 @@ namespace Spells
 			Destroy(gameObject, TransitionTime);
 		}
 
+		// AI - Gradually transition player color and visibility over time.
 		private IEnumerator Transition(Color start, Color end, bool hiding)
 		{
 			PlayerController.PlaySound("Shadow Sink");
@@ -65,7 +80,6 @@ namespace Spells
 				percent = (Time.time - startTime) / TransitionTime;
 
 				_playerSpriteRenderer.color = Color.Lerp(start, end, percent);
-
 				PlayerController.VisibilityFactor = rawVisibility * (hiding ? 1f - percent : percent);
 
 				yield return null;
@@ -73,5 +87,7 @@ namespace Spells
 
 			_hidden = hiding;
 		}
+
+		#endregion
 	}
 }

@@ -1,10 +1,13 @@
-﻿using Player;
+﻿using GameManager;
+using Player;
 using UnityEngine;
 
 namespace AI.Sentry
 {
 	public class SentryVision : MonoBehaviour
 	{
+		#region Fields
+
 		private Sentry _sentry;
 		private PolygonCollider2D _visionCollider;
 		
@@ -17,21 +20,29 @@ namespace AI.Sentry
 
 		private LayerMask _layerMask;
 
+		#endregion
+
+		#region Initialization Functions
+
 		private void Start()
 		{
 			_sentry = GetComponentInParent<Sentry>();
 			_visionCollider = GetComponentInParent<PolygonCollider2D>();
 			
-			_playerController = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerController>();
-			_playerBodyCollider = _playerController.GetComponent<BoxCollider2D>();
-			_playerFeetCollider = _playerController.GetComponent<CircleCollider2D>();
+			_playerController = GameObject.FindGameObjectWithTag(GameConstants.PLAYER_TAG).GetComponent<PlayerController>();
+			_playerBodyCollider = _playerController?.GetComponent<BoxCollider2D>();
+			_playerFeetCollider = _playerController?.GetComponent<CircleCollider2D>();
 			
 			_layerMask = LayerMask.GetMask("Player", "Platforms", "Affected Platforms");
 		}
 
+		#endregion
+
+		#region Update Functions
+
 		private void Update()
 		{
-			if (_playerController.DisguisedAsGuard)
+			if (_playerController == null || _playerController.DisguisedAsGuard)
 			{
 				return;
 			}
@@ -42,6 +53,12 @@ namespace AI.Sentry
 				return;
 			}
 			
+			CheckPlayerLineOfSight();
+		}
+
+		// AI - Raycast to the player to check if they're visible or if something is blocking the view.
+		private void CheckPlayerLineOfSight()
+		{
 			Vector2 visionPosition = transform.position;
 			Vector2 playerDirection = _playerController.transform.position - transform.position;
 			float clampedDistance = Mathf.Clamp(Vector2.Distance(transform.position, _playerController.transform.position), 0f, 15f);
@@ -49,40 +66,54 @@ namespace AI.Sentry
 			Debug.DrawRay(visionPosition, playerDirection.normalized * clampedDistance, Color.yellow);
 			RaycastHit2D playerRayHit = Physics2D.Raycast(visionPosition, playerDirection, clampedDistance, _layerMask);
 
-			if (playerRayHit.collider != null && playerRayHit.collider.tag.Equals("Player"))
+			if (playerRayHit.collider == null || !playerRayHit.collider.tag.Equals(GameConstants.PLAYER_TAG))
 			{
-				_sentry.CheckSeesPlayer(_playerController.VisibilityFactor);
+				return;
 			}
+
+			_sentry.CheckSeesPlayer(_playerController.VisibilityFactor);
 		}
 
+		#endregion
+
+		#region Collision Functions
+
+		// AI - Detect when the player enters the vision cone.
 		private void OnTriggerEnter2D(Collider2D otherCollider)
 		{
-			if (otherCollider.tag.Equals("Player"))
+			if (!otherCollider.tag.Equals(GameConstants.PLAYER_TAG))
 			{
-				if (otherCollider.Equals(_playerBodyCollider))
-				{
-					_boxVisible = true;
-				}
-				else if (otherCollider.Equals(_playerFeetCollider))
-				{
-					_circleVisible = true;
-				}
+				return;
+			}
+
+			if (otherCollider.Equals(_playerBodyCollider))
+			{
+				_boxVisible = true;
+			}
+			else if (otherCollider.Equals(_playerFeetCollider))
+			{
+				_circleVisible = true;
 			}
 		}
 
-		void OnTriggerExit2D(Collider2D otherCollider)
+		// AI - Detect when the player exits the vision cone.
+		private void OnTriggerExit2D(Collider2D otherCollider)
 		{
-			if (otherCollider.tag.Equals("Player"))
+			if (!otherCollider.tag.Equals(GameConstants.PLAYER_TAG))
 			{
-				if (otherCollider.Equals(_playerBodyCollider))
-				{
-					_boxVisible = false;
-				}
-				else if (otherCollider.Equals(_playerFeetCollider))
-				{
-					_circleVisible = false;
-				}
+				return;
+			}
+
+			if (otherCollider.Equals(_playerBodyCollider))
+			{
+				_boxVisible = false;
+			}
+			else if (otherCollider.Equals(_playerFeetCollider))
+			{
+				_circleVisible = false;
 			}
 		}
+
+		#endregion
 	}
 }

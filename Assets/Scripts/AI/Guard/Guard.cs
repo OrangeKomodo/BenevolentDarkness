@@ -243,7 +243,7 @@ namespace AI.Guard
 			// If it's not found the Corrupted Guard is killed.
 			if (_closestGuard == null)
 			{
-				TakeHit(1000);
+				TakeHit(GameManager.GameConstants.INSTANT_KILL_DAMAGE);
 				return;
 			}
 
@@ -441,11 +441,11 @@ namespace AI.Guard
 			// Alert all other Guards on the floor.
 			for (int fellowGuardIndex = 0; fellowGuardIndex < _fellowGuards.Length; ++fellowGuardIndex)
 			{
-				if (_fellowGuards[fellowGuardIndex] == this)
+				if (_fellowGuards[fellowGuardIndex] == null || _fellowGuards[fellowGuardIndex] == this)
 				{
 					continue;
 				}
-							
+						
 				_fellowGuards[fellowGuardIndex].PlayerSeenByOther();
 			}
 		}
@@ -646,7 +646,7 @@ namespace AI.Guard
 					continue;
 				}
 				
-				friendToDamage.GetComponent<Guard>().TakeHit(1000);
+				friendToDamage.GetComponent<Guard>().TakeHit(GameManager.GameConstants.INSTANT_KILL_DAMAGE);
 			}
 
 			AudioManager.Instance.PlaySound("Swipe");
@@ -809,14 +809,14 @@ namespace AI.Guard
 				}
 				
 				// Kill the guard if going 30 units per second or faster when a stop is hit.
-				if (_maxRecordedForceFieldVelocity >= 30f)
+				if (_maxRecordedForceFieldVelocity >= GameManager.GameConstants.FORCE_FIELD_KILL_VELOCITY)
 				{
-					TakeHit(1000f);
+					TakeHit(GameManager.GameConstants.INSTANT_KILL_DAMAGE);
 					return;
 				}
 				
 				// Knock out the guard if going 10 units per second or faster when a stop is hit.
-				if (_maxRecordedForceFieldVelocity >= 10f)
+				if (_maxRecordedForceFieldVelocity >= GameManager.GameConstants.FORCE_FIELD_KNOCKOUT_VELOCITY)
 				{
 					OnGuardUnconscious();
 					return;

@@ -3,33 +3,44 @@ using UnityEngine;
 
 namespace Items
 {
+	#region Quick Save Data Structures
+
 	[System.Serializable]
-	public class MissionItemQuickSave {
+	public class MissionItemQuickSave
+	{
 		public bool Active;
 	}
 
 	[System.Serializable]
-	public class DoorQuickSave {
+	public class DoorQuickSave
+	{
 		public bool Locked;
 	}
 
 	[System.Serializable]
-	public class ButtonQuickSave {
+	public class ButtonQuickSave
+	{
 		public bool Used;
 	}
 
 	[System.Serializable]
-	public class HidingPlaceQuickSave {
+	public class HidingPlaceQuickSave
+	{
 		public bool IsHiding;
 	}
 
 	[System.Serializable]
-	public class TriggerAreaQuickSave {
+	public class TriggerAreaQuickSave
+	{
 		public bool Triggered;
 	}
 
+	#endregion
+
 	public class ItemManager : MonoBehaviour
 	{
+		#region Fields
+
 		public MissionItem[] MissionItems;
 		public Door[] Doors;
 		public ButtonItem[] Buttons;
@@ -44,11 +55,16 @@ namespace Items
 
 		private bool _variablesSet = false;
 
+		#endregion
+
+		#region Initialization Functions
+
 		private void Start()
 		{
 			SetVariables();
 		}
 
+		// AI - Initialize quick save data structures for all item types.
 		private void SetVariables()
 		{
 			for (int missionItemIndex = 0; missionItemIndex < MissionItems.Length; ++missionItemIndex)
@@ -75,6 +91,11 @@ namespace Items
 			_variablesSet = true;
 		}
 
+		#endregion
+
+		#region Quick Save Functions
+
+		// AI - Capture the current state of all items for quick save.
 		public void QuickSave()
 		{
 			if (!_variablesSet)
@@ -104,6 +125,7 @@ namespace Items
 			}
 		}
 
+		// AI - Restore all items to their previously saved state.
 		public void QuickLoad()
 		{
 			if (!_variablesSet)
@@ -132,5 +154,7 @@ namespace Items
 				TriggerAreas[triggerAreaIndex].Triggered = _triggerAreaQuickSave[triggerAreaIndex].Triggered;
 			}
 		}
+
+		#endregion
 	}
 }

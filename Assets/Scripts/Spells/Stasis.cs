@@ -9,6 +9,8 @@ namespace Spells
 {
 	public class Stasis : Spell
 	{
+		#region Fields
+
 		[Range(0, 100)]
 		public float Sensitivity;
 		public float MaxDistance;
@@ -18,7 +20,6 @@ namespace Spells
 		private float _stasisStartedTime;
 
 		private Camera _camera;
-		private CameraController _cameraController;
 		
 		public LayerMask WhatAreEnemies;
 		public LayerMask WhatIsGround;
@@ -32,11 +33,13 @@ namespace Spells
 		private float _markerUpdateTime = 0.02f;
 		private float _nextMarkerUpdate;
 
+		#endregion
+
+		#region Initialization Functions
+
 		private void Start()
 		{
 			_camera = Camera.main;
-			//_cameraController = PlayerController.CameraController;
-			//_cameraController.NewTarget(transform, Vector2.zero, 0.5f);
 
 			if (!InputManager.UsingGamepad)
 			{
@@ -44,6 +47,10 @@ namespace Spells
 				Cursor.visible = true;
 			}
 		}
+
+		#endregion
+
+		#region Update Functions
 
 		private void Update()
 		{
@@ -53,7 +60,6 @@ namespace Spells
 				{
 					EndStasis();
 				}
-				
 				return;
 			}
 
@@ -69,32 +75,33 @@ namespace Spells
 				return;
 			}
 
-			// Ensure the Marker updates only so often, no matter the framerate.
+			// AI - Ensure the Marker updates only so often, no matter the framerate.
 			if (Time.time < _nextMarkerUpdate)
 			{
 				return;
 			}
 			
 			_nextMarkerUpdate = Time.time + _markerUpdateTime;
-
 			UpdateMarkerPosition();
 		}
 
-		// Move the Marker according to the Player's input
+		#endregion
+
+		#region Marker Update Functions
+
+		// AI - Move the Marker according to the Player's input.
 		private void UpdateMarkerPosition()
 		{
-			// Get cursor position for the mouse or the controller
 			Vector2 cursorPosition = GetUpdatedCursorPosition();
-
 			RaycastHit2D cursorRayHit = Physics2D.Raycast(cursorPosition, Vector2.zero, 100f);
 
-			// If the cursor is not in a valid location, abort
+			// AI - If the cursor is not in a valid location, abort.
 			if (!cursorRayHit)
 			{
 				return;
 			}
 
-			// Shoot a raycast from the Player to the cursor to place the marker at the farthest valid position in that direction
+			// AI - Shoot a raycast from the Player to the cursor to place the marker at the farthest valid position.
 			LayerMask layerMask = WhatIsGround | WhatIsWall;
 				
 			Vector2 targetPosition = cursorRayHit.point;
@@ -107,54 +114,22 @@ namespace Spells
 			Debug.DrawRay(playerPosition, normalizedTargetDirection * clampedDistance, Color.orange);
 			RaycastHit2D playerRayHit = Physics2D.Raycast(playerPosition, targetDirection, clampedDistance, layerMask);
 
-			// If the raycast hit a wall or ceiling, record data to be used later
+			// AI - If the raycast hit a wall or ceiling, snap to that point.
 			if (playerRayHit.collider != null)
 			{
 				transform.position = playerRayHit.point;
-				
 				return;
 			}
 			
-			// Otherwise, set the Marker's position to the cursor position or the farthest it can go in that direction
+			// AI - Otherwise, set the Marker's position to the cursor position or the farthest it can go.
 			transform.position = playerPosition + normalizedTargetDirection * clampedDistance;
 		}
 
-		private void PerformStasis()
-		{
-			PlayerController.PlaySound("Stasis");
-			//_cameraController.ResetTarget();
-			
-			Collider2D[] enemiesToFreeze = Physics2D.OverlapCircleAll(transform.position, transform.localScale.x, WhatAreEnemies);
-			for (int enemyIndex = 0; enemyIndex < enemiesToFreeze.Length; ++enemyIndex)
-			{
-				if (enemiesToFreeze[enemyIndex].name.Contains("Guard"))
-				{
-					Guard guard = enemiesToFreeze[enemyIndex].GetComponent<Guard>();
-					guard.InStasis(true);
-					_frozenGuards.Add(guard);
-					
-					continue;
-				}
-				
-				if (enemiesToFreeze[enemyIndex].name.Contains("Sentry"))
-				{
-					Sentry sentry = enemiesToFreeze[enemyIndex].GetComponent<Sentry>();
-					sentry.InStasis(true);
-					_frozenSentries.Add(sentry);
+		#endregion
 
-					continue;
-				}
-			}
+		#region Input Functions
 
-			_stasisStartedTime = Time.time;
-			StasisOccured = true;
-			SpellCaster.StasisOccured();
-
-			Cursor.lockState = CursorLockMode.Locked;
-			Cursor.visible = false;
-		}
-
-		// Get the cursor position depending on whether we're using a mouse or a controller
+		// AI - Get the cursor position depending on whether we're using a mouse or a controller.
 		private Vector3 GetUpdatedCursorPosition()
 		{
 			if (InputManager.UsingGamepad)
@@ -169,26 +144,78 @@ namespace Spells
 			return _camera.ScreenToWorldPoint(Input.mousePosition);
 		}
 
-		// Check whether the raycast hit a collider on one of the layers in the given mask
-		private bool IsLayerInMask(int layer, LayerMask mask)
+		#endregion
+
+		#region Stasis Functions
+
+		// AI - Freeze all enemies within the stasis bubble's radius.
+		private void PerformStasis()
 		{
-			int layerValue = 1 << layer; // this converts the layer index to a bit so we can compare it against the mask
-			int maskAndLayerValue = mask & layerValue;
-			return maskAndLayerValue != 0;
+			PlayerController.PlaySound("Stasis");
+			
+			Collider2D[] enemiesToFreeze = Physics2D.OverlapCircleAll(transform.position, transform.localScale.x, WhatAreEnemies);
+			for (int enemyIndex = 0; enemyIndex < enemiesToFreeze.Length; ++enemyIndex)
+			{
+				FreezeEnemy(enemiesToFreeze[enemyIndex]);
+			}
+
+			_stasisStartedTime = Time.time;
+			StasisOccured = true;
+			SpellCaster.StasisOccured();
+
+			Cursor.lockState = CursorLockMode.Locked;
+			Cursor.visible = false;
 		}
 
+		// AI - Freeze a single enemy (guard or sentry).
+		private void FreezeEnemy(Collider2D enemyCollider)
+		{
+			if (enemyCollider == null)
+			{
+				return;
+			}
+
+			if (enemyCollider.name.Contains("Guard"))
+			{
+				Guard guard = enemyCollider.GetComponent<Guard>();
+				if (guard != null && !_frozenGuards.Contains(guard))
+				{
+					guard.InStasis(true);
+					_frozenGuards.Add(guard);
+				}
+				return;
+			}
+			
+			if (enemyCollider.name.Contains("Sentry"))
+			{
+				Sentry sentry = enemyCollider.GetComponent<Sentry>();
+				if (sentry != null && !_frozenSentries.Contains(sentry))
+				{
+					sentry.InStasis(true);
+					_frozenSentries.Add(sentry);
+				}
+			}
+		}
+
+		// AI - End the stasis effect and unfreeze all enemies.
 		private void EndStasis()
 		{
 			if (StasisOccured)
 			{
 				foreach (Guard guard in _frozenGuards)
 				{
-					guard.InStasis(false);
+					if (guard != null)
+					{
+						guard.InStasis(false);
+					}
 				}
 
 				foreach (Sentry sentry in _frozenSentries)
 				{
-					sentry.InStasis(false);
+					if (sentry != null)
+					{
+						sentry.InStasis(false);
+					}
 				}
 			
 				_frozenGuards.Clear();
@@ -197,11 +224,15 @@ namespace Spells
 			
 			Cursor.lockState = CursorLockMode.Locked;
 			Cursor.visible = false;
-			//_cameraController.ResetTarget();
 
 			Destroy(gameObject);
 		}
 
+		#endregion
+
+		#region Collision Functions
+
+		// AI - Freeze enemies that enter the stasis bubble after it's been cast.
 		private void OnTriggerEnter2D(Collider2D otherCollider)
 		{
 			if (!StasisOccured)
@@ -209,39 +240,27 @@ namespace Spells
 				return;
 			}
 
-			int layer =  otherCollider.gameObject.layer;
-			if (IsLayerInMask(layer, WhatAreEnemies))
+			int layer = otherCollider.gameObject.layer;
+			if (!IsLayerInMask(layer, WhatAreEnemies))
 			{
 				return;
 			}
 			
-			if (otherCollider.name.Contains("Guard"))
-			{
-				Guard guard = otherCollider.GetComponent<Guard>();
-				if (guard == null)
-				{
-					return;
-				}
-				
-				guard.InStasis(true);
-				_frozenGuards.Add(guard);
-				
-				return;
-			}
-			
-			if (otherCollider.name.Contains("Sentry"))
-			{
-				Sentry sentry = otherCollider.GetComponent<Sentry>();
-				if (sentry == null)
-				{
-					return;
-				}
-				
-				sentry.InStasis(true);
-				_frozenSentries.Add(sentry);
-				
-				return;
-			}
+			FreezeEnemy(otherCollider);
 		}
+
+		#endregion
+
+		#region Helper Functions
+
+		// AI - Check whether the given layer is included in the mask.
+		private bool IsLayerInMask(int layer, LayerMask mask)
+		{
+			int layerValue = 1 << layer;
+			int maskAndLayerValue = mask & layerValue;
+			return maskAndLayerValue != 0;
+		}
+
+		#endregion
 	}
 }

@@ -1,10 +1,12 @@
-﻿using Player;
+﻿using Interfaces;
 using UnityEngine;
 
 namespace DamageSystem
 {
-	public class LivingEntity : MonoBehaviour
+	public class LivingEntity : MonoBehaviour, IAttackable
 	{
+		#region Fields
+
 		[SerializeField]
 		protected float StartingHealth;
 		[SerializeField]
@@ -16,11 +18,28 @@ namespace DamageSystem
 		public event System.Action<float, float, float> OnHit;
 		public event System.Action<float, float> OnHeal;
 
+		#endregion
+
+		#region Properties
+
+		// AI - IAttackable implementation
+		public bool IsDead => Dead;
+		float IAttackable.Health => Health;
+
+		#endregion
+
+		#region Initialization Functions
+
 		protected virtual void Start()
 		{
 			Health = StartingHealth;
 		}
 
+		#endregion
+
+		#region Damage Functions
+
+		// AI - Apply damage to the entity. If health reaches zero or below, the entity dies.
 		public virtual void TakeHit(float damage)
 		{
 			if (Dead)
@@ -37,6 +56,11 @@ namespace DamageSystem
 			}
 		}
 
+		#endregion
+
+		#region Healing Functions
+
+		// AI - Restore health to the entity. Health cannot exceed the starting maximum.
 		public virtual void Heal(float heals)
 		{
 			if (Dead)
@@ -60,6 +84,11 @@ namespace DamageSystem
 			Health += heals;
 		}
 
+		#endregion
+
+		#region Death Functions
+
+		// AI - Mark the entity as dead and invoke the death event.
 		protected virtual void Die()
 		{
 			if (Dead)
@@ -71,9 +100,16 @@ namespace DamageSystem
 			OnDeath?.Invoke();
 		}
 
+		#endregion
+
+		#region Status Functions
+
+		// AI - Returns true if the entity is alive, false if dead.
 		public virtual bool GetStatus()
 		{
 			return !Dead;
 		}
+
+		#endregion
 	}
 }

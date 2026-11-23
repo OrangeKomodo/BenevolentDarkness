@@ -6,6 +6,8 @@ namespace Player
 {
 	public class PlayerAttack : MonoBehaviour
 	{
+		#region Fields
+
 		public int Damage;
 
 		public Transform AttackPos;
@@ -21,20 +23,31 @@ namespace Player
 
 		private bool _attackButtonPressed = true;
 
+		#endregion
+
+		#region Initialization Functions
+
 		private void Start()
 		{
 			_playerController = GetComponent<PlayerController>();
 		}
 
+		#endregion
+
+		#region Update Functions
+
 		private void Update()
 		{
 			HandleAttack();
-			
 			HandleAttackCooldown();
-
 			HandleAttackButtonReleased();
 		}
 
+		#endregion
+
+		#region Attack Functions
+
+		// AI - Process player attack logic including backside detection.
 		private void HandleAttack()
 		{
 			if (!_playerController.CanAttack)
@@ -43,65 +56,125 @@ namespace Player
 			}
 
 			CheckForBackside();
-
 			PerformAttack();
 		}
 
+		// AI - Raycast to detect if the player can see an enemy's backside for a stealth attack.
 		private void CheckForBackside()
 		{
-			// Calculate the raycast to check for a Backside
 			Vector2 playerPosition = transform.position;
 			Vector2 attackDirection = transform.right * (transform.localScale.x / Mathf.Abs(transform.localScale.x));
 
-			//Draw and perform the raycast
 			Debug.DrawRay(playerPosition, attackDirection * AttackRange, Color.magenta);
 			RaycastHit2D playerRayHit = Physics2D.Raycast(playerPosition, attackDirection, AttackRange, WhatAreEnemies);
 
-			// Negative check for the Backside
-			if (playerRayHit.collider == null || !playerRayHit.collider.name.Equals("Backside"))
+			if (playerRayHit.collider == null || !playerRayHit.collider.name.Equals(GameManager.GameConstants.BACKSIDE_NAME))
 			{
-				// If the Backside isn't seen when it previously was, unload the Attack Icons
-				if (_seesBackside)
-				{
-					_playerController.LoadAttackIcons(false);
-					_seesBackside = false;
-				}
-
+				HandleBacksideNotSeen();
 				return;
 			}
 
-			// If the Backside is seen when it previously wasn't, load the Attack Icons
+			HandleBacksideSeen(playerRayHit);
+		}
+
+		// AI - Hide attack icons when the player no longer sees an enemy's backside.
+		private void HandleBacksideNotSeen()
+		{
+			if (!_seesBackside)
+			{
+				return;
+			}
+
+			_playerController.LoadAttackIcons(false);
+			_seesBackside = false;
+		}
+
+		// AI - Show attack icons and handle stealth attack inputs when seeing an enemy's backside.
+		private void HandleBacksideSeen(RaycastHit2D playerRayHit)
+		{
 			if (!_seesBackside)
 			{
 				_playerController.LoadAttackIcons(true);
 				_seesBackside = true;
 			}
 
-			// Handle player subduing the enemy
 			if (Input.GetButtonDown("Subdue"))
 			{
-				_playerController.PlaySound("Swipe");
-				playerRayHit.collider.GetComponentInParent<Guard>().OnGuardUnconscious();
-				_playerController.Attack(1);
-
+				ExecuteSubdue(playerRayHit);
 				return;
 			}
 
-			// Handle player attacking the enemy
-			// NOTE: It's purposeful that this attack ignores the cooldown. If the player has the enemy's backside, it should be a free kill.
+			// AI - Note: This backstab attack intentionally ignores cooldown. Stealth kills should be instant.
 			if (Input.GetAxis("Attack") >= 1f)
 			{
-				_playerController.PlaySound("Swipe");
-				playerRayHit.collider.GetComponentInParent<LivingEntity>().TakeHit(1000);
-				_playerController.Attack(0);
-				_attackButtonPressed = false;
-				_currentAttackCooldown = AttackCooldown;
+				ExecuteBackstab(playerRayHit);
 			}
 		}
 
+		// AI - Knock out an enemy from behind.
+		private void ExecuteSubdue(RaycastHit2D playerRayHit)
+		{
+			_playerController.PlaySound("Swipe");
+			playerRayHit.collider.GetComponentInParent<Guard>().OnGuardUnconscious();
+			_playerController.Attack(1);
+		}
+
+		// AI - Instantly kill an enemy from behind.
+		private void ExecuteBackstab(RaycastHit2D playerRayHit)
+		{
+			_playerController.PlaySound("Swipe");
+			playerRayHit.collider.GetComponentInParent<LivingEntity>().TakeHit(GameManager.GameConstants.INSTANT_KILL_DAMAGE);
+			_playerController.Attack(0);
+			_attackButtonPressed = false;
+			_currentAttackCooldown = AttackCooldown;
+		}
+
+		// AI - Execute a normal frontal attack on nearby enemies.
+		private void PerformAttack()
+		{
+			if (Input.GetAxis("Attack") < 1f)
+			{
+				return;
+			}
+
+			if (_currentAttackCooldown > 0f)
+			{
+				return;
+			}
+			
+			if (_attackButtonPressed)
+			{
+				return;
+			}
+			
+			Collider2D[] enemiesToDamage = Physics2D.OverlapCircleAll(AttackPos.position, AttackRange, WhatAreEnemies);
+			
+			for (int enemyColliderIndex = 0; enemyColliderIndex < enemiesToDamage.Length; enemyColliderIndex++)
+			{
+				// AI - Ignore Backside and Player colliders that might be found.
+				if (enemiesToDamage[enemyColliderIndex].name.Equals(GameManager.GameConstants.BACKSIDE_NAME) || 
+				    enemiesToDamage[enemyColliderIndex].tag.Equals(GameManager.GameConstants.PLAYER_TAG))
+				{
+					continue;
+				}
+					
+				enemiesToDamage[enemyColliderIndex].GetComponent<LivingEntity>().TakeHit(Damage);
+			}
+			
+			_playerController.PlaySound("Swipe");
+			_playerController.Attack(0);
+			
+			_currentAttackCooldown = AttackCooldown;
+			_attackButtonPressed = true;
+		}
+
+		#endregion
+
+		#region Cooldown Functions
+
+		// AI - Tick down the attack cooldown timer.
 		private void HandleAttackCooldown()
 		{
-			// Handle ticking down the attack cooldown
 			if (_currentAttackCooldown <= 0f)
 			{
 				return;
@@ -110,16 +183,19 @@ namespace Player
 			_currentAttackCooldown -= Time.deltaTime;
 		}
 
+		#endregion
+
+		#region Input Tracking Functions
+
+		// AI - Track when the attack button is released to prevent holding for continuous attacks.
 		private void HandleAttackButtonReleased()
 		{
-			// If the Attack button is fully pressed, record it
 			if (Input.GetAxis("Attack") >= 1f)
 			{
 				_attackButtonPressed = true;
 				return;
 			}
 			
-			// If the Attack button is a good deal un-pressed, reset the variable
 			if (Input.GetAxis("Attack") <= 0.8f)
 			{
 				_attackButtonPressed = false;
@@ -127,55 +203,17 @@ namespace Player
 			}
 		}
 
-		private void PerformAttack()
-		{
-			// Check if the attack button is active
-			if (Input.GetAxis("Attack") < 1f)
-			{
-				return;
-			}
+		#endregion
 
-			// Check if the cooldown has expired
-			if (_currentAttackCooldown > 0f)
-			{
-				return;
-			}
-			
-			// Check if the button was released since last attack was consummated
-			if (_attackButtonPressed)
-			{
-				return;
-			}
-			
-			// Find enemy colliders in attack area
-			Collider2D[] enemiesToDamage = Physics2D.OverlapCircleAll(AttackPos.position, AttackRange, WhatAreEnemies);
-			
-			// Iterate through the colliders and apply damage
-			for (int enemyColliderIndex = 0; enemyColliderIndex < enemiesToDamage.Length; enemyColliderIndex++)
-			{
-				// Ignore the Backside and Player colliders that might be found in the list
-				if (enemiesToDamage[enemyColliderIndex].name.Equals("Backside") || enemiesToDamage[enemyColliderIndex].name.Equals("Player"))
-				{
-					continue;
-				}
-					
-				enemiesToDamage[enemyColliderIndex].GetComponent<LivingEntity>().TakeHit(Damage);
-			}
-			
-			// Perform attack audio and animations
-			_playerController.PlaySound("Swipe");
-			_playerController.Attack(0);
-			
-			// Set attack limiters
-			_currentAttackCooldown = AttackCooldown;
-			_attackButtonPressed = true;
-		}
+		#region Debug Functions
 
+		// AI - Optional: Draw the attack sphere for debugging.
 		/*private void OnDrawGizmosSelected()
 		{
-			// Optional function to draw the Attack Sphere for debugging
 			Gizmos.color = Color.red;
 			Gizmos.DrawWireSphere(AttackPos.position, AttackRange);
 		}*/
+
+		#endregion
 	}
 }

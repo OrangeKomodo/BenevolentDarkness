@@ -8,6 +8,8 @@ namespace GameManager
 {
 	public class QuickSaveSystem : Singleton<QuickSaveSystem>
 	{
+		#region Fields
+
 		public Transform Player;
 		public Transform EnemiesHolder;
 		public Transform ItemsHolder;
@@ -19,6 +21,10 @@ namespace GameManager
 
 		private bool _started = false;
 
+		#endregion
+
+		#region Initialization Functions
+
 		private void Start()
 		{
 			_playerController = Player.GetComponent<PlayerController>();
@@ -27,47 +33,80 @@ namespace GameManager
 			_itemManager = ItemsHolder.GetComponent<ItemManager>();
 		}
 
+		#endregion
+
+		#region Update Functions
+
 		private void Update()
 		{
+			// AI - Create initial save shortly after scene starts.
 			if (Time.time > 0.1f && !_started)
 			{
 				QuickSaveAll();
 				_started = true;
 			}
 
-			if (Input.GetKeyDown(KeyCode.F5))
+			HandleQuickSaveInput();
+			HandleQuickLoadInput();
+		}
+
+		// AI - Handle F5 quick save input (only if player is alive, in-game, and not spotted).
+		private void HandleQuickSaveInput()
+		{
+			if (!Input.GetKeyDown(KeyCode.F5))
 			{
-				if (_playerController.GetStatus() && MenuSwitcher.Instance.SelectedMenu == 0)
-				{
-					bool isSeen = false;
-					for (int i = 0; i < _guards.Length && !isSeen; i++)
-					{
-						if (!isSeen)
-						{
-							isSeen = _guards[i].SuspicionPercentage > 0f;
-						}
-					}
-
-					for (int i = 0; i < _sentries.Length; i++)
-					{
-						if (!isSeen)
-						{
-							isSeen = _sentries[i].SuspicionPercentage > 0f;
-						}
-					}
-
-					if (!isSeen)
-					{
-						QuickSaveAll();
-					}
-				}
+				return;
 			}
-			else if (Input.GetKeyDown(KeyCode.F9))
+
+			if (!_playerController.GetStatus() || MenuSwitcher.Instance.SelectedMenu != 0)
+			{
+				return;
+			}
+
+			if (IsPlayerSpotted())
+			{
+				return;
+			}
+
+			QuickSaveAll();
+		}
+
+		// AI - Handle F9 quick load input.
+		private void HandleQuickLoadInput()
+		{
+			if (Input.GetKeyDown(KeyCode.F9))
 			{
 				QuickLoadAll();
 			}
 		}
 
+		// AI - Check if the player is currently spotted by any enemy.
+		private bool IsPlayerSpotted()
+		{
+			for (int i = 0; i < _guards.Length; i++)
+			{
+				if (_guards[i] != null && _guards[i].SuspicionPercentage > GameConstants.NOT_SPOTTED_THRESHOLD)
+				{
+					return true;
+				}
+			}
+
+			for (int i = 0; i < _sentries.Length; i++)
+			{
+				if (_sentries[i] != null && _sentries[i].SuspicionPercentage > GameConstants.NOT_SPOTTED_THRESHOLD)
+				{
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		#endregion
+
+		#region Quick Save Functions
+
+		// AI - Save the state of all game systems.
 		private void QuickSaveAll()
 		{
 			MoralitySystem.Instance.QuickSave();
@@ -75,17 +114,24 @@ namespace GameManager
 			
 			for (int i = 0; i < _guards.Length; i++)
 			{
-				_guards[i].QuickSave();
+				if (_guards[i] != null)
+				{
+					_guards[i].QuickSave();
+				}
 			}
 
 			for (int i = 0; i < _sentries.Length; i++)
 			{
-				_sentries[i].QuickSave();
+				if (_sentries[i] != null)
+				{
+					_sentries[i].QuickSave();
+				}
 			}
 			
 			_itemManager.QuickSave();
 		}
 
+		// AI - Restore the state of all game systems.
 		public void QuickLoadAll()
 		{
 			MenuSwitcher.Instance.LoadMenu(0);
@@ -94,15 +140,23 @@ namespace GameManager
 			
 			for (int i = 0; i < _guards.Length; i++)
 			{
-				_guards[i].QuickLoad();
+				if (_guards[i] != null)
+				{
+					_guards[i].QuickLoad();
+				}
 			}
 
 			for (int i = 0; i < _sentries.Length; i++)
 			{
-				_sentries[i].QuickLoad();
+				if (_sentries[i] != null)
+				{
+					_sentries[i].QuickLoad();
+				}
 			}
 			
 			_itemManager.QuickLoad();
 		}
+
+		#endregion
 	}
 }

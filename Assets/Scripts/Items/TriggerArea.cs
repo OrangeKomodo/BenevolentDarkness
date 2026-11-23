@@ -1,99 +1,105 @@
-﻿using GameManager;
+﻿using Items.TriggerEffects;
 using Player;
 using UnityEngine;
 
 namespace Items
 {
+	// AI - Refactored to use Strategy pattern with TriggerEffect components.
+	// AI - To add new trigger types, create a new TriggerEffect subclass and attach it to the GameObject.
 	public class TriggerArea : MonoBehaviour
 	{
-		public int FunctionNumber;
-		public bool SingleTrigger = false;
-		public bool Triggered = false;
+		#region Fields
 
 		private PlayerController _playerController;
-
 		private bool _playerIn = false;
+		private TriggerEffect[] _triggerEffects;
+
+		#endregion
+
+		#region Initialization Functions
 
 		private void Start()
 		{
-			_playerController = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerController>();
+			_playerController = GameObject.FindGameObjectWithTag(GameManager.GameConstants.PLAYER_TAG).GetComponent<PlayerController>();
+			_triggerEffects = GetComponents<TriggerEffect>();
 		}
 
+		#endregion
+
+		#region Trigger Functions
+
+		// AI - Detect when the player enters the trigger area.
 		private void OnTriggerEnter2D(Collider2D otherCollider)
 		{
-			if (otherCollider.tag.Equals("Player") && !_playerIn)
-			{
-				_playerIn = true;
-				PerformFunction();
-			}
-		}
-
-		private void OnTriggerExit2D(Collider2D otherCollider)
-		{
-			if (otherCollider.tag.Equals("Player") && _playerIn)
-			{
-				_playerIn = false;
-			}
-		}
-
-		private void PerformFunction()
-		{
-			if (SingleTrigger && Triggered)
+			if (!otherCollider.tag.Equals(GameManager.GameConstants.PLAYER_TAG) || _playerIn)
 			{
 				return;
 			}
-			
-			switch (FunctionNumber)
+
+			_playerIn = true;
+			ExecuteEffects();
+		}
+
+		// AI - Detect when the player exits the trigger area.
+		private void OnTriggerExit2D(Collider2D otherCollider)
+		{
+			if (!otherCollider.tag.Equals(GameManager.GameConstants.PLAYER_TAG) || !_playerIn)
 			{
-				case 0:
-				{
-					//Level 1 End
-					if (_playerController.Inventory.Contains("Ledger"))
-					{
-						ObjectiveSystem.Instance.SetObjectiveStatus(102, Objective.Status.Completed);
-						MenuSwitcher.Instance.LoadMenu(2);
-						_playerController.Freeze(true);
-						Triggered = true;
-					}
+				return;
+			}
 
-					break;
-				}
-				case 1:
-				{
-					//Level 2 End
-					if (_playerController.Inventory.Contains("Chalice"))
-					{
-						ObjectiveSystem.Instance.SetObjectiveStatus(202, Objective.Status.Completed);
-						MenuSwitcher.Instance.LoadMenu(2);
-						_playerController.Freeze(true);
-						Triggered = true;
-					}
+			_playerIn = false;
+		}
 
-					break;
-				}
-				case 2:
+		#endregion
+
+		#region Effect Execution
+
+		// AI - Execute all attached trigger effects in sequence.
+		private void ExecuteEffects()
+		{
+			if (_triggerEffects == null || _triggerEffects.Length == 0)
+			{
+				return;
+			}
+
+			for (int i = 0; i < _triggerEffects.Length; i++)
+			{
+				if (_triggerEffects[i] != null)
 				{
-					//Level 3 End
-					MenuSwitcher.Instance.LoadMenu(2);
-					_playerController.Freeze(true);
-					Triggered = true;
-					break;
-				}
-				case 3:
-				{
-					//Death Area
-					_playerController.TakeHit(1000);
-					Triggered = true;
-					break;
-				}
-				case 4:
-				{
-					//Falling Area
-					_playerController.IsFalling(true);
-					Triggered = true;
-					break;
+					_triggerEffects[i].Execute(_playerController);
 				}
 			}
 		}
+
+		#endregion
+
+		#region Quick Save Functions
+
+		// AI - Save the state of all trigger effects.
+		public void QuickSave()
+		{
+			// AI - Individual TriggerEffect components manage their own state.
+			// AI - No action needed here as effects track their Triggered state internally.
+		}
+
+		// AI - Load the state of all trigger effects.
+		public void QuickLoad()
+		{
+			if (_triggerEffects == null)
+			{
+				return;
+			}
+
+			for (int i = 0; i < _triggerEffects.Length; i++)
+			{
+				if (_triggerEffects[i] != null)
+				{
+					_triggerEffects[i].ResetTrigger();
+				}
+			}
+		}
+
+		#endregion
 	}
 }

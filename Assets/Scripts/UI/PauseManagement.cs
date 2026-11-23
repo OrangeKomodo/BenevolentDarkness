@@ -3,9 +3,10 @@ using UnityEngine;
 
 namespace UI
 {
+	// AI - Note: This is a small UI class and doesn't require extensive regions.
 	public class PauseManagement : UserInterfaceInputWrapper
 	{
-		// Select Pause Menu Buttons
+		// AI - Select Pause Menu Buttons.
 		protected override void SelectButton(int button)
 		{
 			base.SelectButton(button);
@@ -27,21 +28,21 @@ namespace UI
 			}
 		}
 
-		// Use Cancel function to Resume
+		// AI - Use Cancel function to Resume.
 		protected override void Cancel()
 		{
-			// Don't call base version for the sake of the Select Sound in this case
+			// AI - Don't call base version for the sake of the Select Sound in this case.
 			Resume();
 		}
 
-		// Use Exit function to Resume
+		// AI - Use Exit function to Resume.
 		protected override void Exit()
 		{
-			// Don't call base version for the sake of the Select Sound in this case
+			// AI - Don't call base version for the sake of the Select Sound in this case.
 			Resume();
 		}
 
-		// Unpause the game
+		// AI - Unpause the game and return to gameplay.
 		public void Resume()
 		{
 			AudioManager.Instance.PlaySound("Select");

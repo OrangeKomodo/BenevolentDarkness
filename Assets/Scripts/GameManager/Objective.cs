@@ -1,5 +1,6 @@
 ﻿namespace GameManager
 {
+    // AI - Note: This is a small data class and doesn't require regions.
     [System.Serializable]
     public class Objective
     {
@@ -17,6 +18,7 @@
         public bool IsActive;
         public int[] NextObjectives;
 
+        // AI - Update the objective's current status.
         public void SetStatus(Status newStatus)
         {
             ObjectiveStatus = newStatus;

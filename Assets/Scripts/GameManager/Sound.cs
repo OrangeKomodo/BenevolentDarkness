@@ -6,6 +6,8 @@ namespace GameManager
     [System.Serializable]
     public class Sound
     {
+        #region Fields
+
         private AudioSource _source;
 
         public string ClipName;
@@ -17,6 +19,11 @@ namespace GameManager
         public bool Loop = false;
         public bool PlayOnAwake = false;
 
+        #endregion
+
+        #region Setup Functions
+
+        // AI - Configure the AudioSource with the specified settings and mixer group.
         public void SetSource(AudioMixerGroup group, AudioSource source)
         {
             _source = source;
@@ -28,6 +35,11 @@ namespace GameManager
             _source.outputAudioMixerGroup = group;
         }
 
+        #endregion
+
+        #region Playback Functions
+
+        // AI - Begin playing the audio clip through the configured AudioSource.
         public void Play()
         {
             if (_source == null)
@@ -38,6 +50,7 @@ namespace GameManager
             _source.Play();
         }
 
+        // AI - Stop playing the audio clip.
         public void Stop()
         {
             if (_source == null)
@@ -48,6 +61,7 @@ namespace GameManager
             _source.Stop();
         }
 
+        // AI - Pause or unpause the audio clip based on the provided boolean.
         public void Pause(bool pause)
         {
             if (_source == null)
@@ -58,11 +72,12 @@ namespace GameManager
             if (pause)
             {
                 _source.Pause();
+                return;
             }
-            else
-            {
-                _source.UnPause();
-            }
+            
+            _source.UnPause();
         }
+
+        #endregion
     }
 }

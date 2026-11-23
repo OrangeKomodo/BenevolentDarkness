@@ -6,6 +6,8 @@ namespace AI.Guard
 {
 	public class GuardVision : MonoBehaviour
 	{
+		#region Fields
+
 		private bool _boxVisible = false;
 		private bool _circleVisible = false;
 		private bool _inRange = false;
@@ -24,6 +26,10 @@ namespace AI.Guard
 		private List<Guard> _visibleGuards = new List<Guard>();
 		private List<Guard> _incapacitatedGuards = new List<Guard>();
 
+		#endregion
+
+		#region Initialization Functions
+
 		private void Start()
 		{
 			_guard = GetComponentInParent<Guard>();
@@ -37,13 +43,21 @@ namespace AI.Guard
 			_layerMask = LayerMask.GetMask("Player", "Platforms", "Affected Platforms");
 		}
 
+		#endregion
+
+		#region Update Functions
+
 		private void Update()
 		{
 			SearchForPlayer();
-
 			SearchForOtherGuards();
 		}
 
+		#endregion
+
+		#region Player Detection Functions
+
+		// AI - Check if the player is visible within the guard's vision cone using raycasts.
 		private void SearchForPlayer()
 		{
 			if (_playerController.DisguisedAsGuard || _playerController.InShadowSink)
@@ -57,10 +71,18 @@ namespace AI.Guard
 				return;
 			}
 
+			UpdatePlayerRangeStatus();
+			CheckPlayerLineOfSight();
+		}
+
+		// AI - Update whether the player has entered or exited melee range.
+		private void UpdatePlayerRangeStatus()
+		{
 			if (_inRange && !_wasInRange)
 			{
 				_guard.SetPlayerInMeleeRange();
 				_wasInRange = true;
+				return;
 			}
 
 			if (!_inRange && _wasInRange)
@@ -68,7 +90,11 @@ namespace AI.Guard
 				_guard.SetPlayerOutOfMeleeRange();
 				_wasInRange = false;
 			}
-			
+		}
+
+		// AI - Raycast to the player to check if they're visible or if something is blocking the view.
+		private void CheckPlayerLineOfSight()
+		{
 			Vector2 visionPosition = transform.position;
 			Vector2 playerDirection = _playerController.transform.position - transform.position;
 			float clampedDistance = Mathf.Clamp(Vector2.Distance(transform.position, _playerController.transform.position), 0f, 15f);
@@ -76,12 +102,19 @@ namespace AI.Guard
 			Debug.DrawRay(visionPosition, playerDirection.normalized * clampedDistance, Color.yellow);
 			RaycastHit2D playerRayHit = Physics2D.Raycast(visionPosition, playerDirection, clampedDistance, _layerMask);
 
-			if (playerRayHit.collider != null && playerRayHit.collider.tag.Equals("Player"))
+			if (playerRayHit.collider == null || !playerRayHit.collider.tag.Equals(GameManager.GameConstants.PLAYER_TAG))
 			{
-				_guard.CheckSeesPlayer(_playerController.VisibilityFactor);
+				return;
 			}
+
+			_guard.CheckSeesPlayer(_playerController.VisibilityFactor);
 		}
 
+		#endregion
+
+		#region Guard Detection Functions
+
+		// AI - Check if any visible guards have been incapacitated and alert the searching guard.
 		private void SearchForOtherGuards()
 		{
 			if (_visibleGuards.Count == 0)
@@ -113,48 +146,70 @@ namespace AI.Guard
 			}
 		}
 
+		#endregion
+
+		#region Collision Functions
+
+		// AI - Detect when the player or other guards enter the vision cone.
 		private void OnTriggerEnter2D(Collider2D otherCollider)
 		{
-			if (otherCollider.tag.Equals("Player"))
+			if (otherCollider.tag.Equals(GameManager.GameConstants.PLAYER_TAG))
 			{
-				if (otherCollider.Equals(_playerBodyCollider))
-				{
-					_boxVisible = true;
-				}
-				else if (otherCollider.Equals(_playerFeetCollider))
-				{
-					_circleVisible = true;
-				}
-				
-				_inRange = _attackCollider.IsTouching(_playerBodyCollider) || _attackCollider.IsTouching(_playerFeetCollider);
+				HandlePlayerEnterVision(otherCollider);
+				return;
 			}
 
-			if (otherCollider.name.Equals("Guard Actual") && !_visibleGuards.Contains(otherCollider.GetComponent<Guard>()))
+			if (otherCollider.name.Equals(GameManager.GameConstants.GUARD_ACTUAL_NAME) && !_visibleGuards.Contains(otherCollider.GetComponent<Guard>()))
 			{
 				_visibleGuards.Add(otherCollider.GetComponent<Guard>());
 			}
 		}
 
+		// AI - Track which player collider entered the vision cone and check if they're in attack range.
+		private void HandlePlayerEnterVision(Collider2D otherCollider)
+		{
+			if (otherCollider.Equals(_playerBodyCollider))
+			{
+				_boxVisible = true;
+			}
+			else if (otherCollider.Equals(_playerFeetCollider))
+			{
+				_circleVisible = true;
+			}
+			
+			_inRange = _attackCollider.IsTouching(_playerBodyCollider) || _attackCollider.IsTouching(_playerFeetCollider);
+		}
+
+		// AI - Detect when the player or other guards exit the vision cone.
 		private void OnTriggerExit2D(Collider2D otherCollider)
 		{
-			if (otherCollider.tag.Equals("Player"))
+			if (otherCollider.tag.Equals(GameManager.GameConstants.PLAYER_TAG))
 			{
-				if (otherCollider.Equals(_playerBodyCollider) && !_visionCollider.IsTouching(_playerBodyCollider))
-				{
-					_boxVisible = false;
-				}
-				else if (otherCollider.Equals(_playerFeetCollider))
-				{
-					_circleVisible = false;
-				}
-
-				_inRange = _attackCollider.IsTouching(_playerBodyCollider) || _attackCollider.IsTouching(_playerFeetCollider);
+				HandlePlayerExitVision(otherCollider);
+				return;
 			}
 
-			if (otherCollider.name.Equals("Guard Actual") && _visibleGuards.Contains(otherCollider.GetComponent<Guard>()))
+			if (otherCollider.name.Equals(GameManager.GameConstants.GUARD_ACTUAL_NAME) && _visibleGuards.Contains(otherCollider.GetComponent<Guard>()))
 			{
 				_visibleGuards.Remove(otherCollider.GetComponent<Guard>());
 			}
 		}
+
+		// AI - Track which player collider exited the vision cone and check if they're still in attack range.
+		private void HandlePlayerExitVision(Collider2D otherCollider)
+		{
+			if (otherCollider.Equals(_playerBodyCollider) && !_visionCollider.IsTouching(_playerBodyCollider))
+			{
+				_boxVisible = false;
+			}
+			else if (otherCollider.Equals(_playerFeetCollider))
+			{
+				_circleVisible = false;
+			}
+
+			_inRange = _attackCollider.IsTouching(_playerBodyCollider) || _attackCollider.IsTouching(_playerFeetCollider);
+		}
+
+		#endregion
 	}
 }
